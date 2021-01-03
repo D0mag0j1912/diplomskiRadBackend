@@ -39,9 +39,6 @@ else if( (int)(date('i',strtotime($vrijeme))) >= 45 && (int)(date('i',strtotime(
 
 echo $vrijeme; */
 
-$mkbSifra = "A06.0";
-$polje = explode(" ",$mkbSifra);
-foreach($polje as $element){
-    echo $element;
-}
+$datum = "03.01.2020";
+echo date("Y-m-d",strtotime($datum));
 ?>

@@ -7,6 +7,32 @@ date_default_timezone_set('Europe/Zagreb');
 
 class PovezanaPovijestBolestiService{
 
+    //Funkcija koja dohvaća sve podatke povijesti bolesti za određeni povezani slučaj
+    function dohvatiPovijestBolestiPovezanSlucaj($datum,$razlogDolaska,$mkbSifraPrimarna,$id){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+        //Kreiram prazno polje odgovora
+        $response = [];
+
+
+        $sql = "SELECT * FROM povijestBolesti pb 
+                WHERE pb.datum = '$datum' AND pb.razlogDolaska = '$razlogDolaska' 
+                AND pb.mkbSifraPrimarna = '$mkbSifraPrimarna' AND pb.mboPacijent IN 
+                (SELECT pacijent.mboPacijent FROM pacijent 
+                WHERE pacijent.idPacijent = '$id')";
+        $result = $conn->query($sql);
+
+        //Ako ima pronađenih rezultata za navedenu pretragu
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+
+        return $response;
+    }
+
     //Funkcija koja dohvaća sve podatke povijesti bolesti za određenu PRETRAGU KORISNIKA
     function dohvatiPovijestBolestiPretraga($id,$pretraga){
         //Dohvaćam bazu 
