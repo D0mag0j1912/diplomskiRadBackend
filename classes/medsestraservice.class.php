@@ -374,7 +374,7 @@ class MedSestraService{
         //Ako ima pacijenata u čekaonici
         else{
             //Kreiram upit koji dohvaća osobne podatke pacijenta
-            $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,c.datumDodavanja,c.vrijemeDodavanja,c.statusCekaonica FROM pacijent p 
+            $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,c.statusCekaonica FROM pacijent p 
                     JOIN cekaonica c ON p.idPacijent = c.idPacijent 
                     ORDER BY c.statusCekaonica,c.datumDodavanja,c.vrijemeDodavanja DESC 
                     LIMIT 10";
@@ -404,7 +404,7 @@ class MedSestraService{
         if(!empty($statusi)){
             foreach($statusi as $status){
         
-                $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,c.datumDodavanja,c.vrijemeDodavanja,c.statusCekaonica FROM pacijent p 
+                $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,c.statusCekaonica FROM pacijent p 
                         JOIN cekaonica c ON p.idPacijent = c.idPacijent 
                         WHERE c.statusCekaonica = '$status'
                         ORDER BY c.statusCekaonica,c.datumDodavanja,c.vrijemeDodavanja DESC";
