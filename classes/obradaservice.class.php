@@ -73,7 +73,7 @@ class ObradaService{
 
         $status = "Aktivan";
 
-        //Kreiram sql upit koji će provjeriti postoji li aktivan pacijent u obradi
+        //Kreiram sql upit koji će provjeriti je li trenutno aktivni pacijent naručen na današnji datum
         $sql = "SELECT COUNT(*) AS BrojPacijent FROM narucivanje n 
                 WHERE n.datumNarucivanje = CURDATE() AND n.idPacijent IN 
                 (SELECT o.idPacijent FROM obrada o 
@@ -89,11 +89,12 @@ class ObradaService{
                 $brojPacijenata = $rowCountPacijent['BrojPacijent'];
             }
         }
-        //Ako je već neki pacijent aktivan u obradi
+        //Ako trenutno aktivni pacijent nije naručen na današnji datum
         if($brojPacijenata == 0){
             $response["success"] = "false";
             $response["message"] = "Pacijent je nenaručen!";
         }
+        //Ako JE trenutno aktivni pacijent naručen na današnji datum
         else{
             $sql = "SELECT DATE_FORMAT(n.vrijemeNarucivanje,'%H:%i') AS Vrijeme FROM narucivanje n 
                     WHERE n.datumNarucivanje = CURDATE() AND n.idPacijent IN 

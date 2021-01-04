@@ -259,47 +259,89 @@ class MedSestraService{
         //Kreiram prazno polje odgovora
         $response = []; 
 
-        //Kreiram sql upit koji će provjeriti postoji li pacijent u bazi podataka kojega je medicinska sestra tražila
-        $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM pacijent p 
-                            WHERE p.imePacijent = '$ime' 
-                            OR p.prezPacijent = '$prezime'";
-        //Rezultat upita spremam u varijablu $resultCountPacijent
-        $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultCountPacijent) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
-                //Vrijednost rezultata spremam u varijablu $brojPacijenata
-                $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+        //Ako su uneseni ime ILI prezime (znači samo jedan unos)
+        if(empty($ime) || empty($prezime)){
+            //Kreiram sql upit koji će provjeriti postoji li pacijent u bazi podataka kojega je medicinska sestra tražila
+            $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM pacijent p 
+                                WHERE p.imePacijent = '$ime' 
+                                OR p.prezPacijent = '$prezime'";
+            //Rezultat upita spremam u varijablu $resultCountPacijent
+            $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountPacijent) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                    //Vrijednost rezultata spremam u varijablu $brojPacijenata
+                    $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+                }
             }
-        }
-        //Ako nema pronađenih pacijenata za navedenu pretragu
-        if($brojPacijenata == 0){
-            $response["success"] = "false";
-            $response["message"] = "Nema pronađenih pacijenata za navedeno ime ili prezime!";
-        }
-        //Ako ima pronađenih pacijenata za navedenu pretragu
-        else{
+            //Ako nema pronađenih pacijenata za navedenu pretragu
+            if($brojPacijenata == 0){
+                $response["success"] = "false";
+                $response["message"] = "Nema pronađenih pacijenata za navedeno ime ili prezime!";
+            }
+            //Ako ima pronađenih pacijenata za navedenu pretragu
+            else{
+                //Definiram koliko pacijenata ima po svakoj stranici tablice
+                $brojPacijenataStranica = 5;
+                //Definiram početni broj LIMIT-a (s koje n-torke se počinje)
+                $pocetak = ($trenutnaStranica-1)*$brojPacijenataStranica;
+                //Kreiram upit koji dohvaća osobne podatke pacijenta
+                $sql = "SELECT * FROM pacijent p 
+                        WHERE p.imePacijent = '$ime' 
+                        OR p.prezPacijent = '$prezime' 
+                        LIMIT $pocetak, $brojPacijenataStranica";
 
-            //Definiram koliko pacijenata ima po svakoj stranici tablice
-            $brojPacijenataStranica = 5;
-            //Definiram početni broj LIMIT-a (s koje n-torke se počinje)
-            $pocetak = ($trenutnaStranica-1)*$brojPacijenataStranica;
-            //Kreiram upit koji dohvaća osobne podatke pacijenta
-            $sql = "SELECT * FROM pacijent p 
-                    WHERE p.imePacijent = '$ime' 
-                    OR p.prezPacijent = '$prezime' 
-                    LIMIT $pocetak, $brojPacijenataStranica";
+                $result = $conn->query($sql);
 
-            $result = $conn->query($sql);
-
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    $response[] = $row;
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
                 }
             }
         }
+        else if(!empty($ime) && !empty($prezime)){
+            //Kreiram sql upit koji će provjeriti postoji li pacijent u bazi podataka kojega je medicinska sestra tražila
+            $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM pacijent p 
+                                WHERE p.imePacijent = '$ime' 
+                                AND p.prezPacijent = '$prezime'";
+            //Rezultat upita spremam u varijablu $resultCountPacijent
+            $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountPacijent) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                    //Vrijednost rezultata spremam u varijablu $brojPacijenata
+                    $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+                }
+            }
+            //Ako nema pronađenih pacijenata za navedenu pretragu
+            if($brojPacijenata == 0){
+                $response["success"] = "false";
+                $response["message"] = "Nema pronađenih pacijenata za navedeno ime i prezime!";
+            }
+            //Ako ima pronađenih pacijenata za navedenu pretragu
+            else{
+                //Definiram koliko pacijenata ima po svakoj stranici tablice
+                $brojPacijenataStranica = 5;
+                //Definiram početni broj LIMIT-a (s koje n-torke se počinje)
+                $pocetak = ($trenutnaStranica-1)*$brojPacijenataStranica;
+                //Kreiram upit koji dohvaća osobne podatke pacijenta
+                $sql = "SELECT * FROM pacijent p 
+                        WHERE p.imePacijent = '$ime' 
+                        AND p.prezPacijent = '$prezime' 
+                        LIMIT $pocetak, $brojPacijenataStranica";
 
+                $result = $conn->query($sql);
+
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
+                }
+            } 
+        }
         //Vraćam pacijente
         return $response;
     }
