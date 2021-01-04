@@ -231,7 +231,7 @@ class PovijestBolestiService{
                     $mkbSifraPrimarna = $rowPrimarna["mkbSifra"];
                 }
 
-                //Kreiram sql upit koji će prebrojiti koliko ima SEKUNDARNIH DIJAGNOZA TRENUTNO U BAZI
+                //Kreiram sql upit koji će prebrojiti koliko ima SEKUNDARNIH DIJAGNOZA TRENUTNO U BAZI ZA ODREĐENU PRIMARNU DIJAGNOZU ZA ODREĐENI DATUM I ODREĐENOG PACIJENTA
                 $sqlCountSekundarna = "SELECT COUNT(pb.mkbSifraSekundarna) AS BrojSekundarna FROM povijestbolesti pb
                                         WHERE pb.mkbSifraPrimarna = '$mkbSifraPrimarna' AND pb.datum = '$datum' 
                                         AND pb.mboPacijent IN 
@@ -664,6 +664,11 @@ class PovijestBolestiService{
                         } 
                         $response["success"] = "true";
                         $response["message"] = "Podatci uspješno dodani!"; 
+                    }
+                    //Ako u bazi već postoji sekundarna dijagnoza koju korisnik pokušava unijeti, ne unosi se te server vraća grešku 
+                    else{
+                        $response["success"] = "false";
+                        $response["message"] = "Već ste unijeli ovu sekundarnu dijagnozu danas!";
                     }
                 }
             }

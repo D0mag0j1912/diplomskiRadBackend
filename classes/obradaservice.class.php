@@ -595,7 +595,7 @@ class ObradaService{
         
         $status = "Čeka na pregled";
 
-        //Kreiram sql upit koji će provjeriti postoji li već naručeni pacijent za taj termin
+        //Kreiram sql upit koji će provjeriti koji čekaju na pregled u čekaonici
         $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM pacijent p 
                             JOIN cekaonica c ON c.idPacijent = p.idPacijent 
                             WHERE c.idCekaonica = 
