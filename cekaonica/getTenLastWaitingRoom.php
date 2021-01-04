@@ -3,7 +3,7 @@
 require_once 'C:\wamp64\www\angularPHP\includes\autoloader2.inc.php';
 
 //Dohvaćam liječnički servis
-$servis = new MedSestraService();
+$servis = new CekaonicaService();
 
 //Kreiram objekt tipa "Baza"
 $baza = new Baza();
