@@ -60,17 +60,19 @@ class OtvoreniSlucajService{
                     JOIN ambulanta a ON p.idPregled = a.idPregled 
                     JOIN dijagnoze d ON p.mkbSifraPrimarna = d.mkbSifra 
                     WHERE a.idPacijent = '$id';"; */
-            $sql = "SELECT DISTINCT(p.mkbSifraPrimarna), p.datumPregled, d.imeDijagnoza AS NazivPrimarna,m.imeMedSestra AS OdgovornaOsoba FROM pregled p
+            $sql = "(SELECT DISTINCT(p.mkbSifraPrimarna), DATE_FORMAT(p.datumPregled,'%d.%m.%Y') AS Datum, d.imeDijagnoza AS NazivPrimarna,m.imeMedSestra AS OdgovornaOsoba FROM pregled p
                     JOIN dijagnoze d ON p.mkbSifraPrimarna = d.mkbSifra 
                     JOIN ambulanta a ON a.idPregled = p.idPregled 
                     JOIN med_sestra m ON m.idMedSestra = a.idMedSestra
-                    WHERE a.idPacijent = '$id'
+                    WHERE a.idPacijent = '$id' 
+                    ORDER BY Datum DESC)
                     UNION 
-                    SELECT DISTINCT(pb.mkbSifraPrimarna), pb.datum, d2.imeDijagnoza AS NazivPrimarna,l.imeLijecnik AS OdgovornaOsoba FROM povijestbolesti pb
+                    (SELECT DISTINCT(pb.mkbSifraPrimarna), DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum, d2.imeDijagnoza AS NazivPrimarna,l.imeLijecnik AS OdgovornaOsoba FROM 	                         povijestbolesti pb
                     JOIN dijagnoze d2 ON pb.mkbSifraPrimarna = d2.mkbSifra 
                     JOIN ambulanta a ON a.idPovijestBolesti = pb.idPovijestBolesti 
                     JOIN lijecnik l ON l.idLijecnik = a.idLijecnik
-                    WHERE a.idPacijent = '$id';";
+                    WHERE a.idPacijent = '$id' 
+                    ORDER BY Datum DESC);";
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {
@@ -140,14 +142,14 @@ class OtvoreniSlucajService{
                         WHERE a.idPacijent = '$id' AND pb.mkbSifraPrimarna = '$sifraPrimarna'
                         ORDER BY pb.datum DESC)"; */
                 $sql = "(SELECT DISTINCT(p.mkbSifraSekundarna),m.imeMedSestra AS OdgovornaOsoba, p.mkbSifraPrimarna,
-                        IF(p.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d WHERE d.mkbSifra = p.mkbSifraSekundarna)) AS NazivSekundarna,p.datumPregled AS Datum FROM pregled p 
+                        IF(p.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d WHERE d.mkbSifra = p.mkbSifraSekundarna)) AS NazivSekundarna,DATE_FORMAT(p.datumPregled,'%d.%m.%Y') AS Datum FROM pregled p 
                         JOIN ambulanta a ON a.idPregled = p.idPregled
                         JOIN med_sestra m ON m.idMedSestra = a.idMedSestra
                         WHERE a.idPacijent = '$id' AND p.mkbSifraPrimarna = '$sifraPrimarna'
                         ORDER BY p.datumPregled DESC)
                         UNION 
                     (SELECT DISTINCT(pb.mkbSifraSekundarna), l.imeLijecnik AS OdgovornaOsoba,pb.mkbSifraPrimarna,
-                        IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d WHERE d.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna,pb.datum AS Datum FROM povijestbolesti pb 
+                        IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d WHERE d.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum FROM povijestbolesti pb 
                         JOIN ambulanta a ON a.idPovijestBolesti = pb.idPovijestBolesti
                         JOIN lijecnik l ON l.idLijecnik = a.idLijecnik
                         WHERE a.idPacijent = '$id' AND pb.mkbSifraPrimarna = '$sifraPrimarna'
