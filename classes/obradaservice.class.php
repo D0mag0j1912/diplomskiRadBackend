@@ -219,8 +219,7 @@ class ObradaService{
 
         $status = "Aktivan";
         //Kreiram sql upit koji će provjeriti postoji li aktivnih pacijenata u obradi
-        $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM obrada o 
-                            JOIN pacijent p ON o.idPacijent = p.idPacijent 
+        $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM obrada o
                             WHERE o.statusObrada = '$status'";
         //Rezultat upita spremam u varijablu $resultCountPacijent
         $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);

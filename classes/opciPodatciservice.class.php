@@ -7,6 +7,56 @@ date_default_timezone_set('Europe/Zagreb');
 
 class OpciPodatciService{
 
+    //Funkcija koja dohvaća zdravstvene podatke trenutno aktivnog pacijenta
+    function dohvatiZdravstvenePodatke(){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+        //Kreiram prazno polje odgovora
+        $response = [];
+        //Postavljam status 
+        $status = "Aktivan";
+
+        //Kreiram sql upit koji će provjeriti postoji li aktivnih pacijenata u obradi
+        $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM obrada o
+                            WHERE o.statusObrada = '$status'";
+        //Rezultat upita spremam u varijablu $resultCountPacijent
+        $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
+        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+        if(mysqli_num_rows($resultCountPacijent) > 0){
+            //Idem redak po redak rezultata upita 
+            while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                //Vrijednost rezultata spremam u varijablu $brojPacijenata
+                $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+            }
+        }
+        //Ako nema pronađenih pacijenata u obradi
+        if($brojPacijenata == 0){
+            $response["success"] = "false";
+            $response["message"] = "Nema aktivnih pacijenata!";
+        }
+        //Ako ima pacijenata u obradi
+        else{
+            //Kreiram upit koji dohvaća ZDRAVSTVENE podatke pacijente koji je trenutno aktivan u obradi
+            $sql = "SELECT z.mboPacijent,z.drzavaOsiguranja,z.brojIskazniceDopunsko,ko.opisOsiguranika FROM zdr_podatci z 
+                    JOIN kategorije_osiguranje ko ON ko.oznakaOsiguranika = z.kategorijaOsiguranja
+                    JOIN pacijent p ON p.mboPacijent = z.mboPacijent 
+                    WHERE p.idPacijent IN 
+                    (SELECT o.idPacijent FROM obrada o 
+                    WHERE o.statusObrada = '$status');";
+            $result = $conn->query($sql);
+
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $response[] = $row;
+                }
+            }
+        }
+
+        //Vraćam odgovor
+        return $response;
+    }
+
     //Funkcija koja DODAVA PODATKE OPĆEG PREGLEDA PACIJENTA u bazu
     function dodajOpcePodatkePregleda($idMedSestra, $idPacijent, $nacinPlacanja, $podrucniUredHZZO, $podrucniUredOzljeda, $nazivPoduzeca,
                                     $oznakaOsiguranika, $nazivDrzave, $mbo, $brIskDopunsko, $primarnaDijagnoza,
