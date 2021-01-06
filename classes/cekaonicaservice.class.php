@@ -6,6 +6,55 @@ date_default_timezone_set('Europe/Zagreb');
 
 class CekaonicaService{
 
+    //Funkcija koja dohvaća opće podatke pregleda za određeni ID čekaonice
+    function dohvatiOpcePodatke($idCekaonica){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = []; 
+
+        $sql = "SELECT pr.mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
+                GROUP_CONCAT(DISTINCT pr.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna FROM pregled pr 
+                JOIN dijagnoze d ON d.mkbSifra = pr.mkbSifraPrimarna 
+                WHERE pr.mboPacijent IN 
+                (SELECT p.mboPacijent FROM pacijent p 
+                JOIN cekaonica c ON c.idPacijent = p.idPacijent 
+                WHERE c.idCekaonica = '$idCekaonica') 
+                GROUP BY pr.mkbSifraPrimarna";
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+        return $response;
+    }
+
+    //Funkcija koja dohvaća ime, prezime i datum pregleda pacijenta
+    function dohvatiImePrezimeDatum($idCekaonica){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = []; 
+
+        $sql = "SELECT p.imePacijent,p.prezPacijent,DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS Datum FROM pacijent p 
+                JOIN cekaonica c ON c.idPacijent = p.idPacijent 
+                WHERE c.idCekaonica = '$idCekaonica'";
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+        return $response;
+    }
+
     //Funkcija koja briše pacijenta iz čekaonice
     function izbrisiPacijentaCekaonica($idPacijent,$idCekaonica){
         //Dohvaćam bazu 
