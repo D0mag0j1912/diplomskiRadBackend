@@ -6,6 +6,31 @@ date_default_timezone_set('Europe/Zagreb');
 
 class CekaonicaService{
 
+    //Funkcija koja dohvaća naziv i šifru sekundarnih dijagnoza na osnovu šifre sek. dijagnoze
+    function dohvatiNazivSifraSekundarnaDijagnoza($polje){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = [];
+        //Za svaku pojedinu šifru sekundarne dijagnoze iz polja, pronađi joj šifru i naziv iz baze
+        foreach($polje as $mkbSifra){
+            
+            $sql = "SELECT DISTINCT pr.mkbSifraPrimarna,d.mkbSifra,d.imeDijagnoza FROM dijagnoze d 
+                    JOIN pregled pr ON pr.mkbSifraSekundarna = d.mkbSifra
+                    WHERE d.mkbSifra = '$mkbSifra'";
+            $result = $conn->query($sql);
+
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $response[] = $row;
+                }
+            } 
+        }
+        return $response;
+    }
+
     //Funkcija koja dohvaća opće podatke pregleda za određeni ID čekaonice
     function dohvatiOpcePodatke($idCekaonica){
         //Dohvaćam bazu 
@@ -21,7 +46,7 @@ class CekaonicaService{
                 WHERE pr.mboPacijent IN 
                 (SELECT p.mboPacijent FROM pacijent p 
                 JOIN cekaonica c ON c.idPacijent = p.idPacijent 
-                WHERE c.idCekaonica = '$idCekaonica') 
+                WHERE c.idCekaonica = '$idCekaonica' AND pr.datumPregled = c.datumDodavanja) 
                 GROUP BY pr.mkbSifraPrimarna";
         $result = $conn->query($sql);
 
