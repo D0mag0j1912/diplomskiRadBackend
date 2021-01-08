@@ -31,6 +31,33 @@ class CekaonicaService{
         return $response;
     }
 
+    //Funkcija koja dohvaća povijest bolesti za određeni ID čekaonice
+    function dohvatiPovijestBolesti($idCekaonica){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = []; 
+
+        $sql = "SELECT pb.mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
+                GROUP_CONCAT(DISTINCT pb.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna FROM povijestbolesti pb 
+                JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
+                WHERE pb.mboPacijent IN 
+                (SELECT p.mboPacijent FROM pacijent p 
+                JOIN cekaonica c ON c.idPacijent = p.idPacijent 
+                WHERE c.idCekaonica = '$idCekaonica' AND pb.datum = c.datumDodavanja) 
+                GROUP BY pb.mkbSifraPrimarna";
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+        return $response;
+    }
+
     //Funkcija koja dohvaća opće podatke pregleda za određeni ID čekaonice
     function dohvatiOpcePodatke($idCekaonica){
         //Dohvaćam bazu 
