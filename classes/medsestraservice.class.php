@@ -14,14 +14,34 @@ class MedSestraService{
         //Kreiram prazno polje odgovora
         $response = [];
         
-        //Kreiram upit koji dohvaća ID medicinske sestre
-        $sql = "SELECT idMedSestra FROM med_sestra";
-        
-        $result = $conn->query($sql);
+        //Kreiram sql upit koji će provjeriti koliko ima medicinskih sestara u bazi podataka
+        $sqlCountMedSestra = "SELECT COUNT(*) AS BrojMedSestra FROM med_sestra";
+        //Rezultat upita spremam u varijablu $resultCountMedSestra
+        $resultCountMedSestra = mysqli_query($conn,$sqlCountMedSestra);
+        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+        if(mysqli_num_rows($resultCountMedSestra) > 0){
+            //Idem redak po redak rezultata upita 
+            while($rowCountMedSestra = mysqli_fetch_assoc($resultCountMedSestra)){
+                //Vrijednost rezultata spremam u varijablu $brojMedSestra
+                $brojMedSestra = $rowCountMedSestra['BrojMedSestra'];
+            }
+        } 
+        //Ako je broj liječnika 0
+        if($brojMedSestra == 0){
+            $response["success"] = "false";
+            $response["message"] = "Nema evidentiranih medicinskih sestara!";
+        }
+        //Ako ima liječnika
+        else{
+            //Kreiram upit koji dohvaća ID liječnika
+            $sql = "SELECT idMedSestra FROM med_sestra";
+            
+            $result = $conn->query($sql);
 
-        if($result->num_rows > 0){
-            while($row = $result->fetch_assoc()){
-                $response[] = $row;
+            if($result->num_rows > 0){
+                while($row = $result->fetch_assoc()){
+                    $response[] = $row;
+                }
             }
         }
         //Vraćam odgovor baze 

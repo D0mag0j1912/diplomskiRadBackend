@@ -16,19 +16,40 @@ class LijecnikService{
         //Kreiram prazno polje odgovora
         $response = [];
         
-        //Kreiram upit koji dohvaća ID liječnika
-        $sql = "SELECT idLijecnik FROM lijecnik";
-        
-        $result = $conn->query($sql);
+        //Kreiram sql upit koji će provjeriti koliko ima liječnika u bazi podataka
+        $sqlCountLijecnik = "SELECT COUNT(*) AS BrojLijecnik FROM lijecnik";
+        //Rezultat upita spremam u varijablu $resultCountLijecnik
+        $resultCountLijecnik = mysqli_query($conn,$sqlCountLijecnik);
+        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+        if(mysqli_num_rows($resultCountLijecnik) > 0){
+            //Idem redak po redak rezultata upita 
+            while($rowCountLijecnik = mysqli_fetch_assoc($resultCountLijecnik)){
+                //Vrijednost rezultata spremam u varijablu $brojLijecnika
+                $brojLijecnika = $rowCountLijecnik['BrojLijecnik'];
+            }
+        } 
+        //Ako je broj liječnika 0
+        if($brojLijecnika == 0){
+            $response["success"] = "false";
+            $response["message"] = "Nema evidentiranih liječnika!";
+        }
+        //Ako ima liječnika
+        else{
+            //Kreiram upit koji dohvaća ID liječnika
+            $sql = "SELECT idLijecnik FROM lijecnik";
+            
+            $result = $conn->query($sql);
 
-        if($result->num_rows > 0){
-            while($row = $result->fetch_assoc()){
-                $response[] = $row;
+            if($result->num_rows > 0){
+                while($row = $result->fetch_assoc()){
+                    $response[] = $row;
+                }
             }
         }
         //Vraćam odgovor baze 
         return $response;
     }
+    
     //Funkcija koja dohvaća osobne podatke liječnika
     function dohvatiOsobnePodatke(){
         //Dohvaćam bazu 
