@@ -23,7 +23,9 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $response = []; 
 
         $idMedSestra = mysqli_real_escape_string($conn, trim($request->idMedSestra));
+        $idMedSestra = (int)$idMedSestra;
         $idPacijent = mysqli_real_escape_string($conn, trim($request->idPacijent));
+        $idPacijent = (int)$idPacijent;
         $nacinPlacanja = mysqli_real_escape_string($conn, trim($request->nacinPlacanja));
         $podrucniUredHZZO = mysqli_real_escape_string($conn, trim($request->podrucniUredHZZO));
         $podrucniUredOzljeda = mysqli_real_escape_string($conn, trim($request->podrucniUredOzljeda));
@@ -35,10 +37,12 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $primarnaDijagnoza = mysqli_real_escape_string($conn, trim($request->primarnaDijagnoza));
         $sekundarneDijagnoze = $request->sekundarnaDijagnoza;
         $tipSlucaj = mysqli_real_escape_string($conn, trim($request->tipSlucaj));
+        $idObrada = mysqli_real_escape_string($conn, trim($request->idObrada));
+        $idObrada = (int)$idObrada;
 
         $response = $servis->dodajOpcePodatkePregleda($idMedSestra,$idPacijent,$nacinPlacanja, $podrucniUredHZZO, $podrucniUredOzljeda, $nazivPoduzeca,
                                                     $oznakaOsiguranika, $nazivDrzave, $mbo, $brIskDopunsko, $primarnaDijagnoza,
-                                                    $sekundarneDijagnoze, $tipSlucaj);
+                                                    $sekundarneDijagnoze, $tipSlucaj,$idObrada);
 
         echo json_encode($response);
     }

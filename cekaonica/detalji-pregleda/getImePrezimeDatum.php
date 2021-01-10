@@ -16,12 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     //Kreiram prazno polje
     $response = [];
 
-    //Ako je frontend poslao ID čekaonice
-    if(isset($_GET['idCekaonica'])){
-        //Dohvati ID čekaonice
-        $idCekaonica = (int)$_GET['idCekaonica'];
+    //Ako je frontend poslao ID obrade
+    if(isset($_GET['idObrada'])){
+        //Dohvati ID obrade
+        $idObrada = (int)$_GET['idObrada'];
         //Punim polje sa odgovorom funkcije
-        $response = $servis->dohvatiImePrezimeDatum($idCekaonica);
+        $response = $servis->dohvatiImePrezimeDatum($idObrada);
         echo json_encode($response);
     }
 }

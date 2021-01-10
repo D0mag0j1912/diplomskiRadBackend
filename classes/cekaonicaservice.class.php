@@ -7,7 +7,7 @@ date_default_timezone_set('Europe/Zagreb');
 class CekaonicaService{
 
     //Funkcija koja dohvaća naziv i šifru sekundarnih dijagnoza na osnovu šifre sek. dijagnoze
-    function dohvatiNazivSifraSekundarnaDijagnoza($polje){
+    function dohvatiNazivSifraPovijestBolesti($polje){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -17,7 +17,32 @@ class CekaonicaService{
         //Za svaku pojedinu šifru sekundarne dijagnoze iz polja, pronađi joj šifru i naziv iz baze
         foreach($polje as $mkbSifra){
             
-            $sql = "SELECT DISTINCT pr.mkbSifraPrimarna,d.mkbSifra,d.imeDijagnoza FROM dijagnoze d 
+            $sql = "SELECT DISTINCT pb.mkbSifraPrimarna,d.mkbSifra,d.imeDijagnoza,pb.idPovijestBolesti FROM dijagnoze d 
+                    JOIN povijestBolesti pb ON pb.mkbSifraSekundarna = d.mkbSifra
+                    WHERE d.mkbSifra = '$mkbSifra'";
+            $result = $conn->query($sql);
+
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $response[] = $row;
+                }
+            } 
+        }
+        return $response;
+    }
+
+    //Funkcija koja dohvaća naziv i šifru sekundarnih dijagnoza na osnovu šifre sek. dijagnoze
+    function dohvatiNazivSifraOpciPodatci($polje){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = [];
+        //Za svaku pojedinu šifru sekundarne dijagnoze iz polja, pronađi joj šifru i naziv iz baze
+        foreach($polje as $mkbSifra){
+            
+            $sql = "SELECT DISTINCT pr.mkbSifraPrimarna,d.mkbSifra,d.imeDijagnoza,pr.idPregled FROM dijagnoze d 
                     JOIN pregled pr ON pr.mkbSifraSekundarna = d.mkbSifra
                     WHERE d.mkbSifra = '$mkbSifra'";
             $result = $conn->query($sql);
@@ -31,8 +56,8 @@ class CekaonicaService{
         return $response;
     }
 
-    //Funkcija koja dohvaća povijest bolesti za određeni ID čekaonice
-    function dohvatiPovijestBolesti($idCekaonica){
+    //Funkcija koja dohvaća povijest bolesti za određeni ID obrade
+    function dohvatiPovijestBolesti($idObrada){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -40,13 +65,10 @@ class CekaonicaService{
         //Kreiram prazno polje odgovora
         $response = []; 
 
-        $sql = "SELECT pb.mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
+        $sql = "SELECT pb.anamneza,pb.terapija,pb.mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
                 GROUP_CONCAT(DISTINCT pb.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna FROM povijestbolesti pb 
                 JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
-                WHERE pb.mboPacijent IN 
-                (SELECT p.mboPacijent FROM pacijent p 
-                JOIN cekaonica c ON c.idPacijent = p.idPacijent 
-                WHERE c.idCekaonica = '$idCekaonica' AND pb.datum = c.datumDodavanja) 
+                WHERE pb.idObrada = '$idObrada'
                 GROUP BY pb.mkbSifraPrimarna";
         $result = $conn->query($sql);
 
@@ -58,8 +80,8 @@ class CekaonicaService{
         return $response;
     }
 
-    //Funkcija koja dohvaća opće podatke pregleda za određeni ID čekaonice
-    function dohvatiOpcePodatke($idCekaonica){
+    //Funkcija koja dohvaća opće podatke pregleda za određeni ID obrade
+    function dohvatiOpcePodatke($idObrada){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -70,10 +92,7 @@ class CekaonicaService{
         $sql = "SELECT pr.mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
                 GROUP_CONCAT(DISTINCT pr.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna FROM pregled pr 
                 JOIN dijagnoze d ON d.mkbSifra = pr.mkbSifraPrimarna 
-                WHERE pr.mboPacijent IN 
-                (SELECT p.mboPacijent FROM pacijent p 
-                JOIN cekaonica c ON c.idPacijent = p.idPacijent 
-                WHERE c.idCekaonica = '$idCekaonica' AND pr.datumPregled = c.datumDodavanja) 
+                WHERE pr.idObrada = '$idObrada' 
                 GROUP BY pr.mkbSifraPrimarna";
         $result = $conn->query($sql);
 
@@ -86,7 +105,7 @@ class CekaonicaService{
     }
 
     //Funkcija koja dohvaća ime, prezime i datum pregleda pacijenta
-    function dohvatiImePrezimeDatum($idCekaonica){
+    function dohvatiImePrezimeDatum($idObrada){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -94,9 +113,9 @@ class CekaonicaService{
         //Kreiram prazno polje odgovora
         $response = []; 
 
-        $sql = "SELECT p.imePacijent,p.prezPacijent,DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS Datum FROM pacijent p 
-                JOIN cekaonica c ON c.idPacijent = p.idPacijent 
-                WHERE c.idCekaonica = '$idCekaonica'";
+        $sql = "SELECT p.imePacijent,p.prezPacijent,DATE_FORMAT(o.datumDodavanja,'%d.%m.%Y') AS Datum FROM pacijent p 
+                JOIN obrada o ON o.idPacijent = p.idPacijent 
+                WHERE o.idObrada = '$idObrada'";
         $result = $conn->query($sql);
 
         if ($result->num_rows > 0) {
@@ -108,33 +127,15 @@ class CekaonicaService{
     }
 
     //Funkcija koja briše pacijenta iz čekaonice
-    function izbrisiPacijentaCekaonica($idPacijent,$idCekaonica){
+    function izbrisiPacijentaCekaonica($idObrada,$idCekaonica){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
 
         //Kreiram prazno polje odgovora
         $response = []; 
-
-        $sqlObrada = "DELETE FROM obrada 
-                    WHERE obrada.idPacijent IN 
-                    (SELECT cekaonica.idPacijent FROM cekaonica 
-                    WHERE cekaonica.idPacijent = ? AND cekaonica.idCekaonica = ?);";
-
-        //Kreiranje prepared statementa
-        $stmtObrada = mysqli_stmt_init($conn);
-        //Ako je statement neuspješan
-        if(!mysqli_stmt_prepare($stmtObrada,$sqlObrada)){
-            $response["success"] = "false";
-            $response["message"] = "Prepared statement brisanja obrade ne valja!";
-        }
-        //Ako je prepared statement u redu
-        else{
-            //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-            mysqli_stmt_bind_param($stmtObrada,"ii",$idPacijent,$idCekaonica);
-            //Izvršavanje statementa
-            mysqli_stmt_execute($stmtObrada);
-
+        //Ako je ID obrade prazan
+        if(empty($idObrada)){
             $sql = "DELETE FROM cekaonica 
                 WHERE idCekaonica = ?";
         
@@ -154,6 +155,47 @@ class CekaonicaService{
 
                 $response["success"] = "true";
                 $response["message"] = "Pacijent uspješno izbrisan!";
+            }  
+        }
+        //Ako ID obrade nije prazan
+        else{
+            $sqlObrada = "DELETE FROM obrada 
+                    WHERE idObrada = ?;";
+
+            //Kreiranje prepared statementa
+            $stmtObrada = mysqli_stmt_init($conn);
+            //Ako je statement neuspješan
+            if(!mysqli_stmt_prepare($stmtObrada,$sqlObrada)){
+                $response["success"] = "false";
+                $response["message"] = "Prepared statement brisanja obrade ne valja!";
+            }
+            //Ako je prepared statement u redu
+            else{
+                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                mysqli_stmt_bind_param($stmtObrada,"i",$idObrada);
+                //Izvršavanje statementa
+                mysqli_stmt_execute($stmtObrada);
+
+                $sql = "DELETE FROM cekaonica 
+                    WHERE idObrada = ?";
+            
+                //Kreiranje prepared statementa
+                $stmt = mysqli_stmt_init($conn);
+                //Ako je statement neuspješan
+                if(!mysqli_stmt_prepare($stmt,$sql)){
+                    $response["success"] = "false";
+                    $response["message"] = "Prepared statement brisanja čekaonice ne valja!";
+                }
+                //Ako je prepared statement u redu
+                else{
+                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                    mysqli_stmt_bind_param($stmt,"i",$idObrada);
+                    //Izvršavanje statementa
+                    mysqli_stmt_execute($stmt);
+
+                    $response["success"] = "true";
+                    $response["message"] = "Pacijent uspješno izbrisan!";
+                }
             }
         }
 
@@ -259,7 +301,9 @@ class CekaonicaService{
         //Ako ima pacijenata u čekaonici
         else{
             //Kreiram upit koji dohvaća osobne podatke pacijenta
-            $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,c.statusCekaonica FROM pacijent p 
+            $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,
+                    DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,
+                    c.statusCekaonica,c.idObrada FROM pacijent p 
                     JOIN cekaonica c ON p.idPacijent = c.idPacijent 
                     ORDER BY c.statusCekaonica,c.datumDodavanja,c.vrijemeDodavanja DESC";
 

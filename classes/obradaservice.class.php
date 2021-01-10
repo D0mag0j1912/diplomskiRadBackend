@@ -179,12 +179,20 @@ class ObradaService{
             //Izvršavanje statementa
             mysqli_stmt_execute($stmt);
 
+            //Dohvaćam ID obrade kojega sam upravo unio
+            $resultObrada = mysqli_query($conn,"SELECT MAX(o.idObrada) AS IDObrada FROM obrada o");
+            //Ulazim u polje rezultata i idem redak po redak
+            while($rowObrada = mysqli_fetch_array($resultObrada)){
+                //Dohvaćam željeni ID pregleda
+                $idObrada = $rowObrada['IDObrada'];
+            }
+
             //Status čekaonice
             $statusCekaonicaPrije = "Čeka na pregled";
             $statusCekaonicaPoslije = "Na pregledu";
 
             //Ažurirati atribut "statusCekaonica" na "Na pregledu"
-            $sqlCekaonica = "UPDATE cekaonica SET statusCekaonica = ? 
+            $sqlCekaonica = "UPDATE cekaonica SET statusCekaonica = ?,idObrada = ?
                             WHERE idPacijent = ? AND statusCekaonica = ?";
             //Kreiranje prepared statementa
             $stmtCekaonica = mysqli_stmt_init($conn);
@@ -196,7 +204,7 @@ class ObradaService{
             //Ako je prepared statement u redu
             else{
                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                mysqli_stmt_bind_param($stmtCekaonica,"sis",$statusCekaonicaPoslije,$id,$statusCekaonicaPrije);
+                mysqli_stmt_bind_param($stmtCekaonica,"siis",$statusCekaonicaPoslije,$idObrada,$id,$statusCekaonicaPrije);
                 //Izvršavanje statementa
                 mysqli_stmt_execute($stmtCekaonica);
 
@@ -239,7 +247,7 @@ class ObradaService{
         //Ako ima pacijenata u obradi
         else{
             //Kreiram upit koji dohvaća podatke pacijente koji je trenutno aktivan u obradi
-            $sql = "SELECT o.idPacijent,o.datumDodavanja,o.vrijemeDodavanja,o.statusObrada,
+            $sql = "SELECT o.idObrada,o.idPacijent,o.datumDodavanja,o.vrijemeDodavanja,o.statusObrada,
                     p.imePacijent,p.prezPacijent,DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS DatumRodenja,p.adresaPacijent,p.mboPacijent,z.brojIskazniceDopunsko FROM obrada o 
                     JOIN pacijent p ON o.idPacijent = p.idPacijent 
                     JOIN zdr_podatci z ON z.mboPacijent = p.mboPacijent

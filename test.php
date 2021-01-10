@@ -38,7 +38,34 @@ else if( (int)(date('i',strtotime($vrijeme))) >= 45 && (int)(date('i',strtotime(
 }
 
 echo $vrijeme; */
+$idObrada = 196;
+//Funkcija koja dohvaća povijest bolesti za određeni ID obrade
+function dohvatiPovijestBolesti($idObrada){
+    //Dohvaćam bazu 
+    $baza = new Baza();
+    $conn = $baza->spojiSBazom();
 
-$datum = "03.01.2020";
-echo date("Y-m-d",strtotime($datum));
+    //Kreiram prazno polje odgovora
+    $response = []; 
+
+    $sql = "SELECT pb.mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
+            GROUP_CONCAT(DISTINCT pb.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna FROM povijestbolesti pb 
+            JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
+            WHERE pb.idObrada = '$idObrada'
+            GROUP BY pb.mkbSifraPrimarna";
+    $result = $conn->query($sql);
+
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+            $response[] = $row;
+        }
+    }
+    return $response;
+}
+
+foreach(dohvatiPovijestBolesti($idObrada) as $vanjsko){
+    foreach($vanjsko as $element){
+        echo $element;
+    }
+}
 ?>

@@ -24,10 +24,10 @@ if($_SERVER["REQUEST_METHOD"] === "DELETE"){
         //Uzmi tu vrijednost ID-a i pretvori je u INTEGER
         $idCekaonica = mysqli_real_escape_string($conn, trim($request->idCekaonica));
         $idCekaonica = (int)$idCekaonica;
-        $idPacijent = mysqli_real_escape_string($conn, trim($request->idPacijent));
-        $idPacijent = (int)$idPacijent;
+        $idObrada = mysqli_real_escape_string($conn, trim($request->idObrada));
+        $idObrada = (int)$idObrada;
         //Punim polje sa vrijednostima polja iz funkcije
-        $response = $servis->izbrisiPacijentaCekaonica($idPacijent,$idCekaonica);
+        $response = $servis->izbrisiPacijentaCekaonica($idObrada,$idCekaonica);
         //Vraćam odgovor frontendu
         echo json_encode($response);
     }
