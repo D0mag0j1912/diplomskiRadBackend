@@ -246,7 +246,7 @@ class ObradaService{
         }
         //Ako ima pacijenata u obradi
         else{
-            //Kreiram upit koji dohvaća podatke pacijente koji je trenutno aktivan u obradi
+            //Kreiram upit koji dohvaća podatke pacijenta koji je trenutno aktivan u obradi
             $sql = "SELECT o.idObrada,o.idPacijent,o.datumDodavanja,o.vrijemeDodavanja,o.statusObrada,
                     p.imePacijent,p.prezPacijent,DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS DatumRodenja,p.adresaPacijent,p.mboPacijent,z.brojIskazniceDopunsko FROM obrada o 
                     JOIN pacijent p ON o.idPacijent = p.idPacijent 

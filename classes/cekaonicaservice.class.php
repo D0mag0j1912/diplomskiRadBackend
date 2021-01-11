@@ -7,7 +7,7 @@ date_default_timezone_set('Europe/Zagreb');
 class CekaonicaService{
 
     //Funkcija koja dohvaća naziv i šifru sekundarnih dijagnoza na osnovu šifre sek. dijagnoze
-    function dohvatiNazivSifraPovijestBolesti($polje){
+    function dohvatiNazivSifraPovijestBolesti($polje,$idObrada){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -16,10 +16,9 @@ class CekaonicaService{
         $response = [];
         //Za svaku pojedinu šifru sekundarne dijagnoze iz polja, pronađi joj šifru i naziv iz baze
         foreach($polje as $mkbSifra){
-            
-            $sql = "SELECT DISTINCT pb.mkbSifraPrimarna,d.mkbSifra,d.imeDijagnoza,pb.idPovijestBolesti FROM dijagnoze d 
+            $sql = "SELECT DISTINCT(TRIM(pb.mkbSifraPrimarna)) AS mkbSifraPrimarna,d.mkbSifra,d.imeDijagnoza,pb.idPovijestBolesti FROM dijagnoze d 
                     JOIN povijestBolesti pb ON pb.mkbSifraSekundarna = d.mkbSifra
-                    WHERE d.mkbSifra = '$mkbSifra'";
+                    WHERE d.mkbSifra = '$mkbSifra' AND pb.idObrada = '$idObrada'";
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {
@@ -32,7 +31,7 @@ class CekaonicaService{
     }
 
     //Funkcija koja dohvaća naziv i šifru sekundarnih dijagnoza na osnovu šifre sek. dijagnoze
-    function dohvatiNazivSifraOpciPodatci($polje){
+    function dohvatiNazivSifraOpciPodatci($polje,$idObrada){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -41,10 +40,9 @@ class CekaonicaService{
         $response = [];
         //Za svaku pojedinu šifru sekundarne dijagnoze iz polja, pronađi joj šifru i naziv iz baze
         foreach($polje as $mkbSifra){
-            
-            $sql = "SELECT DISTINCT pr.mkbSifraPrimarna,d.mkbSifra,d.imeDijagnoza,pr.idPregled FROM dijagnoze d 
+            $sql = "SELECT DISTINCT(TRIM(pr.mkbSifraPrimarna)) AS mkbSifraPrimarna,d.mkbSifra,d.imeDijagnoza,pr.idPregled FROM dijagnoze d 
                     JOIN pregled pr ON pr.mkbSifraSekundarna = d.mkbSifra
-                    WHERE d.mkbSifra = '$mkbSifra'";
+                    WHERE d.mkbSifra = '$mkbSifra' AND pr.idObrada = '$idObrada'";
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {
@@ -65,7 +63,7 @@ class CekaonicaService{
         //Kreiram prazno polje odgovora
         $response = []; 
 
-        $sql = "SELECT pb.anamneza,pb.terapija,pb.mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
+        $sql = "SELECT pb.anamneza,pb.terapija,TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
                 GROUP_CONCAT(DISTINCT pb.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna FROM povijestbolesti pb 
                 JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                 WHERE pb.idObrada = '$idObrada'
@@ -89,7 +87,7 @@ class CekaonicaService{
         //Kreiram prazno polje odgovora
         $response = []; 
 
-        $sql = "SELECT pr.mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
+        $sql = "SELECT TRIM(pr.mkbSifraPrimarna) AS mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
                 GROUP_CONCAT(DISTINCT pr.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna FROM pregled pr 
                 JOIN dijagnoze d ON d.mkbSifra = pr.mkbSifraPrimarna 
                 WHERE pr.idObrada = '$idObrada' 
@@ -113,7 +111,7 @@ class CekaonicaService{
         //Kreiram prazno polje odgovora
         $response = []; 
 
-        $sql = "SELECT p.imePacijent,p.prezPacijent,DATE_FORMAT(o.datumDodavanja,'%d.%m.%Y') AS Datum FROM pacijent p 
+        $sql = "SELECT p.imePacijent,p.prezPacijent,DATE_FORMAT(o.datumDodavanja,'%d.%m.%Y') AS Datum,o.idObrada FROM pacijent p 
                 JOIN obrada o ON o.idPacijent = p.idPacijent 
                 WHERE o.idObrada = '$idObrada'";
         $result = $conn->query($sql);

@@ -26,14 +26,14 @@ class MedSestraService{
                 $brojMedSestra = $rowCountMedSestra['BrojMedSestra'];
             }
         } 
-        //Ako je broj liječnika 0
+        //Ako je broj medicinskih sestara 0
         if($brojMedSestra == 0){
             $response["success"] = "false";
             $response["message"] = "Nema evidentiranih medicinskih sestara!";
         }
-        //Ako ima liječnika
+        //Ako ima medicinskih sestara
         else{
-            //Kreiram upit koji dohvaća ID liječnika
+            //Kreiram upit koji dohvaća ID medicinske sestre
             $sql = "SELECT idMedSestra FROM med_sestra";
             
             $result = $conn->query($sql);

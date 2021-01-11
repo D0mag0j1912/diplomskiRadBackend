@@ -17,13 +17,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $response = [];
 
     //Ako je frontend poslao ID čekaonice
-    if(isset($_GET['mkbSifraSekundarna'])){
+    if(isset($_GET['mkbSifraSekundarna']) && isset($_GET['idObrada'])){
         //Dohvati spojene šifre sekundarnih dijagnoza
         $mkbSifraSekundarna = $_GET['mkbSifraSekundarna'];
+        //Dohvati ID obrade
+        $idObrada = $_GET['idObrada'];
+        $idObrada = (int)$idObrada;
         //Svaku pojedinu sekundarnu dijagnozu iz stringa odvoji kao jedan element polja
         $polje = explode(" ",$mkbSifraSekundarna);
         //Punim polje sa odgovorom funkcije
-        $response = $servis->dohvatiNazivSifraOpciPodatci($polje);
+        $response = $servis->dohvatiNazivSifraOpciPodatci($polje,$idObrada);
         //Vrati odgovor frontendu
         echo json_encode($response);
     }

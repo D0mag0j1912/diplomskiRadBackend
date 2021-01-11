@@ -82,8 +82,9 @@ class PovezanaPovijestBolestiService{
         //Za svaku pojedinu šifru sekundarne dijagnoze iz polja, pronađi joj šifru i naziv iz baze
         foreach($polje as $mkbSifra){
             
-            $sql = "SELECT d.mkbSifra,d.imeDijagnoza FROM dijagnoze d 
-                WHERE d.mkbSifra = '$mkbSifra'";
+            $sql = "SELECT DISTINCT(TRIM(pb.mkbSifraPrimarna)) AS mkbSifraPrimarna,d.mkbSifra,d.imeDijagnoza FROM dijagnoze d 
+                    JOIN povijestbolesti pb ON pb.mkbSifraSekundarna = d.mkbSifra
+                    WHERE d.mkbSifra = '$mkbSifra'";
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {
@@ -128,7 +129,7 @@ class PovezanaPovijestBolestiService{
         else{
             $sql = "SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
                     pb.razlogDolaska, 
-                    pb.mkbSifraPrimarna,
+                    TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,
                     d.imeDijagnoza AS NazivPrimarna,
                     GROUP_CONCAT(DISTINCT pb.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna FROM povijestbolesti pb 
                                         JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
