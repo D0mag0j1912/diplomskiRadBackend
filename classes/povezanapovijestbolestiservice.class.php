@@ -45,7 +45,7 @@ class PovezanaPovijestBolestiService{
 
         $sql = "SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
                 pb.razlogDolaska, 
-                pb.mkbSifraPrimarna,
+                TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,
                 d.imeDijagnoza AS NazivPrimarna,
                 GROUP_CONCAT(DISTINCT pb.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna FROM povijestbolesti pb 
                 JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
