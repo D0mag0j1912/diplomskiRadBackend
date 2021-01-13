@@ -25,14 +25,16 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 
         //Dohvaćam ID koji je frontend poslao
         $id = mysqli_real_escape_string($conn, trim($request->id));
+        //Dohvaćam tip korisnika koji je frontend poslao
+        $tip = mysqli_real_escape_string($conn, trim($request->tip));
 
         //Ako vraća null, nema errora
-        if($servis->provjeraObrada() != null){
-            $response = $servis->provjeraObrada();
+        if($servis->provjeraObrada($tip) != null){
+            $response = $servis->provjeraObrada($tip);
         }
         else{
             //Punim polje sa odgovorom baze
-            $response = $servis->dodajUObradu($id);
+            $response = $servis->dodajUObradu($tip,$id);
         }
         //Šaljem nazad frontendu odgovor
         echo json_encode($response);
@@ -43,11 +45,15 @@ else if($_SERVER["REQUEST_METHOD"] === "GET"){
     //Kreiram prazno polje
     $response = [];
 
-    //Punim polje sa vrijednostima polja iz funkcije
-    $response = $servis->dohvatiPacijentObrada();
+    if(isset($_GET['tip'])){
+        //Dohvaćam tip korisnika
+        $tip = $_GET['tip'];
+        //Punim polje sa vrijednostima polja iz funkcije
+        $response = $servis->dohvatiPacijentObrada($tip);
 
-    //Vraćam frontendu rezultat
-    echo json_encode($response);
+        //Vraćam frontendu rezultat
+        echo json_encode($response);
+    }
 }
 //Ako zahtjev frontenda uključuje metodu PUT:
 else if($_SERVER["REQUEST_METHOD"] === "PUT"){
@@ -63,8 +69,12 @@ else if($_SERVER["REQUEST_METHOD"] === "PUT"){
 
         //Dohvaćam ID koji je frontend poslao
         $id = mysqli_real_escape_string($conn, trim($request->id));
+        //Dohvaćam tip korisnika koji je frontend poslao
+        $tip = mysqli_real_escape_string($conn, trim($request->tip));
+        //Dohvaćam ID obrade koji je frontend poslao
+        $idObrada = mysqli_real_escape_string($conn, trim($request->idObrada));
 
-        $response = $servis->azurirajStatus($id);
+        $response = $servis->azurirajStatus($idObrada,$tip,$id);
 
         echo json_encode($response);
     }

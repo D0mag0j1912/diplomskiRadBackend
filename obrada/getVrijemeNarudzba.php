@@ -16,10 +16,14 @@ if($_SERVER["REQUEST_METHOD"] === "GET"){
     //Kreiram prazno polje
     $response = [];
 
-    //Punim polje sa vrijednostima polja iz funkcije
-    $response = $servis->dohvatiVrijemeNarudzbe();
+    if(isset($_GET['tip'])){
+        //Dohvaćam tip korisnika
+        $tip = $_GET['tip'];
+        //Punim polje sa vrijednostima polja iz funkcije
+        $response = $servis->dohvatiVrijemeNarudzbe($tip);
 
-    //Vraćam frontendu rezultat
-    echo json_encode($response);
+        //Vraćam frontendu rezultat
+        echo json_encode($response);
+    }
 }
 ?>

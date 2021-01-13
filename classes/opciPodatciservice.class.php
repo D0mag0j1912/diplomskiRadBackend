@@ -8,7 +8,7 @@ date_default_timezone_set('Europe/Zagreb');
 class OpciPodatciService{
 
     //Funkcija koja dohvaća zdravstvene podatke trenutno aktivnog pacijenta
-    function dohvatiZdravstvenePodatke(){
+    function dohvatiZdravstvenePodatke($tip){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -17,38 +17,41 @@ class OpciPodatciService{
         //Postavljam status 
         $status = "Aktivan";
 
-        //Kreiram sql upit koji će provjeriti postoji li aktivnih pacijenata u obradi
-        $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM obrada o
-                            WHERE o.statusObrada = '$status'";
-        //Rezultat upita spremam u varijablu $resultCountPacijent
-        $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultCountPacijent) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
-                //Vrijednost rezultata spremam u varijablu $brojPacijenata
-                $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+        //Ako je tip korisnika "sestra":
+        if($tip == "sestra"){
+            //Kreiram sql upit koji će provjeriti postoji li aktivnih pacijenata u obradi
+            $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM obrada_med_sestra o
+                                WHERE o.statusObrada = '$status'";
+            //Rezultat upita spremam u varijablu $resultCountPacijent
+            $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountPacijent) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                    //Vrijednost rezultata spremam u varijablu $brojPacijenata
+                    $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+                }
             }
-        }
-        //Ako nema pronađenih pacijenata u obradi
-        if($brojPacijenata == 0){
-            $response["success"] = "false";
-            $response["message"] = "Nema aktivnih pacijenata!";
-        }
-        //Ako ima pacijenata u obradi
-        else{
-            //Kreiram upit koji dohvaća ZDRAVSTVENE podatke pacijente koji je trenutno aktivan u obradi
-            $sql = "SELECT z.mboPacijent,z.drzavaOsiguranja,z.brojIskazniceDopunsko,ko.opisOsiguranika FROM zdr_podatci z 
-                    JOIN kategorije_osiguranje ko ON ko.oznakaOsiguranika = z.kategorijaOsiguranja
-                    JOIN pacijent p ON p.mboPacijent = z.mboPacijent 
-                    WHERE p.idPacijent IN 
-                    (SELECT o.idPacijent FROM obrada o 
-                    WHERE o.statusObrada = '$status');";
-            $result = $conn->query($sql);
+            //Ako nema pronađenih pacijenata u obradi
+            if($brojPacijenata == 0){
+                $response["success"] = "false";
+                $response["message"] = "Nema aktivnih pacijenata!";
+            }
+            //Ako ima pacijenata u obradi
+            else{
+                //Kreiram upit koji dohvaća ZDRAVSTVENE podatke pacijente koji je trenutno aktivan u obradi
+                $sql = "SELECT z.mboPacijent,z.drzavaOsiguranja,z.brojIskazniceDopunsko,ko.opisOsiguranika FROM zdr_podatci z 
+                        JOIN kategorije_osiguranje ko ON ko.oznakaOsiguranika = z.kategorijaOsiguranja
+                        JOIN pacijent p ON p.mboPacijent = z.mboPacijent 
+                        WHERE p.idPacijent IN 
+                        (SELECT o.idPacijent FROM obrada_med_sestra o 
+                        WHERE o.statusObrada = '$status');";
+                $result = $conn->query($sql);
 
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    $response[] = $row;
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
                 }
             }
         }
@@ -185,7 +188,7 @@ class OpciPodatciService{
                 //Kreiram upit za spremanje prvog dijela podataka u bazu
                 $sql = "INSERT INTO pregled (nacinPlacanja, podrucniUredHZZO, podrucniUredOzljeda, 
                                             nazivPoduzeca, oznakaOsiguranika, nazivDrzave, mboPacijent, brIskDopunsko,
-                                            mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, datumPregled,narucen,idObrada) 
+                                            mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, datumPregled,narucen,idObradaMedSestra) 
                                             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                 //Kreiranje prepared statementa
                 $stmt = mysqli_stmt_init($conn);
@@ -405,7 +408,7 @@ class OpciPodatciService{
                     //Kreiram upit za spremanje prvog dijela podataka u bazu
                     $sql = "INSERT INTO pregled (nacinPlacanja, podrucniUredHZZO, podrucniUredOzljeda, 
                             nazivPoduzeca, oznakaOsiguranika, nazivDrzave, mboPacijent, brIskDopunsko,
-                            mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, datumPregled,narucen,idObrada) 
+                            mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, datumPregled,narucen,idObradaMedSestra) 
                             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                     //Kreiranje prepared statementa
                     $stmt = mysqli_stmt_init($conn);
@@ -482,7 +485,7 @@ class OpciPodatciService{
                     //Ažuriram podatke
                     $sql = "UPDATE pregled p SET p.nacinPlacanja = ?, p.podrucniUredHZZO = ?, p.podrucniUredOzljeda = ?, 
                             p.nazivPoduzeca = ?, p.oznakaOsiguranika = ?,p.nazivDrzave = ?,p.mboPacijent = ?, p.brIskDopunsko = ?,
-                            p.mkbSifraPrimarna = ?,p.mkbSifraSekundarna = ?,p.tipSlucaj = ?,p.datumPregled = ?, p.narucen = ?,p.idObrada = ? 
+                            p.mkbSifraPrimarna = ?,p.mkbSifraSekundarna = ?,p.tipSlucaj = ?,p.datumPregled = ?, p.narucen = ?,p.idObradaMedSestra = ? 
                             WHERE p.idPregled = ?";
                     //Kreiranje prepared statementa
                     $stmt = mysqli_stmt_init($conn);
@@ -536,7 +539,7 @@ class OpciPodatciService{
                         //Ažuriram podatke
                         $sql = "UPDATE pregled p SET p.nacinPlacanja = ?, p.podrucniUredHZZO = ?, p.podrucniUredOzljeda = ?, 
                                 p.nazivPoduzeca = ?, p.oznakaOsiguranika = ?,p.nazivDrzave = ?,p.mboPacijent = ?, p.brIskDopunsko = ?,
-                                p.mkbSifraPrimarna = ?,p.mkbSifraSekundarna = ?,p.tipSlucaj = ?,p.datumPregled = ?, p.narucen = ?, p.idObrada = ? 
+                                p.mkbSifraPrimarna = ?,p.mkbSifraSekundarna = ?,p.tipSlucaj = ?,p.datumPregled = ?, p.narucen = ?, p.idObradaMedSestra = ? 
                                 WHERE p.idPregled = ?";
                         //Kreiranje prepared statementa
                         $stmt = mysqli_stmt_init($conn);
@@ -575,7 +578,7 @@ class OpciPodatciService{
                         //Kreiram upit za spremanje prvog dijela podataka u bazu
                         $sql = "INSERT INTO pregled (nacinPlacanja, podrucniUredHZZO, podrucniUredOzljeda, 
                                 nazivPoduzeca, oznakaOsiguranika, nazivDrzave, mboPacijent, brIskDopunsko,
-                                mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, datumPregled,narucen,idObrada) 
+                                mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, datumPregled,narucen,idObradaMedSestra) 
                                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                         //Kreiranje prepared statementa
                         $stmt = mysqli_stmt_init($conn);
@@ -660,7 +663,7 @@ class OpciPodatciService{
                         //Kreiram upit za spremanje podataka
                         $sql = "INSERT INTO pregled (nacinPlacanja, podrucniUredHZZO, podrucniUredOzljeda, 
                                 nazivPoduzeca, oznakaOsiguranika, nazivDrzave, mboPacijent, brIskDopunsko,
-                                mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, datumPregled,narucen,idObrada) 
+                                mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, datumPregled,narucen,idObradaMedSestra) 
                                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                         //Kreiranje prepared statementa
                         $stmt = mysqli_stmt_init($conn);

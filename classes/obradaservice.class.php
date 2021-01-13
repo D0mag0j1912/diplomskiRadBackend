@@ -20,7 +20,7 @@ class ObradaService{
         $sql = "SELECT MAX(a.idPovijestBolesti) AS IDPovijestBolesti FROM ambulanta a 
                 JOIN povijestBolesti pb ON pb.idPovijestBolesti = a.idPovijestBolesti
                 WHERE a.idPacijent IN 
-                (SELECT o.idPacijent FROM obrada o 
+                (SELECT o.idPacijent FROM obrada_lijecnik o 
                 WHERE o.statusObrada = '$status') 
                 AND pb.datum = CURDATE();";
         $result = $conn->query($sql);
@@ -48,7 +48,7 @@ class ObradaService{
         $sql = "SELECT MAX(a.idPregled) AS IDPregled FROM ambulanta a 
                 JOIN pregled p ON p.idPregled = a.idPregled
                 WHERE a.idPacijent IN 
-                (SELECT o.idPacijent FROM obrada o 
+                (SELECT o.idPacijent FROM obrada_med_sestra o 
                 WHERE o.statusObrada = '$status') 
                 AND p.datumPregled = CURDATE();";
         $result = $conn->query($sql);
@@ -63,7 +63,7 @@ class ObradaService{
     }
 
     //Funkcija koja dohvaća vrijeme narudžbe trenutno aktivnog pacijenta
-    function dohvatiVrijemeNarudzbe(){
+    function dohvatiVrijemeNarudzbe($tip){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -72,47 +72,88 @@ class ObradaService{
         $response = [];
 
         $status = "Aktivan";
-
-        //Kreiram sql upit koji će provjeriti je li trenutno aktivni pacijent naručen na današnji datum
-        $sql = "SELECT COUNT(*) AS BrojPacijent FROM narucivanje n 
-                WHERE n.datumNarucivanje = CURDATE() AND n.idPacijent IN 
-                (SELECT o.idPacijent FROM obrada o 
-                WHERE o.statusObrada = '$status');";
-
-        //Rezultat upita spremam u varijablu $resultCountPacijent
-        $resultCountPacijent = mysqli_query($conn,$sql);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultCountPacijent) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
-                //Vrijednost rezultata spremam u varijablu $brojPacijenata
-                $brojPacijenata = $rowCountPacijent['BrojPacijent'];
-            }
-        }
-        //Ako trenutno aktivni pacijent nije naručen na današnji datum
-        if($brojPacijenata == 0){
-            $response["success"] = "false";
-            $response["message"] = "Pacijent je nenaručen!";
-        }
-        //Ako JE trenutno aktivni pacijent naručen na današnji datum
-        else{
-            $sql = "SELECT DATE_FORMAT(n.vrijemeNarucivanje,'%H:%i') AS Vrijeme FROM narucivanje n 
+        //Ako je tip korisnika "lijecnik":
+        if($tip == "lijecnik"){
+            //Kreiram sql upit koji će provjeriti je li trenutno aktivni pacijent naručen na današnji datum
+            $sql = "SELECT COUNT(*) AS BrojPacijent FROM narucivanje n 
                     WHERE n.datumNarucivanje = CURDATE() AND n.idPacijent IN 
-                    (SELECT o.idPacijent FROM obrada o 
+                    (SELECT o.idPacijent FROM obrada_lijecnik o 
                     WHERE o.statusObrada = '$status');";
-            $result = $conn->query($sql);
 
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    $response[] = $row;
+            //Rezultat upita spremam u varijablu $resultCountPacijent
+            $resultCountPacijent = mysqli_query($conn,$sql);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountPacijent) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                    //Vrijednost rezultata spremam u varijablu $brojPacijenata
+                    $brojPacijenata = $rowCountPacijent['BrojPacijent'];
                 }
             }
+            //Ako trenutno aktivni pacijent nije naručen na današnji datum
+            if($brojPacijenata == 0){
+                $response["success"] = "false";
+                $response["message"] = "Pacijent je nenaručen!";
+            }
+            //Ako JE trenutno aktivni pacijent naručen na današnji datum
+            else{
+                $sql = "SELECT DATE_FORMAT(n.vrijemeNarucivanje,'%H:%i') AS Vrijeme FROM narucivanje n 
+                        WHERE n.datumNarucivanje = CURDATE() AND n.idPacijent IN 
+                        (SELECT o.idPacijent FROM obrada_lijecnik o 
+                        WHERE o.statusObrada = '$status');";
+                $result = $conn->query($sql);
+
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
+                }
+            }
+            return $response;
         }
-        return $response;
+        //Ako je tip korisnika "sestra":
+        else if($tip == "sestra"){
+            //Kreiram sql upit koji će provjeriti je li trenutno aktivni pacijent naručen na današnji datum
+            $sql = "SELECT COUNT(*) AS BrojPacijent FROM narucivanje n 
+                    WHERE n.datumNarucivanje = CURDATE() AND n.idPacijent IN 
+                    (SELECT o.idPacijent FROM obrada_med_sestra o 
+                    WHERE o.statusObrada = '$status');";
+
+            //Rezultat upita spremam u varijablu $resultCountPacijent
+            $resultCountPacijent = mysqli_query($conn,$sql);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountPacijent) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                    //Vrijednost rezultata spremam u varijablu $brojPacijenata
+                    $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+                }
+            }
+            //Ako trenutno aktivni pacijent nije naručen na današnji datum
+            if($brojPacijenata == 0){
+                $response["success"] = "false";
+                $response["message"] = "Pacijent je nenaručen!";
+            }
+            //Ako JE trenutno aktivni pacijent naručen na današnji datum
+            else{
+                $sql = "SELECT DATE_FORMAT(n.vrijemeNarucivanje,'%H:%i') AS Vrijeme FROM narucivanje n 
+                        WHERE n.datumNarucivanje = CURDATE() AND n.idPacijent IN 
+                        (SELECT o.idPacijent FROM obrada_med_sestra o 
+                        WHERE o.statusObrada = '$status');";
+                $result = $conn->query($sql);
+
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
+                }
+            }
+            return $response;
+        }
     }
 
     //Funkcija koja provjerava postoji li već neki pacijent aktivan u obradi
-    function provjeraObrada(){
+    function provjeraObrada($tip){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -120,35 +161,65 @@ class ObradaService{
         //Kreiram prazno polje odgovora
         $response = [];
 
-        //Status pacijenta u čekaonici
+        //Status pacijenta u obradi
         $status = "Aktivan";
-        //Kreiram sql upit koji će provjeriti postoji li aktivan pacijent u obradi
-        $sql = "SELECT COUNT(*) AS BrojPacijent FROM obrada o 
-                 WHERE o.statusObrada = '$status'";
 
-        //Rezultat upita spremam u varijablu $resultCountPacijent
-        $resultCountPacijent = mysqli_query($conn,$sql);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultCountPacijent) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
-                //Vrijednost rezultata spremam u varijablu $brojPacijenata
-                $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+        //Ako je tip korisnika "lijecnik":
+        if($tip == "lijecnik"){
+            //Kreiram sql upit koji će provjeriti postoji li aktivan pacijent u obradi liječnika
+            $sql = "SELECT COUNT(*) AS BrojPacijent FROM obrada_lijecnik o 
+                    WHERE o.statusObrada = '$status'";
+
+            //Rezultat upita spremam u varijablu $resultCountPacijent
+            $resultCountPacijent = mysqli_query($conn,$sql);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountPacijent) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                    //Vrijednost rezultata spremam u varijablu $brojPacijenata
+                    $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+                }
+            }
+            //Ako je već neki pacijent aktivan u obradi
+            if($brojPacijenata > 0){
+                $response["success"] = "false";
+                $response["message"] = "Već postoji aktivan pacijent!";
+                return $response;
+            }
+            else{
+                return null;
             }
         }
-        //Ako je već neki pacijent aktivan u obradi
-        if($brojPacijenata > 0){
-            $response["success"] = "false";
-            $response["message"] = "Već postoji aktivan pacijent!";
-            return $response;
-        }
-        else{
-            return null;
+        //Ako je tip korisnika "sestra":
+        else if($tip == "sestra"){
+            //Kreiram sql upit koji će provjeriti postoji li aktivan pacijent u obradi medicinske sestre
+            $sql = "SELECT COUNT(*) AS BrojPacijent FROM obrada_med_sestra o 
+                    WHERE o.statusObrada = '$status'";
+
+            //Rezultat upita spremam u varijablu $resultCountPacijent
+            $resultCountPacijent = mysqli_query($conn,$sql);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountPacijent) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                    //Vrijednost rezultata spremam u varijablu $brojPacijenata
+                    $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+                }
+            }
+            //Ako je već neki pacijent aktivan u obradi
+            if($brojPacijenata > 0){
+                $response["success"] = "false";
+                $response["message"] = "Već postoji aktivan pacijent!";
+                return $response;
+            }
+            else{
+                return null;
+            }
         }
     }
     
     //Funkcija koja dodava pacijenta u obradu
-    function dodajUObradu($id){
+    function dodajUObradu($tip,$id){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -163,37 +234,216 @@ class ObradaService{
         //Početni status u obradu
         $status = "Aktivan";
 
-        $sql = "INSERT INTO obrada (idPacijent,datumDodavanja,vrijemeDodavanja,statusObrada) VALUES (?,?,?,?)";
+        //Ako je tip korisnika "LIJEČNIK":
+        if($tip == "lijecnik"){
+            $sql = "INSERT INTO obrada_lijecnik (idPacijent,datumDodavanja,vrijemeDodavanja,statusObrada) VALUES (?,?,?,?)";
 
-        //Kreiranje prepared statementa
-        $stmt = mysqli_stmt_init($conn);
-        //Ako je statement neuspješan
-        if(!mysqli_stmt_prepare($stmt,$sql)){
-            $response["success"] = "false";
-            $response["message"] = "Prepared statement ne valja!";
-        }
-        //Ako je prepared statement u redu
-        else{
-            //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-            mysqli_stmt_bind_param($stmt,"isss",$id,$datum,$vrijeme,$status);
-            //Izvršavanje statementa
-            mysqli_stmt_execute($stmt);
-
-            //Dohvaćam ID obrade kojega sam upravo unio
-            $resultObrada = mysqli_query($conn,"SELECT MAX(o.idObrada) AS IDObrada FROM obrada o");
-            //Ulazim u polje rezultata i idem redak po redak
-            while($rowObrada = mysqli_fetch_array($resultObrada)){
-                //Dohvaćam željeni ID pregleda
-                $idObrada = $rowObrada['IDObrada'];
+            //Kreiranje prepared statementa
+            $stmt = mysqli_stmt_init($conn);
+            //Ako je statement neuspješan
+            if(!mysqli_stmt_prepare($stmt,$sql)){
+                $response["success"] = "false";
+                $response["message"] = "Prepared statement ne valja!";
             }
+            //Ako je prepared statement u redu
+            else{
+                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                mysqli_stmt_bind_param($stmt,"isss",$id,$datum,$vrijeme,$status);
+                //Izvršavanje statementa
+                mysqli_stmt_execute($stmt);
 
-            //Status čekaonice
-            $statusCekaonicaPrije = "Čeka na pregled";
-            $statusCekaonicaPoslije = "Na pregledu";
+                //Dohvaćam ID obrade kojega sam upravo unio
+                $resultObrada = mysqli_query($conn,"SELECT MAX(o.idObrada) AS IDObrada FROM obrada_lijecnik o");
+                //Ulazim u polje rezultata i idem redak po redak
+                while($rowObrada = mysqli_fetch_array($resultObrada)){
+                    //Dohvaćam željeni ID pregleda
+                    $idObrada = $rowObrada['IDObrada'];
+                }
 
-            //Ažurirati atribut "statusCekaonica" na "Na pregledu"
-            $sqlCekaonica = "UPDATE cekaonica SET statusCekaonica = ?,idObrada = ?
-                            WHERE idPacijent = ? AND statusCekaonica = ?";
+                //Status čekaonice
+                $statusCekaonicaPrije = "Čeka na pregled";
+                $statusCekaonicaPoslije = "Na pregledu";
+
+                //Ažurirati atribut "statusCekaonica" na "Na pregledu"
+                $sqlCekaonica = "UPDATE cekaonica SET statusCekaonica = ?,idObradaLijecnik = ?
+                                WHERE idPacijent = ? AND statusCekaonica = ?";
+                //Kreiranje prepared statementa
+                $stmtCekaonica = mysqli_stmt_init($conn);
+                //Ako je statement neuspješan
+                if(!mysqli_stmt_prepare($stmtCekaonica,$sqlCekaonica)){
+                    $response["success"] = "false";
+                    $response["message"] = "Prepared statement cekaonice ne valja!";
+                }
+                //Ako je prepared statement u redu
+                else{
+                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                    mysqli_stmt_bind_param($stmtCekaonica,"siis",$statusCekaonicaPoslije,$idObrada,$id,$statusCekaonicaPrije);
+                    //Izvršavanje statementa
+                    mysqli_stmt_execute($stmtCekaonica);
+
+                    $response["success"] = "true";
+                    $response["message"] = "Pacijent je uspješno dodan u obradu!";
+                }
+            }
+        }
+        //Ako je tip korisnika "SESTRA":
+        else if($tip == "sestra"){
+            $sql = "INSERT INTO obrada_med_sestra (idPacijent,datumDodavanja,vrijemeDodavanja,statusObrada) VALUES (?,?,?,?)";
+
+            //Kreiranje prepared statementa
+            $stmt = mysqli_stmt_init($conn);
+            //Ako je statement neuspješan
+            if(!mysqli_stmt_prepare($stmt,$sql)){
+                $response["success"] = "false";
+                $response["message"] = "Prepared statement ne valja!";
+            }
+            //Ako je prepared statement u redu
+            else{
+                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                mysqli_stmt_bind_param($stmt,"isss",$id,$datum,$vrijeme,$status);
+                //Izvršavanje statementa
+                mysqli_stmt_execute($stmt);
+
+                //Dohvaćam ID obrade kojega sam upravo unio
+                $resultObrada = mysqli_query($conn,"SELECT MAX(o.idObrada) AS IDObrada FROM obrada_med_sestra o");
+                //Ulazim u polje rezultata i idem redak po redak
+                while($rowObrada = mysqli_fetch_array($resultObrada)){
+                    //Dohvaćam željeni ID pregleda
+                    $idObrada = $rowObrada['IDObrada'];
+                }
+
+                //Status čekaonice
+                $statusCekaonicaPrije = "Čeka na pregled";
+                $statusCekaonicaPoslije = "Na pregledu";
+
+                //Ažurirati atribut "statusCekaonica" na "Na pregledu"
+                $sqlCekaonica = "UPDATE cekaonica SET statusCekaonica = ?,idObradaMedSestra = ?
+                                WHERE idPacijent = ? AND statusCekaonica = ?";
+                //Kreiranje prepared statementa
+                $stmtCekaonica = mysqli_stmt_init($conn);
+                //Ako je statement neuspješan
+                if(!mysqli_stmt_prepare($stmtCekaonica,$sqlCekaonica)){
+                    $response["success"] = "false";
+                    $response["message"] = "Prepared statement cekaonice ne valja!";
+                }
+                //Ako je prepared statement u redu
+                else{
+                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                    mysqli_stmt_bind_param($stmtCekaonica,"siis",$statusCekaonicaPoslije,$idObrada,$id,$statusCekaonicaPrije);
+                    //Izvršavanje statementa
+                    mysqli_stmt_execute($stmtCekaonica);
+
+                    $response["success"] = "true";
+                    $response["message"] = "Pacijent je uspješno dodan u obradu!";
+                }
+            }
+        }
+        //Vraćam odgovor
+        return $response;
+    }
+
+    //Funkcija koja dohvaća trenutno aktivnog pacijenta u obradi
+    function dohvatiPacijentObrada($tip){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = [];
+
+        $status = "Aktivan";
+        //Ako je tip korisnika "lijecnik":
+        if($tip == "lijecnik"){
+            //Kreiram sql upit koji će provjeriti postoji li aktivnih pacijenata u obradi
+            $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM obrada_lijecnik o
+                                WHERE o.statusObrada = '$status'";
+            //Rezultat upita spremam u varijablu $resultCountPacijent
+            $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountPacijent) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                    //Vrijednost rezultata spremam u varijablu $brojPacijenata
+                    $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+                }
+            }
+            //Ako nema pronađenih pacijenata u obradi
+            if($brojPacijenata == 0){
+                $response["success"] = "false";
+                $response["message"] = "Nema aktivnih pacijenata!";
+            }
+            //Ako ima pacijenata u obradi
+            else{
+                //Kreiram upit koji dohvaća podatke pacijenta koji je trenutno aktivan u obradi
+                $sql = "SELECT o.idObrada,o.idPacijent,o.datumDodavanja,o.vrijemeDodavanja,o.statusObrada,
+                        p.imePacijent,p.prezPacijent,DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS DatumRodenja,p.adresaPacijent,p.mboPacijent,z.brojIskazniceDopunsko FROM obrada_lijecnik o 
+                        JOIN pacijent p ON o.idPacijent = p.idPacijent 
+                        JOIN zdr_podatci z ON z.mboPacijent = p.mboPacijent
+                        WHERE o.statusObrada = '$status'";
+                $result = $conn->query($sql);
+
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
+                }
+            }
+        }
+        //Ako je tip korisnika "sestra":
+        else if($tip == "sestra"){
+            //Kreiram sql upit koji će provjeriti postoji li aktivnih pacijenata u obradi
+            $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM obrada_med_sestra o
+                                WHERE o.statusObrada = '$status'";
+            //Rezultat upita spremam u varijablu $resultCountPacijent
+            $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountPacijent) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                    //Vrijednost rezultata spremam u varijablu $brojPacijenata
+                    $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+                }
+            }
+            //Ako nema pronađenih pacijenata u obradi
+            if($brojPacijenata == 0){
+                $response["success"] = "false";
+                $response["message"] = "Nema aktivnih pacijenata!";
+            }
+            //Ako ima pacijenata u obradi
+            else{
+                //Kreiram upit koji dohvaća podatke pacijenta koji je trenutno aktivan u obradi
+                $sql = "SELECT o.idObrada,o.idPacijent,o.datumDodavanja,o.vrijemeDodavanja,o.statusObrada,
+                        p.imePacijent,p.prezPacijent,DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS DatumRodenja,p.adresaPacijent,p.mboPacijent,z.brojIskazniceDopunsko FROM obrada_med_sestra o 
+                        JOIN pacijent p ON o.idPacijent = p.idPacijent 
+                        JOIN zdr_podatci z ON z.mboPacijent = p.mboPacijent
+                        WHERE o.statusObrada = '$status'";
+                $result = $conn->query($sql);
+
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
+                }
+            }
+        }
+        //Vraćam odgovor
+        return $response;
+    }
+
+    //Funkcija koja ažurira statuse tablica "obrada" i "cekaonica" pri završenom pregledu
+    function azurirajStatus($idObrada,$tip,$id){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = [];
+
+        //Ako je tip korisnika "lijecnik":
+        if($tip == "lijecnik"){
+            $sqlCekaonica = "UPDATE cekaonica SET statusCekaonica = ? 
+                        WHERE idPacijent = ? AND statusCekaonica = ? AND idObradaLijecnik = ?";
+
             //Kreiranje prepared statementa
             $stmtCekaonica = mysqli_stmt_init($conn);
             //Ako je statement neuspješan
@@ -203,126 +453,93 @@ class ObradaService{
             }
             //Ako je prepared statement u redu
             else{
+                //Početni status
+                $statusCekaonicaPrije = "Na pregledu";
+                $statusCekaonicaPoslije = "Završen pregled";
                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                mysqli_stmt_bind_param($stmtCekaonica,"siis",$statusCekaonicaPoslije,$idObrada,$id,$statusCekaonicaPrije);
+                mysqli_stmt_bind_param($stmtCekaonica,"sisi",$statusCekaonicaPoslije,$id,$statusCekaonicaPrije,$idObrada);
                 //Izvršavanje statementa
                 mysqli_stmt_execute($stmtCekaonica);
 
-                $response["success"] = "true";
-                $response["message"] = "Pacijent je uspješno dodan u obradu!";
-            }
-        }
-        //Vraćam odgovor
-        return $response;
-    }
+                $sqlObrada = "UPDATE obrada_lijecnik SET statusObrada = ? 
+                            WHERE idPacijent = ? AND statusObrada = ?";
 
-    //Funkcija koja dohvaća trenutno aktivnog pacijenta u obradi
-    function dohvatiPacijentObrada(){
-        //Dohvaćam bazu 
-        $baza = new Baza();
-        $conn = $baza->spojiSBazom();
+                //Kreiranje prepared statementa
+                $stmtObrada = mysqli_stmt_init($conn);
+                //Ako je statement neuspješan
+                if(!mysqli_stmt_prepare($stmtObrada,$sqlObrada)){
+                    $response["success"] = "false";
+                    $response["message"] = "Prepared statement cekaonice ne valja!";
+                }
+                //Ako je prepared statement u redu
+                else{
+                    //Početni status
+                    $statusObradaPrije = "Aktivan";
+                    $statusObradaPoslije = "Neaktivan";
+                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                    mysqli_stmt_bind_param($stmtObrada,"sis",$statusObradaPoslije,$id,$statusObradaPrije);
+                    //Izvršavanje statementa
+                    mysqli_stmt_execute($stmtObrada);
 
-        //Kreiram prazno polje odgovora
-        $response = [];
-
-        $status = "Aktivan";
-        //Kreiram sql upit koji će provjeriti postoji li aktivnih pacijenata u obradi
-        $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM obrada o
-                            WHERE o.statusObrada = '$status'";
-        //Rezultat upita spremam u varijablu $resultCountPacijent
-        $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultCountPacijent) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
-                //Vrijednost rezultata spremam u varijablu $brojPacijenata
-                $brojPacijenata = $rowCountPacijent['BrojPacijent'];
-            }
-        }
-        //Ako nema pronađenih pacijenata u obradi
-        if($brojPacijenata == 0){
-            $response["success"] = "false";
-            $response["message"] = "Nema aktivnih pacijenata!";
-        }
-        //Ako ima pacijenata u obradi
-        else{
-            //Kreiram upit koji dohvaća podatke pacijenta koji je trenutno aktivan u obradi
-            $sql = "SELECT o.idObrada,o.idPacijent,o.datumDodavanja,o.vrijemeDodavanja,o.statusObrada,
-                    p.imePacijent,p.prezPacijent,DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS DatumRodenja,p.adresaPacijent,p.mboPacijent,z.brojIskazniceDopunsko FROM obrada o 
-                    JOIN pacijent p ON o.idPacijent = p.idPacijent 
-                    JOIN zdr_podatci z ON z.mboPacijent = p.mboPacijent
-                    WHERE o.statusObrada = '$status'";
-            $result = $conn->query($sql);
-
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    $response[] = $row;
+                    $response["success"] = "true";
+                    $response["message"] = "Tablice ažurirane!";
                 }
             }
         }
-
-        //Vraćam odgovor
-        return $response;
-    }
-
-    //Funkcija koja ažurira statuse tablica "obrada" i "cekaonica" pri završenom pregledu
-    function azurirajStatus($id){
-        //Dohvaćam bazu 
-        $baza = new Baza();
-        $conn = $baza->spojiSBazom();
-
-        //Kreiram prazno polje odgovora
-        $response = [];
-
-        $sqlCekaonica = "UPDATE cekaonica SET statusCekaonica = ? 
-                        WHERE idPacijent = ? AND statusCekaonica = ?";
-
-        //Kreiranje prepared statementa
-        $stmtCekaonica = mysqli_stmt_init($conn);
-        //Ako je statement neuspješan
-        if(!mysqli_stmt_prepare($stmtCekaonica,$sqlCekaonica)){
-            $response["success"] = "false";
-            $response["message"] = "Prepared statement cekaonice ne valja!";
-        }
-        //Ako je prepared statement u redu
-        else{
-            //Početni status
-            $statusCekaonicaPrije = "Na pregledu";
-            $statusCekaonicaPoslije = "Završen pregled";
-            //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-            mysqli_stmt_bind_param($stmtCekaonica,"sis",$statusCekaonicaPoslije,$id,$statusCekaonicaPrije);
-            //Izvršavanje statementa
-            mysqli_stmt_execute($stmtCekaonica);
-
-            $sqlObrada = "UPDATE obrada SET statusObrada = ? 
-                        WHERE idPacijent = ? AND statusObrada = ?";
+        //Ako je tip korisnika "sestra":
+        else if($tip == "sestra"){
+            $sqlCekaonica = "UPDATE cekaonica SET statusCekaonica = ? 
+                        WHERE idPacijent = ? AND statusCekaonica = ? AND idObradaMedSestra = ?";
 
             //Kreiranje prepared statementa
-            $stmtObrada = mysqli_stmt_init($conn);
+            $stmtCekaonica = mysqli_stmt_init($conn);
             //Ako je statement neuspješan
-            if(!mysqli_stmt_prepare($stmtObrada,$sqlObrada)){
+            if(!mysqli_stmt_prepare($stmtCekaonica,$sqlCekaonica)){
                 $response["success"] = "false";
                 $response["message"] = "Prepared statement cekaonice ne valja!";
             }
             //Ako je prepared statement u redu
             else{
                 //Početni status
-                $statusObradaPrije = "Aktivan";
-                $statusObradaPoslije = "Neaktivan";
+                $statusCekaonicaPrije = "Na pregledu";
+                $statusCekaonicaPoslije = "Završen pregled";
                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                mysqli_stmt_bind_param($stmtObrada,"sis",$statusObradaPoslije,$id,$statusObradaPrije);
+                mysqli_stmt_bind_param($stmtCekaonica,"sisi",$statusCekaonicaPoslije,$id,$statusCekaonicaPrije,$idObrada);
                 //Izvršavanje statementa
-                mysqli_stmt_execute($stmtObrada);
+                mysqli_stmt_execute($stmtCekaonica);
 
-                $response["success"] = "true";
-                $response["message"] = "Tablice ažurirane!";
+                $sqlObrada = "UPDATE obrada_med_sestra SET statusObrada = ? 
+                            WHERE idPacijent = ? AND statusObrada = ?";
+
+                //Kreiranje prepared statementa
+                $stmtObrada = mysqli_stmt_init($conn);
+                //Ako je statement neuspješan
+                if(!mysqli_stmt_prepare($stmtObrada,$sqlObrada)){
+                    $response["success"] = "false";
+                    $response["message"] = "Prepared statement cekaonice ne valja!";
+                }
+                //Ako je prepared statement u redu
+                else{
+                    //Početni status
+                    $statusObradaPrije = "Aktivan";
+                    $statusObradaPoslije = "Neaktivan";
+                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                    mysqli_stmt_bind_param($stmtObrada,"sis",$statusObradaPoslije,$id,$statusObradaPrije);
+                    //Izvršavanje statementa
+                    mysqli_stmt_execute($stmtObrada);
+
+                    $response["success"] = "true";
+                    $response["message"] = "Tablice ažurirane!";
+                }
             }
         }
+        
+        //Vraćam odgovor
         return $response;
     }
 
     //Funkcija koja dohvaća OSNOVNE podatke pacijenta koji je trenutno u obradi
-    function dohvatiOsnovnePodatkePacijenta(){
+    function dohvatiOsnovnePodatkePacijenta($tip){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -330,50 +547,90 @@ class ObradaService{
         //Kreiram prazno polje odgovora
         $response = [];
         $status = "Aktivan";
-
-        //Kreiram sql upit koji će provjeriti postoji li aktivnih pacijenata u obradi
-        $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM pacijent p
-                            WHERE p.idPacijent IN 
-                            (SELECT o.idPacijent FROM obrada o 
-                            WHERE o.statusObrada = '$status')";
-        //Rezultat upita spremam u varijablu $resultCountPacijent
-        $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultCountPacijent) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
-                //Vrijednost rezultata spremam u varijablu $brojPacijenata
-                $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+        //Ako je tip korisnika "lijecnik":
+        if($tip == "lijecnik"){
+            //Kreiram sql upit koji će provjeriti postoji li aktivnih pacijenata u obradi
+            $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM pacijent p
+                                WHERE p.idPacijent IN 
+                                (SELECT o.idPacijent FROM obrada_lijecnik o 
+                                WHERE o.statusObrada = '$status')";
+            //Rezultat upita spremam u varijablu $resultCountPacijent
+            $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountPacijent) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                    //Vrijednost rezultata spremam u varijablu $brojPacijenata
+                    $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+                }
             }
-        }
-        //Ako nema pronađenih pacijenata u obradi
-        if($brojPacijenata == 0){
-            $response["success"] = "false";
-            $response["message"] = "Nema aktivnih pacijenata!";
-        }
-        //Ako ima pacijenata u obradi
-        else{
-            //Kreiram upit koji dohvaća OSNOVNE podatke pacijente koji je trenutno aktivan u obradi
-            $sql = "SELECT p.*,m.nazivMjesto FROM pacijent p
-                    JOIN mjesto m ON p.pbrMjestoPacijent = m.pbrMjesto
-                    WHERE p.idPacijent IN 
-                    (SELECT o.idPacijent FROM obrada o 
-                    WHERE o.statusObrada = '$status')";
-            $result = $conn->query($sql);
+            //Ako nema pronađenih pacijenata u obradi
+            if($brojPacijenata == 0){
+                $response["success"] = "false";
+                $response["message"] = "Nema aktivnih pacijenata!";
+            }
+            //Ako ima pacijenata u obradi
+            else{
+                //Kreiram upit koji dohvaća OSNOVNE podatke pacijente koji je trenutno aktivan u obradi
+                $sql = "SELECT p.*,m.nazivMjesto FROM pacijent p
+                        JOIN mjesto m ON p.pbrMjestoPacijent = m.pbrMjesto
+                        WHERE p.idPacijent IN 
+                        (SELECT o.idPacijent FROM obrada_lijecnik o 
+                        WHERE o.statusObrada = '$status')";
+                $result = $conn->query($sql);
 
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    $response[] = $row;
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
                 }
             }
         }
+        //Ako je tip korisnika "sestra":
+        else if($tip == "sestra"){
+            //Kreiram sql upit koji će provjeriti postoji li aktivnih pacijenata u obradi
+            $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM pacijent p
+                                WHERE p.idPacijent IN 
+                                (SELECT o.idPacijent FROM obrada_med_sestra o 
+                                WHERE o.statusObrada = '$status')";
+            //Rezultat upita spremam u varijablu $resultCountPacijent
+            $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountPacijent) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                    //Vrijednost rezultata spremam u varijablu $brojPacijenata
+                    $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+                }
+            }
+            //Ako nema pronađenih pacijenata u obradi
+            if($brojPacijenata == 0){
+                $response["success"] = "false";
+                $response["message"] = "Nema aktivnih pacijenata!";
+            }
+            //Ako ima pacijenata u obradi
+            else{
+                //Kreiram upit koji dohvaća OSNOVNE podatke pacijente koji je trenutno aktivan u obradi
+                $sql = "SELECT p.*,m.nazivMjesto FROM pacijent p
+                        JOIN mjesto m ON p.pbrMjestoPacijent = m.pbrMjesto
+                        WHERE p.idPacijent IN 
+                        (SELECT o.idPacijent FROM obrada_med_sestra o 
+                        WHERE o.statusObrada = '$status')";
+                $result = $conn->query($sql);
 
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
+                }
+            }
+        }
         //Vraćam odgovor
         return $response;
     }
 
     //Funkcija koja dohvaća ZDRAVSTVENE podatke pacijenta koji je trenutno u obradi
-    function dohvatiZdravstvenePodatkePacijenta(){
+    function dohvatiZdravstvenePodatkePacijenta($tip){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -381,45 +638,86 @@ class ObradaService{
         //Kreiram prazno polje odgovora
         $response = [];
         $status = "Aktivan";
-
-        //Kreiram sql upit koji će provjeriti postoji li aktivnih pacijenata u obradi
-        $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM pacijent p
-                            WHERE p.idPacijent IN 
-                            (SELECT o.idPacijent FROM obrada o 
-                            WHERE o.statusObrada = '$status')";
-        //Rezultat upita spremam u varijablu $resultCountPacijent
-        $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultCountPacijent) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
-                //Vrijednost rezultata spremam u varijablu $brojPacijenata
-                $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+        //Ako je tip korisnika "lijecnik":
+        if($tip == "lijecnik"){
+            //Kreiram sql upit koji će provjeriti postoji li aktivnih pacijenata u obradi
+            $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM pacijent p
+                                WHERE p.idPacijent IN 
+                                (SELECT o.idPacijent FROM obrada_lijecnik o 
+                                WHERE o.statusObrada = '$status')";
+            //Rezultat upita spremam u varijablu $resultCountPacijent
+            $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountPacijent) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                    //Vrijednost rezultata spremam u varijablu $brojPacijenata
+                    $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+                }
             }
-        }
-        //Ako nema pronađenih pacijenata u obradi
-        if($brojPacijenata == 0){
-            $response["success"] = "false";
-            $response["message"] = "Nema aktivnih pacijenata!";
-        }
-        //Ako ima pacijenata u obradi
-        else{
-            //Kreiram upit koji dohvaća ZDRAVSTVENE podatke pacijente koji je trenutno aktivan u obradi
-            $sql = "SELECT z.*,p.*,pu.sifUred,pu.nazivSluzbe FROM zdr_podatci z 
-                    JOIN pacijent p ON z.mboPacijent = p.mboPacijent 
-                    JOIN podrucni_ured pu ON pu.sifUred = z.sifUred 
-                    WHERE p.idPacijent IN 
-                    (SELECT o.idPacijent FROM obrada o 
-                    WHERE o.statusObrada = '$status')";
-            $result = $conn->query($sql);
+            //Ako nema pronađenih pacijenata u obradi
+            if($brojPacijenata == 0){
+                $response["success"] = "false";
+                $response["message"] = "Nema aktivnih pacijenata!";
+            }
+            //Ako ima pacijenata u obradi
+            else{
+                //Kreiram upit koji dohvaća ZDRAVSTVENE podatke pacijente koji je trenutno aktivan u obradi
+                $sql = "SELECT z.*,p.*,pu.sifUred,pu.nazivSluzbe FROM zdr_podatci z 
+                        JOIN pacijent p ON z.mboPacijent = p.mboPacijent 
+                        JOIN podrucni_ured pu ON pu.sifUred = z.sifUred 
+                        WHERE p.idPacijent IN 
+                        (SELECT o.idPacijent FROM obrada_lijecnik o 
+                        WHERE o.statusObrada = '$status')";
+                $result = $conn->query($sql);
 
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    $response[] = $row;
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
                 }
             }
         }
+        //Ako je tip korisnika "sestra":
+        else if($tip == "sestra"){
+            //Kreiram sql upit koji će provjeriti postoji li aktivnih pacijenata u obradi
+            $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM pacijent p
+                                WHERE p.idPacijent IN 
+                                (SELECT o.idPacijent FROM obrada_med_sestra o 
+                                WHERE o.statusObrada = '$status')";
+            //Rezultat upita spremam u varijablu $resultCountPacijent
+            $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountPacijent) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                    //Vrijednost rezultata spremam u varijablu $brojPacijenata
+                    $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+                }
+            }
+            //Ako nema pronađenih pacijenata u obradi
+            if($brojPacijenata == 0){
+                $response["success"] = "false";
+                $response["message"] = "Nema aktivnih pacijenata!";
+            }
+            //Ako ima pacijenata u obradi
+            else{
+                //Kreiram upit koji dohvaća ZDRAVSTVENE podatke pacijente koji je trenutno aktivan u obradi
+                $sql = "SELECT z.*,p.*,pu.sifUred,pu.nazivSluzbe FROM zdr_podatci z 
+                        JOIN pacijent p ON z.mboPacijent = p.mboPacijent 
+                        JOIN podrucni_ured pu ON pu.sifUred = z.sifUred 
+                        WHERE p.idPacijent IN 
+                        (SELECT o.idPacijent FROM obrada_med_sestra o 
+                        WHERE o.statusObrada = '$status')";
+                $result = $conn->query($sql);
 
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
+                }
+            }
+        }
         //Vraćam odgovor
         return $response;
     }
@@ -627,10 +925,10 @@ class ObradaService{
         //Ako ima pacijenata koji čekaju na pregled
         else{
             $sql = "SELECT p.imePacijent,p.prezPacijent FROM pacijent p 
-                JOIN cekaonica c ON c.idPacijent = p.idPacijent 
-                WHERE c.idCekaonica = 
-                (SELECT MAX(idCekaonica) FROM cekaonica 
-                WHERE statusCekaonica = '$status')";
+                    JOIN cekaonica c ON c.idPacijent = p.idPacijent 
+                    WHERE c.idCekaonica = 
+                    (SELECT MAX(idCekaonica) FROM cekaonica 
+                    WHERE statusCekaonica = '$status')";
 
             $result = $conn->query($sql);
 

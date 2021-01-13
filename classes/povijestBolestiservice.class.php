@@ -129,7 +129,7 @@ class PovijestBolestiService{
                 //Kreiram upit za spremanje prvog dijela podataka u bazu
                 $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                         nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                        preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObrada) 
+                        preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik) 
                         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                 //Kreiranje prepared statementa
                 $stmt = mysqli_stmt_init($conn);
@@ -341,7 +341,7 @@ class PovijestBolestiService{
                     //Kreiram upit za spremanje prvog dijela podataka u bazu
                     $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                                                         nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                                                        preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObrada) 
+                                                        preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik) 
                                                         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                     //Kreiranje prepared statementa
                     $stmt = mysqli_stmt_init($conn);
@@ -420,7 +420,7 @@ class PovijestBolestiService{
                     //Kreiram upit za spremanje prvog dijela podataka u bazu
                     $sql = "UPDATE povijestBolesti pb SET pb.razlogDolaska = ?, pb.anamneza = ?, pb.statusPacijent = ?, 
                             pb.nalaz = ?, pb.mkbSifraPrimarna = ?,pb.mkbSifraSekundarna = ?,pb.tipSlucaj = ?, pb.terapija = ?,
-                            pb.preporukaLijecnik = ?,pb.napomena = ?,pb.datum = ?,pb.narucen = ?, pb.mboPacijent = ?,pb.idObrada = ? 
+                            pb.preporukaLijecnik = ?,pb.napomena = ?,pb.datum = ?,pb.narucen = ?, pb.mboPacijent = ?,pb.idObradaLijecnik = ? 
                             WHERE pb.idPovijestBolesti = ?";
                     //Kreiranje prepared statementa
                     $stmt = mysqli_stmt_init($conn);
@@ -476,7 +476,7 @@ class PovijestBolestiService{
                         //Kreiram upit za spremanje prvog dijela podataka u bazu
                         $sql = "UPDATE povijestBolesti pb SET pb.razlogDolaska = ?, pb.anamneza = ?, pb.statusPacijent = ?, 
                                 pb.nalaz = ?, pb.mkbSifraPrimarna = ?,pb.mkbSifraSekundarna = ?,pb.tipSlucaj = ?, pb.terapija = ?,
-                                pb.preporukaLijecnik = ?,pb.napomena = ?,pb.datum = ?,pb.narucen = ?, pb.mboPacijent = ?,pb.idObrada = ? 
+                                pb.preporukaLijecnik = ?,pb.napomena = ?,pb.datum = ?,pb.narucen = ?, pb.mboPacijent = ?,pb.idObradaLijecnik = ? 
                                 WHERE pb.idPovijestBolesti = ?";
                         //Kreiranje prepared statementa
                         $stmt = mysqli_stmt_init($conn);
@@ -517,7 +517,7 @@ class PovijestBolestiService{
                         //Kreiram upit za spremanje prvog dijela podataka u bazu
                         $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                                 nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                                preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObrada) 
+                                preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik) 
                                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                         //Kreiranje prepared statementa
                         $stmt = mysqli_stmt_init($conn);
@@ -605,7 +605,7 @@ class PovijestBolestiService{
                         //Kreiram upit za spremanje prvog dijela podataka u bazu
                         $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                                 nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                                preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObrada) 
+                                preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik) 
                                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                         //Kreiranje prepared statementa
                         $stmt = mysqli_stmt_init($conn);

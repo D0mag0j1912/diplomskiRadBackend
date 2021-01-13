@@ -14,11 +14,12 @@ class CekaonicaService{
 
         //Kreiram prazno polje odgovora
         $response = [];
+        
         //Za svaku pojedinu šifru sekundarne dijagnoze iz polja, pronađi joj šifru i naziv iz baze
         foreach($polje as $mkbSifra){
             $sql = "SELECT DISTINCT(TRIM(pb.mkbSifraPrimarna)) AS mkbSifraPrimarna,d.mkbSifra,d.imeDijagnoza,pb.idPovijestBolesti FROM dijagnoze d 
                     JOIN povijestBolesti pb ON pb.mkbSifraSekundarna = d.mkbSifra
-                    WHERE d.mkbSifra = '$mkbSifra' AND pb.idObrada = '$idObrada'";
+                    WHERE d.mkbSifra = '$mkbSifra' AND pb.idObradaLijecnik = '$idObrada'";
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {
@@ -26,7 +27,7 @@ class CekaonicaService{
                     $response[] = $row;
                 }
             } 
-        }
+        }   
         return $response;
     }
 
@@ -38,11 +39,12 @@ class CekaonicaService{
 
         //Kreiram prazno polje odgovora
         $response = [];
+        
         //Za svaku pojedinu šifru sekundarne dijagnoze iz polja, pronađi joj šifru i naziv iz baze
         foreach($polje as $mkbSifra){
             $sql = "SELECT DISTINCT(TRIM(pr.mkbSifraPrimarna)) AS mkbSifraPrimarna,d.mkbSifra,d.imeDijagnoza,pr.idPregled FROM dijagnoze d 
                     JOIN pregled pr ON pr.mkbSifraSekundarna = d.mkbSifra
-                    WHERE d.mkbSifra = '$mkbSifra' AND pr.idObrada = '$idObrada'";
+                    WHERE d.mkbSifra = '$mkbSifra' AND pr.idObradaMedSestra = '$idObrada'";
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {
@@ -51,10 +53,11 @@ class CekaonicaService{
                 }
             } 
         }
+
         return $response;
     }
 
-    //Funkcija koja dohvaća povijest bolesti za određeni ID obrade
+    //Funkcija koja dohvaća povijest bolesti za određeni ID obrade liječnika
     function dohvatiPovijestBolesti($idObrada){
         //Dohvaćam bazu 
         $baza = new Baza();
@@ -62,11 +65,11 @@ class CekaonicaService{
 
         //Kreiram prazno polje odgovora
         $response = []; 
-
+        
         $sql = "SELECT pb.anamneza,pb.terapija,TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
                 GROUP_CONCAT(DISTINCT pb.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna FROM povijestbolesti pb 
                 JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
-                WHERE pb.idObrada = '$idObrada'
+                WHERE pb.idObradaLijecnik = '$idObrada'
                 GROUP BY pb.mkbSifraPrimarna";
         $result = $conn->query($sql);
 
@@ -75,10 +78,11 @@ class CekaonicaService{
                 $response[] = $row;
             }
         }
+        
         return $response;
     }
 
-    //Funkcija koja dohvaća opće podatke pregleda za određeni ID obrade
+    //Funkcija koja dohvaća opće podatke pregleda za određeni ID obrade medicinske sestre
     function dohvatiOpcePodatke($idObrada){
         //Dohvaćam bazu 
         $baza = new Baza();
@@ -86,11 +90,11 @@ class CekaonicaService{
 
         //Kreiram prazno polje odgovora
         $response = []; 
-
+        
         $sql = "SELECT TRIM(pr.mkbSifraPrimarna) AS mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
                 GROUP_CONCAT(DISTINCT pr.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna FROM pregled pr 
                 JOIN dijagnoze d ON d.mkbSifra = pr.mkbSifraPrimarna 
-                WHERE pr.idObrada = '$idObrada' 
+                WHERE pr.idObradaMedSestra = '$idObrada' 
                 GROUP BY pr.mkbSifraPrimarna";
         $result = $conn->query($sql);
 
@@ -99,26 +103,42 @@ class CekaonicaService{
                 $response[] = $row;
             }
         }
+        
         return $response;
     }
 
     //Funkcija koja dohvaća ime, prezime i datum pregleda pacijenta
-    function dohvatiImePrezimeDatum($idObrada){
+    function dohvatiImePrezimeDatum($tip,$idObrada){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
 
         //Kreiram prazno polje odgovora
         $response = []; 
+        //Ako je tip korisnika "lijecnik":
+        if($tip == "lijecnik"){
+            $sql = "SELECT p.imePacijent,p.prezPacijent,DATE_FORMAT(o.datumDodavanja,'%d.%m.%Y') AS Datum,o.idObrada FROM pacijent p 
+                    JOIN obrada_lijecnik o ON o.idPacijent = p.idPacijent 
+                    WHERE o.idObrada = '$idObrada'";
+            $result = $conn->query($sql);
 
-        $sql = "SELECT p.imePacijent,p.prezPacijent,DATE_FORMAT(o.datumDodavanja,'%d.%m.%Y') AS Datum,o.idObrada FROM pacijent p 
-                JOIN obrada o ON o.idPacijent = p.idPacijent 
-                WHERE o.idObrada = '$idObrada'";
-        $result = $conn->query($sql);
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $response[] = $row;
+                }
+            }
+        }
+        //Ako je tip korisnika "sestra":
+        else if($tip == "sestra"){
+            $sql = "SELECT p.imePacijent,p.prezPacijent,DATE_FORMAT(o.datumDodavanja,'%d.%m.%Y') AS Datum,o.idObrada FROM pacijent p 
+                    JOIN obrada_med_sestra o ON o.idPacijent = p.idPacijent 
+                    WHERE o.idObrada = '$idObrada'";
+            $result = $conn->query($sql);
 
-        if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                $response[] = $row;
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $response[] = $row;
+                }
             }
         }
         return $response;
@@ -298,10 +318,15 @@ class CekaonicaService{
         }
         //Ako ima pacijenata u čekaonici
         else{
-            //Kreiram upit koji dohvaća osobne podatke pacijenta
-            $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,
+            //Kreiram upit koji dohvaća sve pacijente iz čekaonice
+            $sql = "SELECT IF(c.idObradaLijecnik IS NULL, 
+                    (SELECT m.imeMedSestra FROM med_sestra m), (SELECT l.imeLijecnik FROM lijecnik l)) AS OdgovornaOsoba,
+                    p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,
                     DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,
-                    c.statusCekaonica,c.idObrada FROM pacijent p 
+                    c.statusCekaonica,IF(c.idObradaLijecnik IS NULL, c.idObradaMedSestra, c.idObradaLijecnik) AS idObrada,	
+                    IF(c.idObradaLijecnik IS NULL, 
+                    (SELECT k.tip FROM korisnik k WHERE k.tip = 'sestra'), 
+                    (SELECT k.tip FROM korisnik k WHERE k.tip = 'lijecnik')) AS tip FROM pacijent p 
                     JOIN cekaonica c ON p.idPacijent = c.idPacijent 
                     ORDER BY c.statusCekaonica,c.datumDodavanja,c.vrijemeDodavanja DESC";
 
@@ -313,6 +338,7 @@ class CekaonicaService{
                 }
             }
         }
+        
         //Vraćam odgovor
         return $response;
     }
@@ -373,8 +399,15 @@ class CekaonicaService{
         }
         //Ako ima pacijenata u čekaonici
         else{
-            //Kreiram upit koji dohvaća osobne podatke pacijenta
-            $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,c.statusCekaonica FROM pacijent p 
+
+            $sql = "SELECT IF(c.idObradaLijecnik IS NULL, 
+                    (SELECT m.imeMedSestra FROM med_sestra m), (SELECT l.imeLijecnik FROM lijecnik l)) AS OdgovornaOsoba,
+                    p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,
+                    DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,
+                    c.statusCekaonica,IF(c.idObradaLijecnik IS NULL, c.idObradaMedSestra, c.idObradaLijecnik) AS idObrada,	
+                    IF(c.idObradaLijecnik IS NULL, 
+                    (SELECT k.tip FROM korisnik k WHERE k.tip = 'sestra'), 
+                    (SELECT k.tip FROM korisnik k WHERE k.tip = 'lijecnik')) AS tip FROM pacijent p 
                     JOIN cekaonica c ON p.idPacijent = c.idPacijent 
                     ORDER BY c.statusCekaonica,c.datumDodavanja,c.vrijemeDodavanja DESC 
                     LIMIT 10";
@@ -404,7 +437,14 @@ class CekaonicaService{
         if(!empty($statusi)){
             foreach($statusi as $status){
         
-                $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,c.statusCekaonica FROM pacijent p 
+                $sql = "SELECT IF(c.idObradaLijecnik IS NULL, 
+                        (SELECT m.imeMedSestra FROM med_sestra m), (SELECT l.imeLijecnik FROM lijecnik l)) AS OdgovornaOsoba,
+                        p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,
+                        DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,
+                        c.statusCekaonica,IF(c.idObradaLijecnik IS NULL, c.idObradaMedSestra, c.idObradaLijecnik) AS idObrada,	
+                        IF(c.idObradaLijecnik IS NULL, 
+                        (SELECT k.tip FROM korisnik k WHERE k.tip = 'sestra'), 
+                        (SELECT k.tip FROM korisnik k WHERE k.tip = 'lijecnik')) AS tip FROM pacijent p 
                         JOIN cekaonica c ON p.idPacijent = c.idPacijent 
                         WHERE c.statusCekaonica = '$status'
                         ORDER BY c.statusCekaonica,c.datumDodavanja,c.vrijemeDodavanja DESC";

@@ -17,11 +17,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $response = [];
 
     //Ako je frontend poslao ID obrade
-    if(isset($_GET['idObrada'])){
+    if(isset($_GET['idObrada']) && isset($_GET['tip'])){
         //Dohvati ID obrade
         $idObrada = (int)$_GET['idObrada'];
+        //Dohvaćam tip korisnika
+        $tip = $_GET['tip'];
         //Punim polje sa odgovorom funkcije
-        $response = $servis->dohvatiImePrezimeDatum($idObrada);
+        $response = $servis->dohvatiImePrezimeDatum($tip,$idObrada);
         echo json_encode($response);
     }
 }

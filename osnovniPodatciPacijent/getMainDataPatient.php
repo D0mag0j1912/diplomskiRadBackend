@@ -16,8 +16,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     //Kreiram prazno polje
     $response = [];
 
-    $response = $servis->dohvatiOsnovnePodatkePacijenta();
+    if(isset($_GET['tip'])){
 
-    echo json_encode($response);
+        $tip = $_GET['tip'];
+        $response = $servis->dohvatiOsnovnePodatkePacijenta($tip);
+        echo json_encode($response);
+    }
 }
 ?>
