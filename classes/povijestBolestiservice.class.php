@@ -23,8 +23,10 @@ class PovijestBolestiService{
             $narucen = NULL;
             //Trenutni datum
             $datum = date('Y-m-d');
-            //Trenutno vrijeme
+            //Trenutno vrijeme za naručivanje
             $vrijeme = date('H:i');
+            //Trenutno vrijeme za pregled
+            $vrijemePregled = date("H:i");
             //Status pacijenta
             $statusObrada = "Aktivan";
             //Inicijalno postavljam šifru primarne dijagnoze na NULL
@@ -129,8 +131,8 @@ class PovijestBolestiService{
                 //Kreiram upit za spremanje prvog dijela podataka u bazu
                 $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                         nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                        preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik) 
-                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                        preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme) 
+                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                 //Kreiranje prepared statementa
                 $stmt = mysqli_stmt_init($conn);
                 //Ako je statement neuspješan
@@ -157,8 +159,8 @@ class PovijestBolestiService{
                         $napomena = NULL;
                     }
                     //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                    mysqli_stmt_bind_param($stmt,"sssssssssssssi",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifra,$prazna,
-                                                    $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada);
+                    mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifra,$prazna,
+                                                    $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
                     //Izvršavanje statementa
                     mysqli_stmt_execute($stmt);
 
@@ -212,8 +214,10 @@ class PovijestBolestiService{
                 $narucen = NULL;
                 //Trenutni datum
                 $datum = date('Y-m-d');
-                //Trenutno vrijeme
+                //Trenutno vrijeme za naručivanje
                 $vrijeme = date('H:i');
+                //Trenutno vrijeme za pregled
+                $vrijemePregled = date("H:i");
                 //Status pacijenta
                 $statusObrada = "Aktivan";
                 //Inicijalno postavljam šifru primarne dijagnoze na NULL
@@ -341,8 +345,8 @@ class PovijestBolestiService{
                     //Kreiram upit za spremanje prvog dijela podataka u bazu
                     $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                                                         nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                                                        preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik) 
-                                                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                                        preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme) 
+                                                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                     //Kreiranje prepared statementa
                     $stmt = mysqli_stmt_init($conn);
                     //Ako je statement neuspješan
@@ -368,8 +372,8 @@ class PovijestBolestiService{
                             $napomena = NULL;
                         }
                         //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                        mysqli_stmt_bind_param($stmt,"sssssssssssssi",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkbSifraSekundarna,
-                                                                    $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada);
+                        mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkbSifraSekundarna,
+                                                                    $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
                         //Izvršavanje statementa
                         mysqli_stmt_execute($stmt);
         
@@ -420,7 +424,7 @@ class PovijestBolestiService{
                     //Kreiram upit za spremanje prvog dijela podataka u bazu
                     $sql = "UPDATE povijestBolesti pb SET pb.razlogDolaska = ?, pb.anamneza = ?, pb.statusPacijent = ?, 
                             pb.nalaz = ?, pb.mkbSifraPrimarna = ?,pb.mkbSifraSekundarna = ?,pb.tipSlucaj = ?, pb.terapija = ?,
-                            pb.preporukaLijecnik = ?,pb.napomena = ?,pb.datum = ?,pb.narucen = ?, pb.mboPacijent = ?,pb.idObradaLijecnik = ? 
+                            pb.preporukaLijecnik = ?,pb.napomena = ?,pb.datum = ?,pb.narucen = ?, pb.mboPacijent = ?,pb.idObradaLijecnik = ?,pb.vrijeme = ? 
                             WHERE pb.idPovijestBolesti = ?";
                     //Kreiranje prepared statementa
                     $stmt = mysqli_stmt_init($conn);
@@ -447,8 +451,8 @@ class PovijestBolestiService{
                             $napomena = NULL;
                         }
                         //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                        mysqli_stmt_bind_param($stmt,"sssssssssssssii",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkbSifraSekundarna,
-                                                        $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$idPovijestBolesti);
+                        mysqli_stmt_bind_param($stmt,"sssssssssssssisi",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkbSifraSekundarna,
+                                                        $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled,$idPovijestBolesti);
                         //Izvršavanje statementa
                         mysqli_stmt_execute($stmt);
 
@@ -476,7 +480,7 @@ class PovijestBolestiService{
                         //Kreiram upit za spremanje prvog dijela podataka u bazu
                         $sql = "UPDATE povijestBolesti pb SET pb.razlogDolaska = ?, pb.anamneza = ?, pb.statusPacijent = ?, 
                                 pb.nalaz = ?, pb.mkbSifraPrimarna = ?,pb.mkbSifraSekundarna = ?,pb.tipSlucaj = ?, pb.terapija = ?,
-                                pb.preporukaLijecnik = ?,pb.napomena = ?,pb.datum = ?,pb.narucen = ?, pb.mboPacijent = ?,pb.idObradaLijecnik = ? 
+                                pb.preporukaLijecnik = ?,pb.napomena = ?,pb.datum = ?,pb.narucen = ?, pb.mboPacijent = ?,pb.idObradaLijecnik = ?,pb.vrijeme = ? 
                                 WHERE pb.idPovijestBolesti = ?";
                         //Kreiranje prepared statementa
                         $stmt = mysqli_stmt_init($conn);
@@ -503,8 +507,8 @@ class PovijestBolestiService{
                                 $napomena = NULL;
                             }
                             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                            mysqli_stmt_bind_param($stmt,"sssssssssssssii",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkbSifraSekundarna,
-                                                            $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$idPovijestBolesti);
+                            mysqli_stmt_bind_param($stmt,"sssssssssssssisi",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkbSifraSekundarna,
+                                                            $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled,$idPovijestBolesti);
                             //Izvršavanje statementa
                             mysqli_stmt_execute($stmt);
 
@@ -517,8 +521,8 @@ class PovijestBolestiService{
                         //Kreiram upit za spremanje prvog dijela podataka u bazu
                         $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                                 nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                                preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik) 
-                                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme) 
+                                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                         //Kreiranje prepared statementa
                         $stmt = mysqli_stmt_init($conn);
                         //Ako je statement neuspješan
@@ -544,8 +548,8 @@ class PovijestBolestiService{
                                 $napomena = NULL;
                             }
                             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                            mysqli_stmt_bind_param($stmt,"sssssssssssssi",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkbSifraSekundarna,
-                                                            $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada);
+                            mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkbSifraSekundarna,
+                                                            $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
                             //Izvršavanje statementa
                             mysqli_stmt_execute($stmt);
 
@@ -605,8 +609,8 @@ class PovijestBolestiService{
                         //Kreiram upit za spremanje prvog dijela podataka u bazu
                         $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                                 nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                                preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik) 
-                                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme) 
+                                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                         //Kreiranje prepared statementa
                         $stmt = mysqli_stmt_init($conn);
                         //Ako je statement neuspješan
@@ -632,8 +636,8 @@ class PovijestBolestiService{
                                 $napomena = NULL;
                             }
                             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                            mysqli_stmt_bind_param($stmt,"sssssssssssssi",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkbSifraSekundarna,
-                                                            $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada);
+                            mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkbSifraSekundarna,
+                                                            $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
                             //Izvršavanje statementa
                             mysqli_stmt_execute($stmt);
 

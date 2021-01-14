@@ -16,10 +16,15 @@ if($_SERVER["REQUEST_METHOD"] === "GET"){
     //Kreiram prazno polje
     $response = [];
 
-    //Punim polje sa vrijednostima polja iz funkcije
-    $response = $servis->dohvatiObradenPovijestBolesti();
+    //Ako je frontend poslao ID trenutno aktivnog pacijenta
+    if(isset($_GET['idPacijent'])){
+        //Dohvaćam ID trenutno aktivnog pacijenta
+        $idPacijent = (int)$_GET['idPacijent'];
+        //Punim polje sa vrijednostima polja iz funkcije
+        $response = $servis->dohvatiObradenPovijestBolesti($idPacijent);
 
-    //Vraćam frontendu rezultat
-    echo json_encode($response);
+        //Vraćam frontendu rezultat
+        echo json_encode($response);
+    }
 }
 ?>

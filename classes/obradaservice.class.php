@@ -7,7 +7,7 @@ date_default_timezone_set('Europe/Zagreb');
 class ObradaService{
 
     //Funkcija koja provjerava JE LI PACIJENT OBRAĐEN OD STRANE LIJEČNIKA 
-    function dohvatiObradenPovijestBolesti(){
+    function dohvatiObradenPovijestBolesti($idPacijent){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -15,13 +15,11 @@ class ObradaService{
         //Kreiram prazno polje odgovora
         $response = [];
 
-        $status = "Aktivan";
         //Kreiram upit koji će provjeriti je li pacijent obrađen od strane liječnika (je li napisana povijest bolesti za njega)
-        $sql = "SELECT MAX(a.idPovijestBolesti) AS IDPovijestBolesti FROM ambulanta a 
-                JOIN povijestBolesti pb ON pb.idPovijestBolesti = a.idPovijestBolesti
-                WHERE a.idPacijent IN 
-                (SELECT o.idPacijent FROM obrada_lijecnik o 
-                WHERE o.statusObrada = '$status') 
+        $sql = "SELECT DATE_FORMAT(MAX(pb.vrijeme),'%H:%i') AS Vrijeme FROM povijestbolesti pb 
+                WHERE pb.mboPacijent IN 
+                (SELECT p.mboPacijent FROM pacijent p 
+                WHERE p.idPacijent = '$idPacijent') 
                 AND pb.datum = CURDATE();";
         $result = $conn->query($sql);
 
@@ -35,7 +33,7 @@ class ObradaService{
     }
 
     //Funkcija koja provjerava JE LI PACIJENT OBRAĐEN OD STRANE MEDICINSKE SESTRE 
-    function dohvatiObradenOpciPodatci(){
+    function dohvatiObradenOpciPodatci($idPacijent){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -43,14 +41,11 @@ class ObradaService{
         //Kreiram prazno polje odgovora
         $response = [];
 
-        $status = "Aktivan";
-
-        $sql = "SELECT MAX(a.idPregled) AS IDPregled FROM ambulanta a 
-                JOIN pregled p ON p.idPregled = a.idPregled
-                WHERE a.idPacijent IN 
-                (SELECT o.idPacijent FROM obrada_med_sestra o 
-                WHERE o.statusObrada = '$status') 
-                AND p.datumPregled = CURDATE();";
+        $sql = "SELECT DATE_FORMAT(MAX(pr.vrijemePregled),'%H:%i') AS Vrijeme FROM pregled pr 
+                WHERE pr.mboPacijent IN 
+                (SELECT p.mboPacijent FROM pacijent p 
+                WHERE p.idPacijent = '$idPacijent') 
+                AND pr.datumPregled = CURDATE();";
         $result = $conn->query($sql);
 
         if ($result->num_rows > 0) {
