@@ -891,7 +891,7 @@ class ObradaService{
     }
 
     //Funkcija koja dohvaća sljedećeg pacijenta čekaonice
-    function dohvatiSljedeciPacijent(){
+    function dohvatiSljedeciPacijent($tip){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -901,44 +901,104 @@ class ObradaService{
         
         $status = "Čeka na pregled";
 
-        //Kreiram sql upit koji će provjeriti koji čekaju na pregled u čekaonici
-        $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM pacijent p 
-                            JOIN cekaonica c ON c.idPacijent = p.idPacijent 
-                            WHERE c.idCekaonica = 
-                            (SELECT MAX(idCekaonica) FROM cekaonica 
-                            WHERE statusCekaonica = '$status')";
-        //Rezultat upita spremam u varijablu $resultCountPacijent
-        $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultCountPacijent) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
-                //Vrijednost rezultata spremam u varijablu $brojNarudzba
-                $brojPacijent = $rowCountPacijent['BrojPacijent'];
+        //Ako je tip prijavljenog korisnika "lijecnik":
+        if($tip == "lijecnik"){
+            //Kreiram upit koji će dohvatiti ID liječnika na osnovu njegovog tipa
+            $sqlID = "SELECT l.idLijecnik FROM lijecnik l 
+                    JOIN korisnik k ON k.idKorisnik = l.idKorisnik 
+                    WHERE k.tip = ?"; // SQL with parameters
+            $stmtID = $conn->prepare($sqlID); 
+            $stmtID->bind_param("s", $tip);
+            $stmtID->execute();
+            $resultID = $stmtID->get_result(); // get the mysqli result
+            while ($rowID = $resultID->fetch_assoc()) {
+                $idLijecnik = $rowID["idLijecnik"];
             }
-        }
-        //Ako nema pacijenata koji čekaju na pregled
-        if($brojPacijent == 0){
-            $response["success"] = "false";
-            $response["message"] = "Nema pacijenata koji čekaju na pregled!";
-        }
-        //Ako ima pacijenata koji čekaju na pregled
-        else{
-            $sql = "SELECT p.imePacijent,p.prezPacijent FROM pacijent p 
-                    JOIN cekaonica c ON c.idPacijent = p.idPacijent 
-                    WHERE c.idCekaonica = 
-                    (SELECT MAX(idCekaonica) FROM cekaonica 
-                    WHERE statusCekaonica = '$status')";
 
-            $result = $conn->query($sql);
+            //Kreiram sql upit koji će provjeriti koliko ima pacijenata koji ČEKAJU NA PREGLED KOD LIJEČNIKA
+            $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM cekaonica c 
+                                WHERE c.statusCekaonica = '$status' AND c.idLijecnik = '$idLijecnik';";
+            //Rezultat upita spremam u varijablu $resultCountPacijent
+            $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountPacijent) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                    //Vrijednost rezultata spremam u varijablu $brojPacijent
+                    $brojPacijent = $rowCountPacijent['BrojPacijent'];
+                }
+            }
+            //Ako nema pacijenata koji čekaju na pregled
+            if($brojPacijent == 0){
+                $response["success"] = "false";
+                $response["message"] = "Nema pacijenata koji čekaju na pregled!";
+            }
+            //Ako ima pacijenata koji čekaju na pregled
+            else{
+                $sql = "SELECT p.imePacijent,p.prezPacijent FROM pacijent p 
+                        JOIN cekaonica c ON c.idPacijent = p.idPacijent 
+                        WHERE c.idCekaonica = 
+                        (SELECT MAX(idCekaonica) FROM cekaonica 
+                        WHERE statusCekaonica = '$status' AND idLijecnik = '$idLijecnik')";
 
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    $response[] = $row;
+                $result = $conn->query($sql);
+
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
                 }
             }
         }
+        //Ako je tip prijavljenog korisnika "sestra":
+        else if($tip == "sestra"){
+            //Kreiram upit koji će dohvatiti ID medicinske sestre na osnovu njezinog tipa
+            $sqlID = "SELECT m.idMedSestra FROM med_sestra m 
+                    JOIN korisnik k ON k.idKorisnik = m.idKorisnik 
+                    WHERE k.tip = ?"; // SQL with parameters
+            $stmtID = $conn->prepare($sqlID); 
+            $stmtID->bind_param("s", $tip);
+            $stmtID->execute();
+            $resultID = $stmtID->get_result(); // get the mysqli result
+            while ($rowID = $resultID->fetch_assoc()) {
+                $idMedSestra = $rowID["idMedSestra"];
+            }
 
+            //Kreiram sql upit koji će provjeriti koliko ima pacijenata koji ČEKAJU NA PREGLED KOD MEDICINSKE SESTRE
+            $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM cekaonica c 
+                                WHERE c.statusCekaonica = '$status' AND c.idMedSestra = '$idMedSestra';";
+            //Rezultat upita spremam u varijablu $resultCountPacijent
+            $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountPacijent) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                    //Vrijednost rezultata spremam u varijablu $brojPacijent
+                    $brojPacijent = $rowCountPacijent['BrojPacijent'];
+                }
+            }
+            //Ako nema pacijenata koji čekaju na pregled
+            if($brojPacijent == 0){
+                $response["success"] = "false";
+                $response["message"] = "Nema pacijenata koji čekaju na pregled!";
+            }
+            //Ako ima pacijenata koji čekaju na pregled
+            else{
+                $sql = "SELECT p.imePacijent,p.prezPacijent FROM pacijent p 
+                        JOIN cekaonica c ON c.idPacijent = p.idPacijent 
+                        WHERE c.idCekaonica = 
+                        (SELECT MAX(idCekaonica) FROM cekaonica 
+                        WHERE statusCekaonica = '$status' AND idMedSestra = '$idMedSestra')";
+
+                $result = $conn->query($sql);
+
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
+                }
+            }
+        }
         return $response;
 
     }

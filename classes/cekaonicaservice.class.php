@@ -145,7 +145,7 @@ class CekaonicaService{
     }
 
     //Funkcija koja briše pacijenta iz čekaonice
-    function izbrisiPacijentaCekaonica($idObrada,$idCekaonica){
+    function izbrisiPacijentaCekaonica($tip,$idObrada,$idCekaonica){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -177,42 +177,86 @@ class CekaonicaService{
         }
         //Ako ID obrade nije prazan
         else{
-            $sqlObrada = "DELETE FROM obrada 
-                    WHERE idObrada = ?;";
+            //Ako je tip korisnika koji je dodao ovaj redak u čekaonicu "lijecnik":
+            if($tip == "lijecnik"){
+                $sqlObrada = "DELETE FROM obrada_lijecnik 
+                            WHERE idObrada = ?;";
 
-            //Kreiranje prepared statementa
-            $stmtObrada = mysqli_stmt_init($conn);
-            //Ako je statement neuspješan
-            if(!mysqli_stmt_prepare($stmtObrada,$sqlObrada)){
-                $response["success"] = "false";
-                $response["message"] = "Prepared statement brisanja obrade ne valja!";
-            }
-            //Ako je prepared statement u redu
-            else{
-                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                mysqli_stmt_bind_param($stmtObrada,"i",$idObrada);
-                //Izvršavanje statementa
-                mysqli_stmt_execute($stmtObrada);
-
-                $sql = "DELETE FROM cekaonica 
-                    WHERE idObrada = ?";
-            
                 //Kreiranje prepared statementa
-                $stmt = mysqli_stmt_init($conn);
+                $stmtObrada = mysqli_stmt_init($conn);
                 //Ako je statement neuspješan
-                if(!mysqli_stmt_prepare($stmt,$sql)){
+                if(!mysqli_stmt_prepare($stmtObrada,$sqlObrada)){
                     $response["success"] = "false";
-                    $response["message"] = "Prepared statement brisanja čekaonice ne valja!";
+                    $response["message"] = "Prepared statement brisanja obrade ne valja!";
                 }
                 //Ako je prepared statement u redu
                 else{
                     //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                    mysqli_stmt_bind_param($stmt,"i",$idObrada);
+                    mysqli_stmt_bind_param($stmtObrada,"i",$idObrada);
                     //Izvršavanje statementa
-                    mysqli_stmt_execute($stmt);
+                    mysqli_stmt_execute($stmtObrada);
 
-                    $response["success"] = "true";
-                    $response["message"] = "Pacijent uspješno izbrisan!";
+                    $sql = "DELETE FROM cekaonica 
+                            WHERE idObradaLijecnik = ?";
+                
+                    //Kreiranje prepared statementa
+                    $stmt = mysqli_stmt_init($conn);
+                    //Ako je statement neuspješan
+                    if(!mysqli_stmt_prepare($stmt,$sql)){
+                        $response["success"] = "false";
+                        $response["message"] = "Prepared statement brisanja čekaonice ne valja!";
+                    }
+                    //Ako je prepared statement u redu
+                    else{
+                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                        mysqli_stmt_bind_param($stmt,"i",$idObrada);
+                        //Izvršavanje statementa
+                        mysqli_stmt_execute($stmt);
+
+                        $response["success"] = "true";
+                        $response["message"] = "Pacijent uspješno izbrisan!";
+                    }
+                }
+            }
+            //Ako je tip korisnika koji je dodao ovaj redak u čekaonicu "sestra":
+            else if($tip == "sestra"){
+                $sqlObrada = "DELETE FROM obrada_med_sestra 
+                            WHERE idObrada = ?;";
+
+                //Kreiranje prepared statementa
+                $stmtObrada = mysqli_stmt_init($conn);
+                //Ako je statement neuspješan
+                if(!mysqli_stmt_prepare($stmtObrada,$sqlObrada)){
+                    $response["success"] = "false";
+                    $response["message"] = "Prepared statement brisanja obrade ne valja!";
+                }
+                //Ako je prepared statement u redu
+                else{
+                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                    mysqli_stmt_bind_param($stmtObrada,"i",$idObrada);
+                    //Izvršavanje statementa
+                    mysqli_stmt_execute($stmtObrada);
+
+                    $sql = "DELETE FROM cekaonica 
+                        WHERE idObradaMedSestra = ?";
+                
+                    //Kreiranje prepared statementa
+                    $stmt = mysqli_stmt_init($conn);
+                    //Ako je statement neuspješan
+                    if(!mysqli_stmt_prepare($stmt,$sql)){
+                        $response["success"] = "false";
+                        $response["message"] = "Prepared statement brisanja čekaonice ne valja!";
+                    }
+                    //Ako je prepared statement u redu
+                    else{
+                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                        mysqli_stmt_bind_param($stmt,"i",$idObrada);
+                        //Izvršavanje statementa
+                        mysqli_stmt_execute($stmt);
+
+                        $response["success"] = "true";
+                        $response["message"] = "Pacijent uspješno izbrisan!";
+                    }
                 }
             }
         }
@@ -253,7 +297,7 @@ class CekaonicaService{
     }
 
     //Funkcija koja dodava pacijenta u čekaonicu
-    function dodajUCekaonicu($id){
+    function dodajUCekaonicu($tip,$id){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -267,24 +311,68 @@ class CekaonicaService{
         $vrijeme = date('H:i:s');
         //Početni status čekaonice
         $status = "Čeka na pregled";
+        //Ako je prijavljeni korisnik "lijecnik"
+        if($tip == "lijecnik"){
+            $sqlID = "SELECT l.idLijecnik FROM lijecnik l;";
+            $result = $conn->query($sqlID);
 
-        $sql = "INSERT INTO cekaonica(idPacijent,datumDodavanja,vrijemeDodavanja,statusCekaonica) VALUES (?,?,?,?)";
-        //Kreiranje prepared statementa
-        $stmt = mysqli_stmt_init($conn);
-        //Ako je statement neuspješan
-        if(!mysqli_stmt_prepare($stmt,$sql)){
-            $response["success"] = "false";
-            $response["message"] = "Prepared statement ne valja!";
+            if ($result->num_rows > 0) {
+                // output data of each row
+                while($row = $result->fetch_assoc()) {
+                    //Dohvaćam ime liječnika
+                    $idLijecnik = $row["idLijecnik"];
+                }
+            }
+
+            $sql = "INSERT INTO cekaonica(idPacijent,datumDodavanja,vrijemeDodavanja,statusCekaonica,idLijecnik) VALUES (?,?,?,?,?)";
+            //Kreiranje prepared statementa
+            $stmt = mysqli_stmt_init($conn);
+            //Ako je statement neuspješan
+            if(!mysqli_stmt_prepare($stmt,$sql)){
+                $response["success"] = "false";
+                $response["message"] = "Prepared statement ne valja!";
+            }
+            //Ako je prepared statement u redu
+            else{
+                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                mysqli_stmt_bind_param($stmt,"isssi",$id,$datum,$vrijeme,$status,$idLijecnik);
+                //Izvršavanje statementa
+                mysqli_stmt_execute($stmt);
+
+                $response["success"] = "true";
+                $response["message"] = "Pacijent je uspješno dodan u čekaonicu!";
+            }
         }
-        //Ako je prepared statement u redu
-        else{
-            //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-            mysqli_stmt_bind_param($stmt,"isss",$id,$datum,$vrijeme,$status);
-            //Izvršavanje statementa
-            mysqli_stmt_execute($stmt);
+        //Ako je prijavljeni korisnik "sestra":
+        else if($tip == "sestra"){
+            $sqlID = "SELECT m.idMedSestra FROM med_sestra m;";
+            $result = $conn->query($sqlID);
 
-            $response["success"] = "true";
-            $response["message"] = "Pacijent je uspješno dodan u čekaonicu!";
+            if ($result->num_rows > 0) {
+                // output data of each row
+                while($row = $result->fetch_assoc()) {
+                    //Dohvaćam ime liječnika
+                    $idMedSestra = $row["idMedSestra"];
+                }
+            }
+            $sql = "INSERT INTO cekaonica(idPacijent,datumDodavanja,vrijemeDodavanja,statusCekaonica,idMedSestra) VALUES (?,?,?,?,?)";
+            //Kreiranje prepared statementa
+            $stmt = mysqli_stmt_init($conn);
+            //Ako je statement neuspješan
+            if(!mysqli_stmt_prepare($stmt,$sql)){
+                $response["success"] = "false";
+                $response["message"] = "Prepared statement ne valja!";
+            }
+            //Ako je prepared statement u redu
+            else{
+                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                mysqli_stmt_bind_param($stmt,"isssi",$id,$datum,$vrijeme,$status,$idMedSestra);
+                //Izvršavanje statementa
+                mysqli_stmt_execute($stmt);
+
+                $response["success"] = "true";
+                $response["message"] = "Pacijent je uspješno dodan u čekaonicu!";
+            }
         }
         //Vraćam odgovor
         return $response;
@@ -319,14 +407,26 @@ class CekaonicaService{
         //Ako ima pacijenata u čekaonici
         else{
             //Kreiram upit koji dohvaća sve pacijente iz čekaonice
-            $sql = "SELECT IF(c.idObradaLijecnik IS NULL, 
-                    (SELECT m.imeMedSestra FROM med_sestra m), (SELECT l.imeLijecnik FROM lijecnik l)) AS OdgovornaOsoba,
+            $sql = "SELECT CASE 
+                    WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT m.imeMedSestra) FROM med_sestra m JOIN cekaonica c ON c.idMedSestra = m.idMedSestra)
+                    WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT l.imeLijecnik) FROM lijecnik l JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
+                    END AS OdgovornaOsoba,
                     p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,
                     DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,
-                    c.statusCekaonica,IF(c.idObradaLijecnik IS NULL, c.idObradaMedSestra, c.idObradaLijecnik) AS idObrada,	
-                    IF(c.idObradaLijecnik IS NULL, 
-                    (SELECT k.tip FROM korisnik k WHERE k.tip = 'sestra'), 
-                    (SELECT k.tip FROM korisnik k WHERE k.tip = 'lijecnik')) AS tip FROM pacijent p 
+                    c.statusCekaonica,
+                    CASE 
+                        WHEN c.idObradaLijecnik IS NULL AND c.idObradaMedSestra IS NULL THEN NULL
+                        WHEN c.idObradaLijecnik IS NULL THEN c.idObradaMedSestra 
+                        WHEN c.idObradaMedSestra IS NULL THEN c.idObradaLijecnik
+                    END AS idObrada,
+                    CASE 	
+                        WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
+                                                        JOIN med_sestra m ON k.idKorisnik = m.idKorisnik 
+                                                        JOIN cekaonica c ON c.idMedSestra = m.idMedSestra) 
+                        WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
+                                                        JOIN lijecnik l ON l.idKorisnik = k.idKorisnik 
+                                                        JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
+                    END AS tip FROM pacijent p 
                     JOIN cekaonica c ON p.idPacijent = c.idPacijent 
                     ORDER BY c.statusCekaonica,c.datumDodavanja,c.vrijemeDodavanja DESC";
 
@@ -344,7 +444,7 @@ class CekaonicaService{
     }
 
     //Funkcija koja provjerava status u čekaonici
-    function provjeraCekaonica($id){
+    function provjeraCekaonica($tip,$id){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -354,20 +454,62 @@ class CekaonicaService{
 
         //Status pacijenta u čekaonici
         $status = "Čeka na pregled";
-        //Provjeravam je li postoji već taj pacijent u čekaonici (da čeka na pregled)
-        $sql="SELECT c.idPacijent FROM cekaonica c 
-                WHERE c.idPacijent = '$id' AND c.statusCekaonica = '$status'";
-        
-        $result = $conn->query($sql);
 
-        if($result->num_rows > 0){
-            $response["success"] = "false";
-            $response["message"] = "Pacijent trenutno čeka na pregled!";
-            return $response;
+        //Ako je prijavljeni korisnik "lijecnik"
+        if($tip == "lijecnik"){
+            $sqlID = "SELECT l.idLijecnik FROM lijecnik l;";
+            $resultID = $conn->query($sqlID);
+
+            if ($resultID->num_rows > 0) {
+                // output data of each row
+                while($rowID = $resultID->fetch_assoc()) {
+                    //Dohvaćam ID liječnika
+                    $idLijecnik = $rowID["idLijecnik"];
+                }
+            }
+            //Provjeravam je li postoji već taj pacijent u čekaonici da ga je dodao liječnik (da čeka na pregled) 
+            $sql="SELECT c.idPacijent FROM cekaonica c 
+                WHERE c.idPacijent = '$id' AND c.statusCekaonica = '$status' AND c.idLijecnik = '$idLijecnik'";
+
+            $result = $conn->query($sql);
+
+            if($result->num_rows > 0){
+                $response["success"] = "false";
+                $response["message"] = "Pacijent trenutno čeka na pregled!";
+                return $response;
+            }
+            else{
+                //Vraćam null
+                return null;
+            }
         }
-        else{
-            //Vraćam null
-            return null;
+        //Ako je prijavljeni korisnik "sestra":
+        else if($tip == "sestra"){
+            $sqlID = "SELECT m.idMedSestra FROM med_sestra m;";
+            $resultID = $conn->query($sqlID);
+
+            if ($resultID->num_rows > 0) {
+                // output data of each row
+                while($rowID = $resultID->fetch_assoc()) {
+                    //Dohvaćam ID liječnika
+                    $idMedSestra = $rowID["idMedSestra"];
+                }
+            }
+            //Provjeravam je li postoji već taj pacijent u čekaonici da ga je dodala medicinska sestra (da čeka na pregled) 
+            $sql="SELECT c.idPacijent FROM cekaonica c 
+                WHERE c.idPacijent = '$id' AND c.statusCekaonica = '$status' AND c.idMedSestra = '$idMedSestra'";
+
+            $result = $conn->query($sql);
+
+            if($result->num_rows > 0){
+                $response["success"] = "false";
+                $response["message"] = "Pacijent trenutno čeka na pregled!";
+                return $response;
+            }
+            else{
+                //Vraćam null
+                return null;
+            }
         }
     }
 
@@ -400,14 +542,26 @@ class CekaonicaService{
         //Ako ima pacijenata u čekaonici
         else{
 
-            $sql = "SELECT IF(c.idObradaLijecnik IS NULL, 
-                    (SELECT m.imeMedSestra FROM med_sestra m), (SELECT l.imeLijecnik FROM lijecnik l)) AS OdgovornaOsoba,
+            $sql = "SELECT CASE 
+                    WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT m.imeMedSestra) FROM med_sestra m JOIN cekaonica c ON c.idMedSestra = m.idMedSestra)
+                    WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT l.imeLijecnik) FROM lijecnik l JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
+                    END AS OdgovornaOsoba,
                     p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,
                     DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,
-                    c.statusCekaonica,IF(c.idObradaLijecnik IS NULL, c.idObradaMedSestra, c.idObradaLijecnik) AS idObrada,	
-                    IF(c.idObradaLijecnik IS NULL, 
-                    (SELECT k.tip FROM korisnik k WHERE k.tip = 'sestra'), 
-                    (SELECT k.tip FROM korisnik k WHERE k.tip = 'lijecnik')) AS tip FROM pacijent p 
+                    c.statusCekaonica,
+                    CASE 
+                        WHEN c.idObradaLijecnik IS NULL AND c.idObradaMedSestra IS NULL THEN NULL
+                        WHEN c.idObradaLijecnik IS NULL THEN c.idObradaMedSestra 
+                        WHEN c.idObradaMedSestra IS NULL THEN c.idObradaLijecnik
+                    END AS idObrada,
+                    CASE 	
+                        WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
+                                                        JOIN med_sestra m ON k.idKorisnik = m.idKorisnik 
+                                                        JOIN cekaonica c ON c.idMedSestra = m.idMedSestra) 
+                        WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
+                                                        JOIN lijecnik l ON l.idKorisnik = k.idKorisnik 
+                                                        JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
+                    END AS tip FROM pacijent p 
                     JOIN cekaonica c ON p.idPacijent = c.idPacijent 
                     ORDER BY c.statusCekaonica,c.datumDodavanja,c.vrijemeDodavanja DESC 
                     LIMIT 10";
@@ -437,14 +591,26 @@ class CekaonicaService{
         if(!empty($statusi)){
             foreach($statusi as $status){
         
-                $sql = "SELECT IF(c.idObradaLijecnik IS NULL, 
-                        (SELECT m.imeMedSestra FROM med_sestra m), (SELECT l.imeLijecnik FROM lijecnik l)) AS OdgovornaOsoba,
+                $sql = "SELECT CASE 
+                        WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT m.imeMedSestra) FROM med_sestra m JOIN cekaonica c ON c.idMedSestra = m.idMedSestra)
+                        WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT l.imeLijecnik) FROM lijecnik l JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
+                        END AS OdgovornaOsoba,
                         p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,
                         DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,
-                        c.statusCekaonica,IF(c.idObradaLijecnik IS NULL, c.idObradaMedSestra, c.idObradaLijecnik) AS idObrada,	
-                        IF(c.idObradaLijecnik IS NULL, 
-                        (SELECT k.tip FROM korisnik k WHERE k.tip = 'sestra'), 
-                        (SELECT k.tip FROM korisnik k WHERE k.tip = 'lijecnik')) AS tip FROM pacijent p 
+                        c.statusCekaonica,
+                        CASE 
+                            WHEN c.idObradaLijecnik IS NULL AND c.idObradaMedSestra IS NULL THEN NULL
+                            WHEN c.idObradaLijecnik IS NULL THEN c.idObradaMedSestra 
+                            WHEN c.idObradaMedSestra IS NULL THEN c.idObradaLijecnik
+                        END AS idObrada,
+                        CASE 	
+                            WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
+                                                            JOIN med_sestra m ON k.idKorisnik = m.idKorisnik 
+                                                            JOIN cekaonica c ON c.idMedSestra = m.idMedSestra) 
+                            WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
+                                                            JOIN lijecnik l ON l.idKorisnik = k.idKorisnik 
+                                                            JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
+                        END AS tip FROM pacijent p 
                         JOIN cekaonica c ON p.idPacijent = c.idPacijent 
                         WHERE c.statusCekaonica = '$status'
                         ORDER BY c.statusCekaonica,c.datumDodavanja,c.vrijemeDodavanja DESC";

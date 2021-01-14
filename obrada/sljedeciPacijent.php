@@ -15,11 +15,15 @@ $conn = $baza->spojiSBazom();
 if($_SERVER["REQUEST_METHOD"] === "GET"){
     //Kreiram prazno polje
     $response = [];
+    //Ako je frontend poslao parametar "tip" korisnika
+    if(isset($_GET['tip'])){
+        //Dohvaćam tip korisnika
+        $tip = $_GET['tip'];
+        //Punim polje sa vrijednostima polja iz funkcije
+        $response = $servis->dohvatiSljedeciPacijent($tip);
 
-    //Punim polje sa vrijednostima polja iz funkcije
-    $response = $servis->dohvatiSljedeciPacijent();
-
-    //Vraćam frontendu rezultat
-    echo json_encode($response);
+        //Vraćam frontendu rezultat
+        echo json_encode($response);
+    }   
 }
 ?>

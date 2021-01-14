@@ -25,14 +25,16 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 
         //Dohvaćam ID koji je frontend poslao
         $id = mysqli_real_escape_string($conn, trim($request->id));
+        //Dohvaćam tip prijavljenog korisnika koji je dodao pacijenta u čekaonicu
+        $tip = mysqli_real_escape_string($conn, trim($request->tip));
 
         //Ako vraća null, nema errora
-        if($servis->provjeraCekaonica($id) != null){
-            $response = $servis->provjeraCekaonica($id);
+        if($servis->provjeraCekaonica($tip,$id) != null){
+            $response = $servis->provjeraCekaonica($tip,$id);
         }
         else{
             //Punim polje sa odgovorom baze
-            $response = $servis->dodajUCekaonicu($id);
+            $response = $servis->dodajUCekaonicu($tip,$id);
         }
         //Šaljem nazad frontendu odgovor
         echo json_encode($response);
