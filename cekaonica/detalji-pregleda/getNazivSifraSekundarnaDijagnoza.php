@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $idObrada = $_GET['idObrada'];
         $idObrada = (int)$idObrada;
         //Dohvaćam tip prijavljenog korisnika
-        $tip = $_GET['tip'];
+        $tip = mysqli_real_escape_string($conn, trim($_GET['tip']));
         //Ako je tip korisnika "lijecnik":
         if($tip == "lijecnik"){
             //Svaku pojedinu sekundarnu dijagnozu iz stringa odvoji kao jedan element polja

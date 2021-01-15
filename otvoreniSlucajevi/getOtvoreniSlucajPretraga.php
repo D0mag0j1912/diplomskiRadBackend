@@ -17,13 +17,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $response = [];
 
     //Ako je s frontenda poslan parametar ID pacijenta i šifra primarne dijagnoze
-    if(isset($_GET['pretraga']) && isset($_GET['id'])){
+    if(isset($_GET['pretraga']) && isset($_GET['id']) && isset($_GET['tip'])){
         //Uzmi tu vrijednosti ID-a i pretvori je u INTEGER
         $id = (int)$_GET['id'];
         //Uzmi tu vrijednost pretrage
         $pretraga = $_GET["pretraga"];
+        //Dohvaćam tip prijavljenog korisnika
+        $tip = mysqli_real_escape_string($conn, trim($_GET['tip']));
         //Punim polje sa vrijednostima polja iz funkcije
-        $response = $servis->dohvatiOtvoreniSlucajPretraga($pretraga,$id);
+        $response = $servis->dohvatiOtvoreniSlucajPretraga($tip,$pretraga,$id);
         //Vraćam frontendu rezultat
         echo json_encode($response);
     }

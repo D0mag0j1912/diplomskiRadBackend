@@ -17,11 +17,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $response = [];
 
     //Ako je s frontenda poslan parametar ID pacijenta
-    if(isset($_GET['id'])){
+    if(isset($_GET['id']) && isset($_GET['tip'])){
         //Uzmi tu vrijednosti ID-a i pretvori je u INTEGER
         $id = (int)$_GET['id'];
+        //Dohvaćam tip prijavljenog korisnika
+        $tip = mysqli_real_escape_string($conn, trim($_GET['tip']));
         //Punim polje sa vrijednostima polja iz funkcije
-        $response = $servis->dohvatiSveSekundarneDijagnoze($servis->svePrimarneDijagnoze($id),$id);
+        $response = $servis->dohvatiSveSekundarneDijagnoze($tip,$servis->svePrimarneDijagnoze($id),$id);
         //Vraćam frontendu rezultat
         echo json_encode($response);
     }

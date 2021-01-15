@@ -16,8 +16,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     //Kreiram prazno polje
     $response = [];
 
-    $response = $servis->dohvati10zadnjih();
+    //Ako je frontend poslao tip prijavljenog korisnika
+    if(isset($_GET['tip'])){
+        //Dohvaćam tip prijavljenog korisnika
+        $tip = mysqli_real_escape_string($conn, trim($_GET['tip']));
+        $response = $servis->dohvati10zadnjih($tip);
 
-    echo json_encode($response);
+        echo json_encode($response);
+    }
 }
 ?>

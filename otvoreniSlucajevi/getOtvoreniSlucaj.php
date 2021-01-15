@@ -16,12 +16,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     //Kreiram prazno polje
     $response = [];
 
-    //Ako je s frontenda poslan parametar ID pacijenta
-    if(isset($_GET['id'])){
+    //Ako je s frontenda poslan parametar ID pacijenta te tip prijavljenog korisnika
+    if(isset($_GET['id']) && isset($_GET['tip'])){
         //Uzmi tu vrijednosti ID-a i pretvori je u INTEGER
         $id = (int)$_GET['id'];
+        //Dohvaćam tip prijavljenog korisnika
+        $tip = mysqli_real_escape_string($conn, trim($_GET['tip']));
         //Punim polje sa vrijednostima polja iz funkcije
-        $response = $servis->dohvatiSveOtvoreneSlucajeve($id);
+        $response = $servis->dohvatiSveOtvoreneSlucajeve($tip,$id);
         //Vraćam frontendu rezultat
         echo json_encode($response);
     }

@@ -379,7 +379,7 @@ class CekaonicaService{
     }
 
     //Funkcija koja dohvaća pacijente iz čekaonice
-    function dohvatiPacijenteCekaonica(){
+    function dohvatiPacijenteCekaonica($tip){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -406,35 +406,72 @@ class CekaonicaService{
         }
         //Ako ima pacijenata u čekaonici
         else{
-            //Kreiram upit koji dohvaća sve pacijente iz čekaonice
-            $sql = "SELECT CASE 
-                    WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT m.imeMedSestra) FROM med_sestra m JOIN cekaonica c ON c.idMedSestra = m.idMedSestra)
-                    WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT l.imeLijecnik) FROM lijecnik l JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
-                    END AS OdgovornaOsoba,
-                    p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,
-                    DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,
-                    c.statusCekaonica,
-                    CASE 
-                        WHEN c.idObradaLijecnik IS NULL AND c.idObradaMedSestra IS NULL THEN NULL
-                        WHEN c.idObradaLijecnik IS NULL THEN c.idObradaMedSestra 
-                        WHEN c.idObradaMedSestra IS NULL THEN c.idObradaLijecnik
-                    END AS idObrada,
-                    CASE 	
-                        WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
-                                                        JOIN med_sestra m ON k.idKorisnik = m.idKorisnik 
-                                                        JOIN cekaonica c ON c.idMedSestra = m.idMedSestra) 
-                        WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
-                                                        JOIN lijecnik l ON l.idKorisnik = k.idKorisnik 
-                                                        JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
-                    END AS tip FROM pacijent p 
-                    JOIN cekaonica c ON p.idPacijent = c.idPacijent 
-                    ORDER BY c.statusCekaonica,c.datumDodavanja,c.vrijemeDodavanja DESC";
+            //Ako je tip prijavljenog korisnika "lijecnik":
+            if($tip == "lijecnik"){
+                //Kreiram upit koji dohvaća sve pacijente iz čekaonice
+                $sql = "SELECT CASE 
+                            WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT m.imeMedSestra) FROM med_sestra m JOIN cekaonica c ON c.idMedSestra = m.idMedSestra)
+                            WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT l.imeLijecnik) FROM lijecnik l JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
+                        END AS OdgovornaOsoba,
+                        p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,
+                        DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,
+                        c.statusCekaonica,
+                        CASE 
+                            WHEN c.idObradaLijecnik IS NULL AND c.idObradaMedSestra IS NULL THEN NULL
+                            WHEN c.idObradaLijecnik IS NULL THEN c.idObradaMedSestra 
+                            WHEN c.idObradaMedSestra IS NULL THEN c.idObradaLijecnik
+                        END AS idObrada,
+                        CASE 	
+                            WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
+                                                            JOIN med_sestra m ON k.idKorisnik = m.idKorisnik 
+                                                            JOIN cekaonica c ON c.idMedSestra = m.idMedSestra) 
+                            WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
+                                                            JOIN lijecnik l ON l.idKorisnik = k.idKorisnik 
+                                                            JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
+                        END AS tip FROM pacijent p 
+                        JOIN cekaonica c ON p.idPacijent = c.idPacijent 
+                        ORDER BY tip ASC,c.statusCekaonica ASC,c.datumDodavanja DESC";
 
-            $result = $conn->query($sql);
+                $result = $conn->query($sql);
 
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    $response[] = $row;
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
+                }
+            }
+            //Ako je tip prijavljenog korisnika "sestra":
+            else if($tip == "sestra"){
+                //Kreiram upit koji dohvaća sve pacijente iz čekaonice
+                $sql = "SELECT CASE 
+                            WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT m.imeMedSestra) FROM med_sestra m JOIN cekaonica c ON c.idMedSestra = m.idMedSestra)
+                            WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT l.imeLijecnik) FROM lijecnik l JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
+                        END AS OdgovornaOsoba,
+                        p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,
+                        DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,
+                        c.statusCekaonica,
+                        CASE 
+                            WHEN c.idObradaLijecnik IS NULL AND c.idObradaMedSestra IS NULL THEN NULL
+                            WHEN c.idObradaLijecnik IS NULL THEN c.idObradaMedSestra 
+                            WHEN c.idObradaMedSestra IS NULL THEN c.idObradaLijecnik
+                        END AS idObrada,
+                        CASE 	
+                            WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
+                                                            JOIN med_sestra m ON k.idKorisnik = m.idKorisnik 
+                                                            JOIN cekaonica c ON c.idMedSestra = m.idMedSestra) 
+                            WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
+                                                            JOIN lijecnik l ON l.idKorisnik = k.idKorisnik 
+                                                            JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
+                        END AS tip FROM pacijent p 
+                        JOIN cekaonica c ON p.idPacijent = c.idPacijent 
+                        ORDER BY tip DESC,c.statusCekaonica ASC,c.datumDodavanja DESC";
+
+                $result = $conn->query($sql);
+
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
                 }
             }
         }
@@ -514,7 +551,7 @@ class CekaonicaService{
     }
 
     //Funkcija koja dohvaća 10 zadnjih pacijenata u čekaonici
-    function dohvati10zadnjih(){
+    function dohvati10zadnjih($tip){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -541,59 +578,12 @@ class CekaonicaService{
         }
         //Ako ima pacijenata u čekaonici
         else{
-
-            $sql = "SELECT CASE 
-                    WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT m.imeMedSestra) FROM med_sestra m JOIN cekaonica c ON c.idMedSestra = m.idMedSestra)
-                    WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT l.imeLijecnik) FROM lijecnik l JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
-                    END AS OdgovornaOsoba,
-                    p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,
-                    DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,
-                    c.statusCekaonica,
-                    CASE 
-                        WHEN c.idObradaLijecnik IS NULL AND c.idObradaMedSestra IS NULL THEN NULL
-                        WHEN c.idObradaLijecnik IS NULL THEN c.idObradaMedSestra 
-                        WHEN c.idObradaMedSestra IS NULL THEN c.idObradaLijecnik
-                    END AS idObrada,
-                    CASE 	
-                        WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
-                                                        JOIN med_sestra m ON k.idKorisnik = m.idKorisnik 
-                                                        JOIN cekaonica c ON c.idMedSestra = m.idMedSestra) 
-                        WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
-                                                        JOIN lijecnik l ON l.idKorisnik = k.idKorisnik 
-                                                        JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
-                    END AS tip FROM pacijent p 
-                    JOIN cekaonica c ON p.idPacijent = c.idPacijent 
-                    ORDER BY c.statusCekaonica,c.datumDodavanja,c.vrijemeDodavanja DESC 
-                    LIMIT 10";
-
-            $result = $conn->query($sql);
-
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    $response[] = $row;
-                }
-            }
-        }
-        //Vraćam odgovor
-        return $response;
-    }
-
-    //Funkcija koja dohvaća pacijente iz čekaonice po njihovom statusu u čekaonici
-    function dohvatiPacijentaPoStatusu($statusi){
-        //Dohvaćam bazu 
-        $baza = new Baza();
-        $conn = $baza->spojiSBazom();
-
-        //Kreiram prazno polje odgovora
-        $response = []; 
-
-        //Ako polje nije prazno
-        if(!empty($statusi)){
-            foreach($statusi as $status){
-        
+            //Ako je tip prijavljenog korisnika "lijecnik":
+            if($tip == "lijecnik"){
+                //Kreiram upit koji dohvaća sve pacijente iz čekaonice
                 $sql = "SELECT CASE 
-                        WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT m.imeMedSestra) FROM med_sestra m JOIN cekaonica c ON c.idMedSestra = m.idMedSestra)
-                        WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT l.imeLijecnik) FROM lijecnik l JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
+                            WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT m.imeMedSestra) FROM med_sestra m JOIN cekaonica c ON c.idMedSestra = m.idMedSestra)
+                            WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT l.imeLijecnik) FROM lijecnik l JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
                         END AS OdgovornaOsoba,
                         p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,
                         DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,
@@ -612,14 +602,139 @@ class CekaonicaService{
                                                             JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
                         END AS tip FROM pacijent p 
                         JOIN cekaonica c ON p.idPacijent = c.idPacijent 
-                        WHERE c.statusCekaonica = '$status'
-                        ORDER BY c.statusCekaonica,c.datumDodavanja,c.vrijemeDodavanja DESC";
-        
+                        ORDER BY tip ASC,c.statusCekaonica ASC,c.datumDodavanja DESC 
+                        LIMIT 10";
+
                 $result = $conn->query($sql);
-        
+
                 if ($result->num_rows > 0) {
                     while($row = $result->fetch_assoc()) {
                         $response[] = $row;
+                    }
+                }
+            }
+            //Ako je tip prijavljenog korisnika "sestra":
+            else if($tip == "sestra"){
+                //Kreiram upit koji dohvaća sve pacijente iz čekaonice
+                $sql = "SELECT CASE 
+                            WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT m.imeMedSestra) FROM med_sestra m JOIN cekaonica c ON c.idMedSestra = m.idMedSestra)
+                            WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT l.imeLijecnik) FROM lijecnik l JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
+                        END AS OdgovornaOsoba,
+                        p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,
+                        DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,
+                        c.statusCekaonica,
+                        CASE 
+                            WHEN c.idObradaLijecnik IS NULL AND c.idObradaMedSestra IS NULL THEN NULL
+                            WHEN c.idObradaLijecnik IS NULL THEN c.idObradaMedSestra 
+                            WHEN c.idObradaMedSestra IS NULL THEN c.idObradaLijecnik
+                        END AS idObrada,
+                        CASE 	
+                            WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
+                                                            JOIN med_sestra m ON k.idKorisnik = m.idKorisnik 
+                                                            JOIN cekaonica c ON c.idMedSestra = m.idMedSestra) 
+                            WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
+                                                            JOIN lijecnik l ON l.idKorisnik = k.idKorisnik 
+                                                            JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
+                        END AS tip FROM pacijent p 
+                        JOIN cekaonica c ON p.idPacijent = c.idPacijent 
+                        ORDER BY tip DESC,c.statusCekaonica ASC,c.datumDodavanja DESC 
+                        LIMIT 10";
+
+                $result = $conn->query($sql);
+
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
+                }
+            }
+        }
+        //Vraćam odgovor
+        return $response;
+    }
+
+    //Funkcija koja dohvaća pacijente iz čekaonice po njihovom statusu u čekaonici
+    function dohvatiPacijentaPoStatusu($tip,$statusi){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = []; 
+
+        //Ako polje nije prazno
+        if(!empty($statusi)){
+            //Ako je tip prijavljenog korisnika "lijecnik"
+            if($tip == "lijecnik"){
+                foreach($statusi as $status){
+                
+                    $sql = "SELECT CASE 
+                            WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT m.imeMedSestra) FROM med_sestra m JOIN cekaonica c ON c.idMedSestra = m.idMedSestra)
+                            WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT l.imeLijecnik) FROM lijecnik l JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
+                            END AS OdgovornaOsoba,
+                            p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,
+                            DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,
+                            c.statusCekaonica,
+                            CASE 
+                                WHEN c.idObradaLijecnik IS NULL AND c.idObradaMedSestra IS NULL THEN NULL
+                                WHEN c.idObradaLijecnik IS NULL THEN c.idObradaMedSestra 
+                                WHEN c.idObradaMedSestra IS NULL THEN c.idObradaLijecnik
+                            END AS idObrada,
+                            CASE 	
+                                WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
+                                                                JOIN med_sestra m ON k.idKorisnik = m.idKorisnik 
+                                                                JOIN cekaonica c ON c.idMedSestra = m.idMedSestra) 
+                                WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
+                                                                JOIN lijecnik l ON l.idKorisnik = k.idKorisnik 
+                                                                JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
+                            END AS tip FROM pacijent p 
+                            JOIN cekaonica c ON p.idPacijent = c.idPacijent 
+                            WHERE c.statusCekaonica = '$status'
+                            ORDER BY tip ASC,c.statusCekaonica ASC,c.datumDodavanja DESC";
+            
+                    $result = $conn->query($sql);
+            
+                    if ($result->num_rows > 0) {
+                        while($row = $result->fetch_assoc()) {
+                            $response[] = $row;
+                        }
+                    }
+                }
+            }
+            //Ako je tip prijavljenog korisnika "sestra":
+            else if($tip == "sestra"){
+                foreach($statusi as $status){
+                
+                    $sql = "SELECT CASE 
+                            WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT m.imeMedSestra) FROM med_sestra m JOIN cekaonica c ON c.idMedSestra = m.idMedSestra)
+                            WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT l.imeLijecnik) FROM lijecnik l JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
+                            END AS OdgovornaOsoba,
+                            p.idPacijent,p.imePacijent,p.prezPacijent,c.idCekaonica,
+                            DATE_FORMAT(c.datumDodavanja,'%d.%m.%Y') AS DatumDodavanja,c.vrijemeDodavanja,
+                            c.statusCekaonica,
+                            CASE 
+                                WHEN c.idObradaLijecnik IS NULL AND c.idObradaMedSestra IS NULL THEN NULL
+                                WHEN c.idObradaLijecnik IS NULL THEN c.idObradaMedSestra 
+                                WHEN c.idObradaMedSestra IS NULL THEN c.idObradaLijecnik
+                            END AS idObrada,
+                            CASE 	
+                                WHEN c.idLijecnik IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
+                                                                JOIN med_sestra m ON k.idKorisnik = m.idKorisnik 
+                                                                JOIN cekaonica c ON c.idMedSestra = m.idMedSestra) 
+                                WHEN c.idMedSestra IS NULL THEN (SELECT GROUP_CONCAT(DISTINCT k.tip) FROM korisnik k 
+                                                                JOIN lijecnik l ON l.idKorisnik = k.idKorisnik 
+                                                                JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
+                            END AS tip FROM pacijent p 
+                            JOIN cekaonica c ON p.idPacijent = c.idPacijent 
+                            WHERE c.statusCekaonica = '$status'
+                            ORDER BY tip DESC,c.statusCekaonica ASC,c.datumDodavanja DESC";
+            
+                    $result = $conn->query($sql);
+            
+                    if ($result->num_rows > 0) {
+                        while($row = $result->fetch_assoc()) {
+                            $response[] = $row;
+                        }
                     }
                 }
             }

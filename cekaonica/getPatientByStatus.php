@@ -11,21 +11,19 @@ $baza = new Baza();
 //Konekciju na bazu spremam u varijablu
 $conn = $baza->spojiSBazom();
 
-//Ako zahtjev frontenda uključuje metodu POST:
-if($_SERVER["REQUEST_METHOD"] === "POST"){
-    //Dohvaćam podatke koje je poslao frontend
-	$postdata = file_get_contents("php://input");
-	//Ako je frontend vratio nešto
-	if(isset($postdata) && !empty($postdata)){
-		//Pretvaram podatke iz JSON formata u format polja
-		$request = json_decode($postdata);
+//Ako zahtjev frontenda uključuje metodu GET:
+if($_SERVER["REQUEST_METHOD"] === "GET"){
+    //Deklariram prazno polje
+    $response = [];
 
-		//Deklariram prazno polje
-        $response = [];
+    //Ako je frontend poslao tip prijavljenog korisnika i statuse 
+    if(isset($_GET['tip']) && isset($_GET['statusi'])){
+        //Dohvaćam tip prijavljenog korisnika
+        $tip = mysqli_real_escape_string($conn, trim($_GET['tip']));
+        //Dohvaćam polje statusa
+        $statusi = json_decode($_GET['statusi']);
 
-        $statusi = $request->statusi;
-
-        $response = $servis->dohvatiPacijentaPoStatusu($statusi);
+        $response = $servis->dohvatiPacijentaPoStatusu($tip,$statusi);
 
         echo json_encode($response);
     }

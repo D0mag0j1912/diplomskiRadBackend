@@ -7,7 +7,7 @@ date_default_timezone_set('Europe/Zagreb');
 
 class OtvoreniSlucajService{
     //Funkcija koja dohvaća sve otvorene slučajeve za trenutno aktivnog pacijenta
-    function dohvatiSveOtvoreneSlucajeve($id){
+    function dohvatiSveOtvoreneSlucajeve($tip,$id){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -51,33 +51,36 @@ class OtvoreniSlucajService{
         }
         //Ako IMA pronađenih dijagnoza za trenutno aktivnog pacijenta
         else{
-            //Kreiram sql koji će dohvatiti sve potrebne podatke slučaja trenutno aktivnog pacijenta
-            /* $sql = "SELECT DISTINCT(p.mkbSifraPrimarna), p.datumPregled, d.imeDijagnoza AS NazivPrimarna,
-                    IF(a.idLijecnik != NULL,
-                    (SELECT l.imeLijecnik FROM lijecnik l),
-                    (SELECT m.imeMedSestra FROM med_sestra m)) AS OdgovornaOsoba
-                    FROM pregled p 
-                    JOIN ambulanta a ON p.idPregled = a.idPregled 
-                    JOIN dijagnoze d ON p.mkbSifraPrimarna = d.mkbSifra 
-                    WHERE a.idPacijent = '$id';"; */
-            $sql = "(SELECT DISTINCT(p.mkbSifraPrimarna), DATE_FORMAT(p.datumPregled,'%d.%m.%Y') AS Datum, d.imeDijagnoza AS NazivPrimarna,m.imeMedSestra AS OdgovornaOsoba FROM pregled p
-                    JOIN dijagnoze d ON p.mkbSifraPrimarna = d.mkbSifra 
-                    JOIN ambulanta a ON a.idPregled = p.idPregled 
-                    JOIN med_sestra m ON m.idMedSestra = a.idMedSestra
-                    WHERE a.idPacijent = '$id' 
-                    ORDER BY Datum DESC)
-                    UNION 
-                    (SELECT DISTINCT(pb.mkbSifraPrimarna), DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum, d2.imeDijagnoza AS NazivPrimarna,l.imeLijecnik AS OdgovornaOsoba FROM 	                         povijestbolesti pb
-                    JOIN dijagnoze d2 ON pb.mkbSifraPrimarna = d2.mkbSifra 
-                    JOIN ambulanta a ON a.idPovijestBolesti = pb.idPovijestBolesti 
-                    JOIN lijecnik l ON l.idLijecnik = a.idLijecnik
-                    WHERE a.idPacijent = '$id' 
-                    ORDER BY Datum DESC);";
-            $result = $conn->query($sql);
+            //Ako je tip prijavljenog korisnika "lijecnik":
+            if($tip == "lijecnik"){
+                $sql = "SELECT DISTINCT(pb.mkbSifraPrimarna), DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum, d.imeDijagnoza AS NazivPrimarna,l.imeLijecnik AS OdgovornaOsoba FROM 	                         povijestbolesti pb
+                        JOIN dijagnoze d ON pb.mkbSifraPrimarna = d.mkbSifra 
+                        JOIN ambulanta a ON a.idPovijestBolesti = pb.idPovijestBolesti 
+                        JOIN lijecnik l ON l.idLijecnik = a.idLijecnik
+                        WHERE a.idPacijent = '$id' 
+                        ORDER BY Datum DESC;";
+                $result = $conn->query($sql);
 
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    $response[] = $row;
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
+                }
+            }
+            //Ako je tip prijavljenog korisnika "sestra":
+            else if($tip == "sestra"){
+                $sql = "SELECT DISTINCT(p.mkbSifraPrimarna), DATE_FORMAT(p.datumPregled,'%d.%m.%Y') AS Datum, d.imeDijagnoza AS NazivPrimarna,m.imeMedSestra AS OdgovornaOsoba FROM pregled p
+                        JOIN dijagnoze d ON p.mkbSifraPrimarna = d.mkbSifra 
+                        JOIN ambulanta a ON a.idPregled = p.idPregled 
+                        JOIN med_sestra m ON m.idMedSestra = a.idMedSestra
+                        WHERE a.idPacijent = '$id'
+                        ORDER BY Datum DESC";
+                $result = $conn->query($sql);
+
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
                 }
             }
         }
@@ -113,58 +116,56 @@ class OtvoreniSlucajService{
     }
 
     //Funkcija koja dohvaća sve sekundarne dijagnoze ZA NEKU PRIMARNU DIJAGNOZU trenutno aktivnog pacijenta
-    function dohvatiSveSekundarneDijagnoze($vanjsko,$id){
+    function dohvatiSveSekundarneDijagnoze($tip,$vanjsko,$id){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
         //Kreiram prazno polje odgovora
         $response = [];
-        //ZA SVAKU PRIMARNU DIJAGNOZU, PRONAĐI SVE SEKUNDARNE DIJAGNOZE
-        foreach($vanjsko as $unutarnje){
-            foreach($unutarnje as $imeAtributa=>$sifraPrimarna){
-                /* $sql = "SELECT DISTINCT(p.mkbSifraSekundarna), p.mkbSifraPrimarna,
-                        IF(p.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d WHERE d.mkbSifra = p.mkbSifraSekundarna)) AS NazivSekundarna FROM pregled p 
-                        JOIN ambulanta a ON a.idPregled = p.idPregled
-                        WHERE a.idPacijent = '$id' AND p.mkbSifraPrimarna = '$sifraPrimarna'
-                        AND p.mkbSifraPrimarna IN 
-                        (SELECT p2.mkbSifraPrimarna FROM pregled p2 
-                        GROUP BY p2.mkbSifraPrimarna) 
-                        ORDER BY p.datumPregled DESC"; */
-                /* $sql = "(SELECT DISTINCT(p.mkbSifraSekundarna), p.mkbSifraPrimarna,
-                        IF(p.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d WHERE d.mkbSifra = p.mkbSifraSekundarna)) AS NazivSekundarna FROM pregled p 
-                        JOIN ambulanta a ON a.idPregled = p.idPregled
-                        WHERE a.idPacijent = '$id' AND p.mkbSifraPrimarna = '$sifraPrimarna' 
-                        ORDER BY p.datumPregled DESC)
-                        UNION 
-                    (SELECT DISTINCT(pb.mkbSifraSekundarna), pb.mkbSifraPrimarna,
-                        IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d WHERE d.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna FROM 		   							povijestbolesti pb 
-                        JOIN ambulanta a ON a.idPovijestBolesti = pb.idPovijestBolesti
-                        WHERE a.idPacijent = '$id' AND pb.mkbSifraPrimarna = '$sifraPrimarna'
-                        ORDER BY pb.datum DESC)"; */
-                $sql = "(SELECT DISTINCT(p.mkbSifraSekundarna),m.imeMedSestra AS OdgovornaOsoba, p.mkbSifraPrimarna,
-                        IF(p.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d WHERE d.mkbSifra = p.mkbSifraSekundarna)) AS NazivSekundarna,DATE_FORMAT(p.datumPregled,'%d.%m.%Y') AS Datum FROM pregled p 
-                        JOIN ambulanta a ON a.idPregled = p.idPregled
-                        JOIN med_sestra m ON m.idMedSestra = a.idMedSestra
-                        WHERE a.idPacijent = '$id' AND p.mkbSifraPrimarna = '$sifraPrimarna'
-                        ORDER BY p.datumPregled DESC)
-                        UNION 
-                    (SELECT DISTINCT(pb.mkbSifraSekundarna), l.imeLijecnik AS OdgovornaOsoba,pb.mkbSifraPrimarna,
-                        IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d WHERE d.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum FROM povijestbolesti pb 
-                        JOIN ambulanta a ON a.idPovijestBolesti = pb.idPovijestBolesti
-                        JOIN lijecnik l ON l.idLijecnik = a.idLijecnik
-                        WHERE a.idPacijent = '$id' AND pb.mkbSifraPrimarna = '$sifraPrimarna'
-                        ORDER BY pb.datum DESC)";
-                $result = $conn->query($sql);
+        //Ako je tip prijavljenog korisnika "lijecnik":
+        if($tip == "lijecnik"){
+            //ZA SVAKU PRIMARNU DIJAGNOZU, PRONAĐI SVE SEKUNDARNE DIJAGNOZE
+            foreach($vanjsko as $unutarnje){
+                foreach($unutarnje as $imeAtributa=>$sifraPrimarna){
+                    $sql = "SELECT DISTINCT(pb.mkbSifraSekundarna),l.imeLijecnik AS OdgovornaOsoba, pb.mkbSifraPrimarna,
+                            IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d WHERE d.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum FROM povijestbolesti pb 
+                            JOIN ambulanta a ON a.idPovijestBolesti = pb.idPovijestBolesti
+                            JOIN lijecnik l ON l.idLijecnik = a.idLijecnik
+                            WHERE a.idPacijent = '$id' AND pb.mkbSifraPrimarna = '$sifraPrimarna'
+                            ORDER BY pb.datum DESC";
+                    $result = $conn->query($sql);
 
-                //Ako ima pronađenih sekundarnih dijagnoza za ovu primarnu dijagnozu
-                if ($result->num_rows > 0) {
-                    while($row = $result->fetch_assoc()) {
-                        $response[] = $row;
+                    //Ako ima pronađenih sekundarnih dijagnoza za ovu primarnu dijagnozu
+                    if ($result->num_rows > 0) {
+                        while($row = $result->fetch_assoc()) {
+                            $response[] = $row;
+                        }
                     }
                 }
             }
         }
-         
+        //Ako je tip prijavljenog korisnika "sestra":
+        else if($tip == "sestra"){
+            //ZA SVAKU PRIMARNU DIJAGNOZU, PRONAĐI SVE SEKUNDARNE DIJAGNOZE
+            foreach($vanjsko as $unutarnje){
+                foreach($unutarnje as $imeAtributa=>$sifraPrimarna){
+                    $sql = "SELECT DISTINCT(p.mkbSifraSekundarna),m.imeMedSestra AS OdgovornaOsoba, p.mkbSifraPrimarna,
+                            IF(p.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d WHERE d.mkbSifra = p.mkbSifraSekundarna)) AS NazivSekundarna,DATE_FORMAT(p.datumPregled,'%d.%m.%Y') AS Datum FROM pregled p 
+                            JOIN ambulanta a ON a.idPregled = p.idPregled
+                            JOIN med_sestra m ON m.idMedSestra = a.idMedSestra
+                            WHERE a.idPacijent = '$id' AND p.mkbSifraPrimarna = '$sifraPrimarna'
+                            ORDER BY p.datumPregled DESC";
+                    $result = $conn->query($sql);
+
+                    //Ako ima pronađenih sekundarnih dijagnoza za ovu primarnu dijagnozu
+                    if ($result->num_rows > 0) {
+                        while($row = $result->fetch_assoc()) {
+                            $response[] = $row;
+                        }
+                    }
+                }
+            }
+        }
         return $response;
     }
 
@@ -176,14 +177,6 @@ class OtvoreniSlucajService{
         //Kreiram prazno polje odgovora
         $response = [];
 
-        /* $sql = "SELECT DISTINCT(d.imeDijagnoza) AS NazivPrimarna, 
-                IF(p.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d WHERE d.mkbSifra = p.mkbSifraSekundarna)) AS NazivSekundarna FROM dijagnoze d 
-                JOIN pregled p ON d.mkbSifra = p.mkbSifraPrimarna
-                JOIN ambulanta a ON p.idPregled = a.idPregled
-                WHERE a.idPacijent = '$idPacijent' AND p.mkbSifraPrimarna = '$mkbSifra'
-                AND p.mkbSifraPrimarna IN 
-                (SELECT p2.mkbSifraPrimarna FROM pregled p2 
-                GROUP BY p2.mkbSifraPrimarna);"; */
         $sql = "SELECT DISTINCT(d.imeDijagnoza) AS NazivPrimarna, 
                 IF(p.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d WHERE d.mkbSifra = p.mkbSifraSekundarna)) AS NazivSekundarna FROM dijagnoze d 
                 JOIN pregled p ON d.mkbSifra = p.mkbSifraPrimarna
@@ -211,46 +204,63 @@ class OtvoreniSlucajService{
     }
 
     //Funkcija koja dohvaća DATUM PREGLEDA, ODGOVORNU OSOBU, ŠIFRU PRIMARNE DIJAGNOZE I NAZIV PRIMARNE DIJAGNOZE NA OSNOVU PRETRAGE
-    function dohvatiOtvoreniSlucajPretraga($pretraga,$id){
+    function dohvatiOtvoreniSlucajPretraga($tip,$pretraga,$id){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
         //Kreiram prazno polje odgovora
         $response = [];
+        //Ako je tip prijavljenog korisnika "lijecnik":
+        if($tip == "lijecnik"){
+            $sql = "SELECT DISTINCT(pb.mkbSifraPrimarna), DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum, d.imeDijagnoza AS NazivPrimarna,
+                    l.imeLijecnik AS OdgovornaOsoba FROM povijestbolesti pb
+                    JOIN dijagnoze d ON pb.mkbSifraPrimarna = d.mkbSifra
+                    JOIN ambulanta a ON a.idPovijestBolesti = pb.idPovijestBolesti 
+                    JOIN lijecnik l ON l.idLijecnik = a.idLijecnik
+                    WHERE a.idPacijent = '$id' AND (UPPER(d.imeDijagnoza) LIKE UPPER('%{$pretraga}%')  
+                                                OR UPPER(l.imeLijecnik) LIKE UPPER('%{$pretraga}%') OR UPPER(pb.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
+                                                OR UPPER(pb.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') OR UPPER(pb.datum) LIKE UPPER('%{$pretraga}%'))
+                    GROUP BY pb.mkbSifraPrimarna
+                    ORDER BY pb.datum DESC";
+            $result = $conn->query($sql);
 
-        $sql = "(SELECT DISTINCT(p.mkbSifraPrimarna), p.datumPregled, d.imeDijagnoza AS NazivPrimarna,d2.imeDijagnoza AS NazivSekundarna,m.imeMedSestra AS OdgovornaOsoba FROM pregled p
-                JOIN dijagnoze d ON p.mkbSifraPrimarna = d.mkbSifra 
-                JOIN dijagnoze d2 ON p.mkbSifraSekundarna = d2.mkbSifra
-                JOIN ambulanta a ON a.idPregled = p.idPregled 
-                JOIN med_sestra m ON m.idMedSestra = a.idMedSestra
-                WHERE a.idPacijent = '$id' AND (UPPER(d.imeDijagnoza) LIKE UPPER('%{$pretraga}%') OR UPPER(d2.imeDijagnoza) LIKE UPPER('%{$pretraga}%') 
-                                                OR UPPER(m.imeMedSestra) LIKE UPPER('%{$pretraga}%') OR UPPER(p.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
-                                                OR UPPER(p.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') OR UPPER(p.datumPregled) LIKE UPPER('%{$pretraga}%'))
-                GROUP BY p.mkbSifraPrimarna 
-                ORDER BY p.datumPregled DESC)
-                UNION 
-                (SELECT DISTINCT(pb.mkbSifraPrimarna), pb.datum, d3.imeDijagnoza AS NazivPrimarna,d4.imeDijagnoza,l.imeLijecnik AS OdgovornaOsoba FROM povijestbolesti pb
-                JOIN dijagnoze d3 ON pb.mkbSifraPrimarna = d3.mkbSifra 
-                JOIN dijagnoze d4 ON pb.mkbSifraSekundarna = d4.mkbSifra
-                JOIN ambulanta a ON a.idPovijestBolesti = pb.idPovijestBolesti 
-                JOIN lijecnik l ON l.idLijecnik = a.idLijecnik
-                WHERE a.idPacijent = '$id' AND (UPPER(d3.imeDijagnoza) LIKE UPPER('%{$pretraga}%') OR UPPER(d4.imeDijagnoza) LIKE UPPER('%{$pretraga}%') 
-                                            OR UPPER(l.imeLijecnik) LIKE UPPER('%{$pretraga}%') OR UPPER(pb.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
-                                            OR UPPER(pb.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') OR UPPER(pb.datum) LIKE UPPER('%{$pretraga}%'))
-                GROUP BY pb.mkbSifraPrimarna
-                ORDER BY pb.datum DESC)";
-        $result = $conn->query($sql);
-
-        //Ako ima pronađenih rezultata za navedenu pretragu
-        if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                $response[] = $row;
+            //Ako ima pronađenih rezultata za navedenu pretragu
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $response[] = $row;
+                }
+            }
+            //Ako nema pronađenih rezultata za ovu pretragu
+            else{
+                $response["success"] = "false";
+                $response["message"] = "Nema pronađenih rezultata za ključnu riječ: ".$pretraga;
             }
         }
-        //Ako nema pronađenih rezultata za ovu pretragu
-        else{
-            $response["success"] = "false";
-            $response["message"] = "Nema pronađenih rezultata za ključnu riječ: ".$pretraga;
+        //Ako je tip prijavljenog korisnika "sestra":
+        else if($tip == "sestra"){
+            $sql = "SELECT DISTINCT(p.mkbSifraPrimarna), DATE_FORMAT(p.datumPregled,'%d.%m.%Y') AS Datum, d.imeDijagnoza AS NazivPrimarna,
+                    m.imeMedSestra AS OdgovornaOsoba FROM pregled p
+                    JOIN dijagnoze d ON p.mkbSifraPrimarna = d.mkbSifra
+                    JOIN ambulanta a ON a.idPregled = p.idPregled 
+                    JOIN med_sestra m ON m.idMedSestra = a.idMedSestra
+                    WHERE a.idPacijent = '$id' AND (UPPER(d.imeDijagnoza) LIKE UPPER('%{$pretraga}%')  
+                                                    OR UPPER(m.imeMedSestra) LIKE UPPER('%{$pretraga}%') OR UPPER(p.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
+                                                    OR UPPER(p.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') OR UPPER(p.datumPregled) LIKE UPPER('%{$pretraga}%'))
+                    GROUP BY p.mkbSifraPrimarna 
+                    ORDER BY p.datumPregled DESC";
+            $result = $conn->query($sql);
+
+            //Ako ima pronađenih rezultata za navedenu pretragu
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $response[] = $row;
+                }
+            }
+            //Ako nema pronađenih rezultata za ovu pretragu
+            else{
+                $response["success"] = "false";
+                $response["message"] = "Nema pronađenih rezultata za ključnu riječ: ".$pretraga;
+            }
         }
         return $response;
     }   

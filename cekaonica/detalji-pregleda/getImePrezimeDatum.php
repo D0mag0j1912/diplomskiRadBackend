@@ -20,8 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if(isset($_GET['idObrada']) && isset($_GET['tip'])){
         //Dohvati ID obrade
         $idObrada = (int)$_GET['idObrada'];
-        //Dohvaćam tip korisnika
-        $tip = $_GET['tip'];
+        //Dohvaćam tip prijavljenog korisnika
+        $tip = mysqli_real_escape_string($conn, trim($_GET['tip']));
         //Punim polje sa odgovorom funkcije
         $response = $servis->dohvatiImePrezimeDatum($tip,$idObrada);
         echo json_encode($response);

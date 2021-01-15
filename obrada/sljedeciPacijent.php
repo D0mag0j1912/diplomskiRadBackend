@@ -17,8 +17,8 @@ if($_SERVER["REQUEST_METHOD"] === "GET"){
     $response = [];
     //Ako je frontend poslao parametar "tip" korisnika
     if(isset($_GET['tip'])){
-        //Dohvaćam tip korisnika
-        $tip = $_GET['tip'];
+        //Dohvaćam tip prijavljenog korisnika
+        $tip = mysqli_real_escape_string($conn, trim($_GET['tip']));
         //Punim polje sa vrijednostima polja iz funkcije
         $response = $servis->dohvatiSljedeciPacijent($tip);
 
