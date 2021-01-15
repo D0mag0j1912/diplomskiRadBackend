@@ -14,45 +14,29 @@ class OtvoreniSlucajService{
         //Kreiram prazno polje odgovora
         $response = [];
 
-        //Kreiram upit koji će provjeriti postoje li primarne dijagnoze (jer ako nema primarne, nema ni sekundarnih) za trenutno aktivnog pacijenta ZA TABLICU POVIJEST BOLESTI
-        $sqlCountDijagnoza = "SELECT COUNT(DISTINCT(pb.mkbSifraPrimarna)) AS BrojDijagnoza FROM  povijestbolesti pb 
-                            JOIN ambulanta a ON a.idPovijestBolesti = pb.idPovijestBolesti 
-                            WHERE a.idPacijent = '$id';";
-        //Rezultat upita spremam u varijablu $resultCountDijagnoza
-        $resultCountDijagnoza = mysqli_query($conn,$sqlCountDijagnoza);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultCountDijagnoza) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowCountDijagnoza = mysqli_fetch_assoc($resultCountDijagnoza)){
-                //Vrijednost rezultata spremam u varijablu $BrojDijagnoza
-                $brojDijagnozaPovijestBolesti = $rowCountDijagnoza['BrojDijagnoza'];
-            }
-        }
-        //Kreiram upit koji će provjeriti postoje li primarne dijagnoze (jer ako nema primarne, nema ni sekundarnih) za trenutno aktivnog pacijenta ZA TABLICU OPĆIH PODATAKA
-        $sqlCountDijagnozaOpci = "SELECT COUNT(DISTINCT(p.mkbSifraPrimarna)) AS BrojDijagnoza FROM  pregled p 
-                                JOIN ambulanta a ON a.idPregled = p.idPregled 
+        //Ako je tip prijavljenog korisnika "lijecnik":
+        if($tip == "lijecnik"){
+            //Kreiram upit koji će provjeriti postoje li primarne dijagnoze (jer ako nema primarne, nema ni sekundarnih) za trenutno aktivnog pacijenta ZA TABLICU POVIJEST BOLESTI
+            $sqlCountDijagnoza = "SELECT COUNT(DISTINCT(pb.mkbSifraPrimarna)) AS BrojDijagnoza FROM  povijestbolesti pb 
+                                JOIN ambulanta a ON a.idPovijestBolesti = pb.idPovijestBolesti 
                                 WHERE a.idPacijent = '$id';";
-        //Rezultat upita spremam u varijablu $resultCountDijagnozaOpci
-        $resultCountDijagnozaOpci = mysqli_query($conn,$sqlCountDijagnozaOpci);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultCountDijagnozaOpci) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowCountDijagnozaOpci = mysqli_fetch_assoc($resultCountDijagnozaOpci)){
-                //Vrijednost rezultata spremam u varijablu $BrojDijagnoza
-                $brojDijagnozaOpci = $rowCountDijagnozaOpci['BrojDijagnoza'];
+            //Rezultat upita spremam u varijablu $resultCountDijagnoza
+            $resultCountDijagnoza = mysqli_query($conn,$sqlCountDijagnoza);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountDijagnoza) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountDijagnoza = mysqli_fetch_assoc($resultCountDijagnoza)){
+                    //Vrijednost rezultata spremam u varijablu $BrojDijagnoza
+                    $brojDijagnozaPovijestBolesti = $rowCountDijagnoza['BrojDijagnoza'];
+                }
             }
-        }
-        //Zbrajam primarne dijagnoze povijesti bolesti i primarne dijagnoze općih podataka pregleda
-        $brojDijagnoza = $brojDijagnozaPovijestBolesti + $brojDijagnozaOpci;
-        //Ako NEMA pronađenih dijagnoza za trenutno aktivnog pacijenta
-        if($brojDijagnoza == 0){
-            $response["success"] = "false";
-            $response["message"] = "Nema aktivnih dijagnoza za pacijenta!";
-        }
-        //Ako IMA pronađenih dijagnoza za trenutno aktivnog pacijenta
-        else{
-            //Ako je tip prijavljenog korisnika "lijecnik":
-            if($tip == "lijecnik"){
+            //Ako nema primarnih dijagnoza
+            if($brojDijagnozaPovijestBolesti == 0){
+                $response["success"] = "false";
+                $response["message"] = "Nema aktivnih dijagnoza za pacijenta!";
+            }
+            //Ako ima primarnih dijagnoza za pacijenta
+            else{
                 $sql = "SELECT DISTINCT(pb.mkbSifraPrimarna), DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum, d.imeDijagnoza AS NazivPrimarna,l.imeLijecnik AS OdgovornaOsoba FROM 	                         povijestbolesti pb
                         JOIN dijagnoze d ON pb.mkbSifraPrimarna = d.mkbSifra 
                         JOIN ambulanta a ON a.idPovijestBolesti = pb.idPovijestBolesti 
@@ -67,8 +51,30 @@ class OtvoreniSlucajService{
                     }
                 }
             }
-            //Ako je tip prijavljenog korisnika "sestra":
-            else if($tip == "sestra"){
+        }
+        //Ako je tip prijavljenog korisnika "sestra":
+        else if($tip == "sestra"){
+            //Kreiram upit koji će provjeriti postoje li primarne dijagnoze (jer ako nema primarne, nema ni sekundarnih) za trenutno aktivnog pacijenta ZA TABLICU OPĆIH PODATAKA
+            $sqlCountDijagnozaOpci = "SELECT COUNT(DISTINCT(p.mkbSifraPrimarna)) AS BrojDijagnoza FROM  pregled p 
+                                    JOIN ambulanta a ON a.idPregled = p.idPregled 
+                                    WHERE a.idPacijent = '$id';";
+            //Rezultat upita spremam u varijablu $resultCountDijagnozaOpci
+            $resultCountDijagnozaOpci = mysqli_query($conn,$sqlCountDijagnozaOpci);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountDijagnozaOpci) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountDijagnozaOpci = mysqli_fetch_assoc($resultCountDijagnozaOpci)){
+                    //Vrijednost rezultata spremam u varijablu $BrojDijagnoza
+                    $brojDijagnozaOpci = $rowCountDijagnozaOpci['BrojDijagnoza'];
+                }
+            }
+            //Ako nema primarnih dijagnoza
+            if($brojDijagnozaOpci == 0){
+                $response["success"] = "false";
+                $response["message"] = "Nema aktivnih dijagnoza za pacijenta!";
+            }
+            //Ako ima primarnih dijagnoza:
+            else{
                 $sql = "SELECT DISTINCT(p.mkbSifraPrimarna), DATE_FORMAT(p.datumPregled,'%d.%m.%Y') AS Datum, d.imeDijagnoza AS NazivPrimarna,m.imeMedSestra AS OdgovornaOsoba FROM pregled p
                         JOIN dijagnoze d ON p.mkbSifraPrimarna = d.mkbSifra 
                         JOIN ambulanta a ON a.idPregled = p.idPregled 
