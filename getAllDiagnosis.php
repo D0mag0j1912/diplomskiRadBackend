@@ -3,7 +3,7 @@
 require_once 'C:\wamp64\www\angularPHP\includes\autoloader.inc.php';
 
 //Dohvaćam liječnički servis
-$servis = new PacijentService();
+$servis = new ImportService();
 
 //Kreiram objekt tipa "Baza"
 $baza = new Baza();
@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     //Kreiram prazno polje
     $response = [];
 
-    $response = $servis->dohvatiSveDijagnoze();
+    $response = $servis->dohvatiDijagnoze();
 
     echo json_encode($response);
 }

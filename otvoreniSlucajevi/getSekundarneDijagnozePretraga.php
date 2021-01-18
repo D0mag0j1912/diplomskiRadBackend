@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         //Uzmi tu vrijednosti ID-a i pretvori je u INTEGER
         $id = (int)$_GET['id'];
         //Uzmi tu vrijednost pretrage
-        $pretraga = $_GET["pretraga"];
+        $pretraga = mysqli_real_escape_string($conn, trim($_GET['pretraga']));
         //Punim polje sa vrijednostima polja iz funkcije
         $response = $servis->dohvatiSveSekundarneDijagnozePretraga($servis->svePrimarneDijagnoze($id),$id,$pretraga);
         //Vraćam frontendu rezultat

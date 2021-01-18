@@ -15,12 +15,13 @@ class ReceptService{
 
         //Kreiram prazno polje odgovora
         $response = [];
-
+ 
         $sql = "SELECT p.imePacijent,p.prezPacijent, 
                 DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS Datum,
                 p.mboPacijent FROM pacijent p 
                 WHERE UPPER(p.imePacijent) LIKE UPPER('%{$pretraga}%') 
-                OR UPPER(p.prezPacijent) LIKE UPPER('%{$pretraga}%')
+                OR UPPER(p.prezPacijent) LIKE UPPER('%{$pretraga}%') OR UPPER(p.datRodPacijent) LIKE UPPER('%{$pretraga}%') 
+                OR UPPER(p.mboPacijent) LIKE UPPER('%{$pretraga}%')
                 ORDER BY p.prezPacijent ASC";
         $result = $conn->query($sql);
 
