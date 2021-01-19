@@ -7,6 +7,92 @@ date_default_timezone_set('Europe/Zagreb');
 
 class ImportService{
 
+    //Funkcija koja dohvaća sve magistralne pripravke sa dopunske liste
+    function dohvatiMagistralnePripravkeDopunskaLista(){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = []; 
+        $sql = "SELECT * FROM dopunskaListaMagistralnihPripravaka";
+
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+        //Vraćam odgovor baze
+        return $response;
+    }
+
+    //Funkcija koja dohvaća sve magistralne pripravke sa osnovne liste
+    function dohvatiMagistralnePripravkeOsnovnaLista(){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = []; 
+        $sql = "SELECT * FROM osnovnaListaMagistralnihPripravaka";
+
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+        //Vraćam odgovor baze
+        return $response;
+    }
+
+    //Funkcija koja dohvaća sve lijekove sa dopunske liste
+    function dohvatiLijekoviDopunskaLista(){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = []; 
+        $sql = "SELECT * FROM dopunskaListaLijekova";
+
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+        //Vraćam odgovor baze
+        return $response;
+    }
+
+    //Funkcija koja dohvaća sve lijekove sa osnovne liste
+    function dohvatiLijekoviOsnovnaLista(){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = []; 
+        $sql = "SELECT * FROM osnovnaListaLijekova 
+                WHERE zasticenoImeLijek IS NOT NULL
+                LIMIT 200";
+
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+        //Vraćam odgovor baze
+        return $response;
+    }
+
     //Funkcija koja dohvaća sve područne urede 
     function dohvatiPodrucneUrede(){
         //Dohvaćam bazu 
