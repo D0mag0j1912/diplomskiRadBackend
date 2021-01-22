@@ -7,6 +7,145 @@ date_default_timezone_set('Europe/Zagreb');
 
 class ReceptService{
 
+    //Funkcija koja dohvaća cijene za LIJEK sa OSNOVNE LISTE
+    function dohvatiCijenaLijekOL($lijek,$ojp){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = [];
+
+        $sql = "SELECT d.cijenaLijek,d.cijenaZavod,d.doplataLijek FROM dopunskalistalijekova d 
+                WHERE d.zasticenoImeLijek = '$lijek' 
+                AND d.oblikJacinaPakiranjeLijek = '$ojp'";
+        $result = $conn->query($sql);
+
+        //Ako ima pronađenih rezultata za navedenu pretragu
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+        return $response;
+    }
+
+    //Funkcija koja dohvaća MAGISTRALNE PRIPRAVKE sa DOPUNSKE LISTE na osnovu liječničke pretrage
+    function dohvatiMagPripravciDopunskaListaPretraga($pretraga){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = [];
+
+        $sql = "SELECT m.nazivMagPripravak FROM dopunskalistamagistralnihpripravaka m  
+                WHERE UPPER(m.nazivMagPripravak) LIKE UPPER('%{$pretraga}%') 
+                LIMIT 8";
+        $result = $conn->query($sql);
+
+        //Ako ima pronađenih rezultata za navedenu pretragu
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+        //Ako nema pronađenih rezultata za ovu pretragu
+        else{
+            $response["success"] = "false";
+            $response["message"] = "Nema pronađenih rezultata za ključnu riječ: ".$pretraga;
+        } 
+        //Vraćam odgovor baze
+        return $response;
+    }
+
+    //Funkcija koja dohvaća MAGISTRALNE PRIPRAVKE sa OSNOVNE LISTE na osnovu liječničke pretrage
+    function dohvatiMagPripravciOsnovnaListaPretraga($pretraga){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = [];
+
+        $sql = "SELECT m.nazivMagPripravak FROM osnovnalistamagistralnihpripravaka m  
+                WHERE UPPER(m.nazivMagPripravak) LIKE UPPER('%{$pretraga}%') 
+                LIMIT 8";
+        $result = $conn->query($sql);
+
+        //Ako ima pronađenih rezultata za navedenu pretragu
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+        //Ako nema pronađenih rezultata za ovu pretragu
+        else{
+            $response["success"] = "false";
+            $response["message"] = "Nema pronađenih rezultata za ključnu riječ: ".$pretraga;
+        } 
+        //Vraćam odgovor baze
+        return $response;
+    }
+
+    //Funkcija koja dohvaća lijekove sa dopunske liste na osnovu liječničke pretrage
+    function dohvatiLijekoviDopunskaListaPretraga($pretraga){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = [];
+
+        $sql = "SELECT CONCAT(l.zasticenoImeLijek,' ',l.oblikJacinaPakiranjeLijek) AS zasticenoImeLijek FROM dopunskalistalijekova l 
+                WHERE UPPER(l.zasticenoImeLijek) LIKE UPPER('%{$pretraga}%') 
+                LIMIT 8";
+        $result = $conn->query($sql);
+
+        //Ako ima pronađenih rezultata za navedenu pretragu
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+        //Ako nema pronađenih rezultata za ovu pretragu
+        else{
+            $response["success"] = "false";
+            $response["message"] = "Nema pronađenih rezultata za ključnu riječ: ".$pretraga;
+        } 
+        //Vraćam odgovor baze
+        return $response;
+    }
+
+    //Funkcija koja dohvaća lijekove sa osnovne liste na osnovu liječničke pretrage
+    function dohvatiLijekoviOsnovnaListaPretraga($pretraga){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = [];
+
+        $sql = "SELECT CONCAT(l.zasticenoImeLijek,' ',l.oblikJacinaPakiranjeLijek) AS zasticenoImeLijek FROM osnovnalistalijekova l 
+                WHERE UPPER(l.zasticenoImeLijek) LIKE UPPER('%{$pretraga}%') 
+                LIMIT 8";
+        $result = $conn->query($sql);
+
+        //Ako ima pronađenih rezultata za navedenu pretragu
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+        //Ako nema pronađenih rezultata za ovu pretragu
+        else{
+            $response["success"] = "false";
+            $response["message"] = "Nema pronađenih rezultata za ključnu riječ: ".$pretraga;
+        } 
+        //Vraćam odgovor baze
+        return $response;
+    }
+
     //Funkcija koja dohvaća pacijente na osnovu liječničke pretrage
     function dohvatiPacijentiPretraga($pretraga){
         //Dohvaćam bazu 

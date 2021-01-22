@@ -39,53 +39,11 @@ else if( (int)(date('i',strtotime($vrijeme))) >= 45 && (int)(date('i',strtotime(
 
 echo $vrijeme; */
 
-//Funkcija koja dohvaća sve registrirane pacijente
-function dohvatiSvePacijente(){
-    //Dohvaćam bazu 
-    $baza = new Baza();
-    $conn = $baza->spojiSBazom();
-
-    //Kreiram prazno polje odgovora
-    $response = [];
-
-    //Kreiram sql upit koji će provjeriti koliko ima pacijenata u bazi podataka
-    $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM pacijent";
-    //Rezultat upita spremam u varijablu $resultCountPacijent
-    $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
-    //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-    if(mysqli_num_rows($resultCountPacijent) > 0){
-        //Idem redak po redak rezultata upita 
-        while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
-            //Vrijednost rezultata spremam u varijablu $brojPacijenata
-            $brojPacijenata = $rowCountPacijent['BrojPacijent'];
-        }
-    }
-    //Ako nema pronađenih pacijenata
-    if($brojPacijenata == 0){
-        $response["success"] = "false";
-        $response["message"] = "Nema pronađenih pacijenata!";
-    }
-    //Ako ima pronađenih pacijenata
-    else{
-        //Kreiram upit koji dohvaća podatke pacijenta za navedeni ID
-        $sql = "SELECT * FROM pacijent 
-                ORDER BY pacijent.idPacijent";
-        
-        $result = $conn->query($sql);
-
-        if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                $response[] = $row;
-            }
-        }
-    }
-    //Vraćam odgovor baze
-    return $response;   
-}
-
-foreach(dohvatiSvePacijente() as $vanjsko){
-    foreach($vanjsko as $pacijent){
-        echo $pacijent."\n";
-    }
-}
+//Splitam string da mu uzmem ime
+$lijek = "Daktarin gel oral. 2%, 1x40 g";
+$polje = explode(" ",$lijek,2);
+$imeLijek = $polje[0];
+$doza = $polje[1];
+echo $imeLijek;
+echo $doza;
 ?>

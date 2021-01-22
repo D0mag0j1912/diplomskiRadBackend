@@ -79,8 +79,7 @@ class ImportService{
         //Kreiram prazno polje odgovora
         $response = []; 
         $sql = "SELECT * FROM osnovnaListaLijekova 
-                WHERE zasticenoImeLijek IS NOT NULL
-                LIMIT 200";
+                WHERE zasticenoImeLijek IS NOT NULL";
 
         $result = $conn->query($sql);
 
