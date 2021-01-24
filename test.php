@@ -39,11 +39,64 @@ else if( (int)(date('i',strtotime($vrijeme))) >= 45 && (int)(date('i',strtotime(
 
 echo $vrijeme; */
 
-//Splitam string da mu uzmem ime
-$lijek = "Daktarin gel oral. 2%, 1x40 g";
+$cijeliLijek = "Xultophy%20otop.%20za%20inj.%2C%20brizg.%20napunj.%203x3%20mL%20(100%20U%2B3%2C6%20mg%2FmL)";
+echo urldecode($cijeliLijek);
+/* $pr = "otop. za inj., brizg. napunj. 3x3 mL (100 U+3,6 mg/mL)";
+//Dohvaćam vrijednost izabranog lijeka
+$lijek = mysqli_real_escape_string($conn, trim($cijeliLijek));
+//Splitam string da mu uzmem ime i oblik-jačinu-pakiranje
 $polje = explode(" ",$lijek,2);
+//Dohvaćam ime lijeka
 $imeLijek = $polje[0];
-$doza = $polje[1];
-echo $imeLijek;
-echo $doza;
+//Dohvaćam oblik,jačinu i pakiranje lijeka
+$ojpLijek = $polje[1]; */
+/* //Funkcija koja dohvaća cijene za LIJEK sa DOPUNSKE LISTE
+function dohvatiCijenaLijekDL($lijek,$ojp,$cijeliLijek){
+    //Dohvaćam bazu 
+    $baza = new Baza();
+    $conn = $baza->spojiSBazom();
+
+    //Kreiram prazno polje odgovora
+    $response = [];
+
+    $sql = "SELECT d.cijenaLijek,d.cijenaZavod,d.doplataLijek FROM dopunskalistalijekova d 
+            WHERE d.zasticenoImeLijek = '$lijek' 
+            AND d.oblikJacinaPakiranjeLijek = '$ojp'";
+    $result = $conn->query($sql);
+
+    //Ako ima pronađenih rezultata za navedenu pretragu
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+            $response[] = $row;
+        }
+    }
+    //Ako nema pronađenih rezultata za navedenu pretragu, splittam ga na drugoj praznini
+    else{
+        //Razdvajam string na drugoj praznini
+        $polje = preg_split ('/ /', $cijeliLijek, 3);
+        //Dohvaćam oblik, jačinu i pakiranje lijeka
+        $ojpLijek=array_pop($polje);
+        //Dohvaćam naziv lijeka
+        $nazivLijek=implode(" ", $polje);
+        //Kreiram upit za dohvaćanje cijena
+        $sqlDrugiSpace = "SELECT d.cijenaLijek,d.cijenaZavod,d.doplataLijek FROM dopunskalistalijekova d 
+            WHERE d.zasticenoImeLijek = '$nazivLijek'
+            AND d.oblikJacinaPakiranjeLijek = '$ojpLijek'";
+        $resultDrugiSpace = $conn->query($sqlDrugiSpace);
+
+        //Ako ima pronađenih rezultata za navedenu pretragu
+        if ($resultDrugiSpace->num_rows > 0) {
+            while($row = $resultDrugiSpace->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+    }
+    return $response;
+}
+
+foreach(dohvatiCijenaLijekDL($imeLijek,$ojpLijek,$lijek) as $vanjski){
+    foreach($vanjski as $element){
+        echo $element;
+    }
+}   */
 ?>

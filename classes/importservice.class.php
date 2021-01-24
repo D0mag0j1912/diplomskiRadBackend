@@ -15,7 +15,7 @@ class ImportService{
 
         //Kreiram prazno polje odgovora
         $response = []; 
-        $sql = "SELECT * FROM dopunskaListaMagistralnihPripravaka";
+        $sql = "SELECT DISTINCT(nazivMagPripravak) AS nazivMagPripravak FROM dopunskaListaMagistralnihPripravaka";
 
         $result = $conn->query($sql);
 
