@@ -7,27 +7,43 @@ date_default_timezone_set('Europe/Zagreb');
 
 class ReceptService{
 
-    //Funkcija koja dohvaća inforaciju je li izabrani LIJEK ima oznaku RS
-    function dohvatiOznakaLijek($imeLijek,$ojpLijek,$lijek){
+    //Funkcija koja računa do kada vrijedi dostatnost nekog proizvoda
+    function dohvatiDatumDostatnost($dostatnost){
+        //Trenutni datum
+        $datum = date('d.m.Y');
+        $vrijediDo = date('d.m.Y', strtotime($datum . ' +'.$dostatnost.' day'));
+        return $vrijediDo;
+    }
+
+    //Funkcija koja dohvaća informaciju ima li izabrani MAGISTRALNI PRIPRAVAK oznaku "RS":
+    function dohvatiOznakaMagPripravak($magPripravak){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
-        //Definiram oznaku koju tražim
-        $oznaka = "RS";
         //Kreiram prazno polje odgovora
         $response = [];
-    
-        $sql = "SELECT * FROM osnovnalistalijekova o 
-                WHERE o.zasticenoImeLijek = '$imeLijek' 
-                AND o.oblikJacinaPakiranjeLijek = '$ojpLijek'";
-        $result = $conn->query($sql);
-    
-        //Ako ima pronađenih rezultata za navedenu pretragu
-        if ($result->num_rows > 0) {
-            //Kreiram upit koji će provjeriti je li izabrani LIJEK ima oznaku RS
-            $sqlCount = "SELECT COUNT(*) AS BrojRS FROM osnovnalistalijekova 
-                    WHERE zasticenoImeLijek = '$imeLijek' AND oblikJacinaPakiranje = '$ojpLijek' 
-                    AND oznakaOsnovniLijek = '$oznaka'";
+        //Definiram oznaku
+        $oznaka = "RS";
+
+        //Provjeravam postoji li izabrani lijek u OSNOVNOJ LISTI magistralnih pripravaka
+        $sqlCountOsnovnaLista = "SELECT COUNT(*) AS BrojOsnovnaLista FROM osnovnalistamagistralnihpripravaka 
+                                WHERE nazivMagPripravak = '$magPripravak'";
+        //Rezultat upita spremam u varijablu $resultCountOsnovnaLista
+        $resultCountOsnovnaLista = mysqli_query($conn,$sqlCountOsnovnaLista);
+        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+        if(mysqli_num_rows($resultCountOsnovnaLista) > 0){
+            //Idem redak po redak rezultata upita 
+            while($rowCountOsnovnaLista = mysqli_fetch_assoc($resultCountOsnovnaLista)){
+                //Vrijednost rezultata spremam u varijablu $brojOsnovnaLista
+                $brojOsnovnaLista= $rowCountOsnovnaLista['BrojOsnovnaLista'];
+            }
+        } 
+        //Ako JE PRONAĐEN izabrani mag. pripravak u OSNOVNOJ LISTI
+        if($brojOsnovnaLista > 0){
+            //Kreiram upit koji će provjeriti je li izabrani MAGISTRALNI PRIPRAVAK ima oznaku RS
+            $sqlCount = "SELECT COUNT(*) AS BrojRS FROM osnovnalistamagistralnihpripravaka
+                        WHERE nazivMagPripravak = '$magPripravak' 
+                        AND oznakaMagPripravak = '$oznaka'";
             //Rezultat upita spremam u varijablu $resultCount
             $resultCount = mysqli_query($conn,$sqlCount);
             //Ako rezultat upita ima podataka u njemu (znači nije prazan)
@@ -38,30 +54,86 @@ class ReceptService{
                     $brojRS = $rowCount['BrojRS'];
                 }
             }
-            //Ako lijek ima oznaku RS
+            //Ako magistralni pripravak IMA oznaku RS:
             if($brojRS > 0){
-                $response["brojRS"] = $brojRS;
+                $response["success"] = "true";
+                $response["lista"] = "osnovna";
+            }
+            //Ako magistralni pripravak NEMA oznaku RS:
+            else{
+                $response["success"] = "false";
+                $response["lista"] = "osnovna";
             }
         }
-        //Ako nema pronađenih rezultata za navedenu pretragu, splittam ga na drugoj praznini
+        //Ako NIJE PRONAĐEN izabrani mag. pripravak u OSNOVNOJ LISTI
         else{
-            //Razdvajam string na drugoj praznini
-            $polje = preg_split ('/ /', $lijek, 3);
-            //Dohvaćam oblik, jačinu i pakiranje lijeka
-            $ojpLijek=array_pop($polje);
-            //Dohvaćam naziv lijeka
-            $nazivLijek=implode(" ", $polje);
-            //Kreiram upit za dohvaćanje cijena
-            $sqlDrugiSpace = "SELECT d.cijenaLijek,d.cijenaZavod,d.doplataLijek FROM dopunskalistalijekova d 
-                            WHERE d.zasticenoImeLijek = '$nazivLijek'
-                            AND d.oblikJacinaPakiranjeLijek = '$ojpLijek'";
-            $resultDrugiSpace = $conn->query($sqlDrugiSpace);
-    
-            //Ako ima pronađenih rezultata za navedenu pretragu
-            if ($resultDrugiSpace->num_rows > 0) {
+            //Počinjem tražiti u DOPUNSKOJ LISTI
+            $sqlCount = "SELECT COUNT(*) AS BrojRS FROM dopunskalistamagistralnihpripravaka
+                        WHERE nazivMagPripravak = '$magPripravak' 
+                        AND oznakaMagPripravak = '$oznaka'";
+            //Rezultat upita spremam u varijablu $resultCount
+            $resultCount = mysqli_query($conn,$sqlCount);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCount) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCount= mysqli_fetch_assoc($resultCount)){
+                    //Vrijednost rezultata spremam u varijablu $brojRS
+                    $brojRS = $rowCount['BrojRS'];
+                }
+            }
+            //Ako magistralni pripravak IMA oznaku RS:
+            if($brojRS > 0){
+                $response["success"] = "true";
+                $response["lista"] = "dopunska";
+            }
+            //Ako magistralni pripravak NEMA oznaku RS:
+            else{
+                $response["success"] = "false";
+                $response["lista"] = "dopunska";
+            }
+        }
+        return $response;
+    }
+
+    //Funkcija koja dohvaća informaciju ima li izabrani LIJEK oznaku "RS"
+    function dohvatiOznakaLijek($lijek){
+        //Kreiram objekt tipa "Baza"
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+        $brojac = 2;
+        //Na početku označavam da nisam pronašao izabrani lijek
+        $pronasao = FALSE;
+        $oznaka = "RS";
+        //Dok ga nisam pronašao
+        while($pronasao !== TRUE){
+            //Splitam string da mu uzmem ime i oblik-jačinu-pakiranje (KREĆEM OD 2)
+            $polje = explode(" ",$lijek,$brojac);
+            //Dohvaćam oblik,jačinu i pakiranje lijeka
+            $ojpLijek = array_pop($polje);
+            //Dohvaćam ime lijeka
+            $imeLijek = implode(" ", $polje);
+            //Provjeravam postoji li izabrani lijek u OSNOVNOJ LISTI lijekova
+            $sqlCountOsnovnaLista = "SELECT COUNT(*) AS BrojOsnovnaLista FROM osnovnalistalijekova 
+                    WHERE zasticenoImeLijek = '$imeLijek' 
+                    AND oblikJacinaPakiranjeLijek = '$ojpLijek';";
+            //Rezultat upita spremam u varijablu $resultCountOsnovnaLista
+            $resultCountOsnovnaLista = mysqli_query($conn,$sqlCountOsnovnaLista);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountOsnovnaLista) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountOsnovnaLista = mysqli_fetch_assoc($resultCountOsnovnaLista)){
+                    //Vrijednost rezultata spremam u varijablu $brojOsnovnaLista
+                    $brojOsnovnaLista= $rowCountOsnovnaLista['BrojOsnovnaLista'];
+                }
+            } 
+            //Ako je pronađen izabrani LIJEK u OSNOVNOJ LISTI lijekova
+            if($brojOsnovnaLista > 0){
+                //Završi petlju
+                $pronasao = TRUE;
                 //Kreiram upit koji će provjeriti je li izabrani LIJEK ima oznaku RS
                 $sqlCount = "SELECT COUNT(*) AS BrojRS FROM osnovnalistalijekova 
-                            WHERE zasticenoImeLijek = '$nazivLijek' AND oblikJacinaPakiranje = '$ojpLijek' 
+                            WHERE zasticenoImeLijek = '$imeLijek' 
+                            AND oblikJacinaPakiranjeLijek = '$ojpLijek' 
                             AND oznakaOsnovniLijek = '$oznaka'";
                 //Rezultat upita spremam u varijablu $resultCount
                 $resultCount = mysqli_query($conn,$sqlCount);
@@ -73,11 +145,62 @@ class ReceptService{
                         $brojRS = $rowCount['BrojRS'];
                     }
                 }
-                //Ako lijek ima oznaku RS
+                //Ako lijek IMA oznaku RS:
                 if($brojRS > 0){
-                    $response["brojRS"] = $brojRS;
+                    $response["success"] = "true";
+                    $response["lista"] = "osnovna";
+                }
+                //Ako lijek NEMA oznaku RS:
+                else{
+                    $response["success"] = "false";
+                    $response["lista"] = "osnovna";
                 }
             }
+            //Provjeravam postoji li izabrani lijek u DOPUNSKOJ LISTI lijekova 
+            $sqlCountDopunskaLista = "SELECT COUNT(*) AS BrojDopunskaLista FROM dopunskalistalijekova 
+                    WHERE zasticenoImeLijek = '$imeLijek' 
+                    AND oblikJacinaPakiranjeLijek = '$ojpLijek';";
+            //Rezultat upita spremam u varijablu $resultCountDopunskaLista
+            $resultCountDopunskaLista = mysqli_query($conn,$sqlCountDopunskaLista);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountDopunskaLista) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountDopunskaLista = mysqli_fetch_assoc($resultCountDopunskaLista)){
+                    //Vrijednost rezultata spremam u varijablu $brojOsnovnaLista
+                    $brojDopunskaLista = $rowCountDopunskaLista['BrojDopunskaLista'];
+                }
+            } 
+            if($brojDopunskaLista > 0){
+                //Završi petlju
+                $pronasao = TRUE;
+                //Kreiram upit koji će provjeriti je li izabrani LIJEK ima oznaku RS
+                $sqlCount = "SELECT COUNT(*) AS BrojRS FROM dopunskalistalijekova 
+                            WHERE zasticenoImeLijek = '$imeLijek' 
+                            AND oblikJacinaPakiranjeLijek = '$ojpLijek' 
+                            AND oznakaDopunskiLijek = '$oznaka'";
+                //Rezultat upita spremam u varijablu $resultCount
+                $resultCount = mysqli_query($conn,$sqlCount);
+                //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+                if(mysqli_num_rows($resultCount) > 0){
+                    //Idem redak po redak rezultata upita 
+                    while($rowCount= mysqli_fetch_assoc($resultCount)){
+                        //Vrijednost rezultata spremam u varijablu $brojRS
+                        $brojRS = $rowCount['BrojRS'];
+                    }
+                }
+                //Ako lijek IMA oznaku RS:
+                if($brojRS > 0){
+                    $response["success"] = "true";
+                    $response["lista"] = "dopunska";
+                }
+                //Ako lijek NEMA oznaku RS:
+                else{
+                    $response["success"] = "false";
+                    $response["lista"] = "dopunska";
+                }
+            }
+            //Povećavam brojač
+            $brojac++;
         }
         return $response;
     }
@@ -87,7 +210,6 @@ class ReceptService{
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
-
         //Kreiram prazno polje odgovora
         $response = [];
 
@@ -104,45 +226,40 @@ class ReceptService{
         return $response;
     }
     //Funkcija koja dohvaća cijene sa osnovu izabranog LIJEKA sa DOPUNSKE LISTE
-    function dohvatiCijenaLijekDL($lijek,$ojp,$cijeliLijek){
+    function dohvatiCijenaLijekDL($lijek){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
     
         //Kreiram prazno polje odgovora
         $response = [];
-    
-        $sql = "SELECT d.cijenaLijek,d.cijenaZavod,d.doplataLijek FROM dopunskalistalijekova d 
-                WHERE d.zasticenoImeLijek = '$lijek' 
-                AND d.oblikJacinaPakiranjeLijek = '$ojp'";
-        $result = $conn->query($sql);
-    
-        //Ako ima pronađenih rezultata za navedenu pretragu
-        if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                $response[] = $row;
-            }
-        }
-        //Ako nema pronađenih rezultata za navedenu pretragu, splittam ga na drugoj praznini
-        else{
-            //Razdvajam string na drugoj praznini
-            $polje = preg_split ('/ /', $cijeliLijek, 3);
-            //Dohvaćam oblik, jačinu i pakiranje lijeka
-            $ojpLijek=array_pop($polje);
-            //Dohvaćam naziv lijeka
-            $nazivLijek=implode(" ", $polje);
-            //Kreiram upit za dohvaćanje cijena
-            $sqlDrugiSpace = "SELECT d.cijenaLijek,d.cijenaZavod,d.doplataLijek FROM dopunskalistalijekova d 
-                WHERE d.zasticenoImeLijek = '$nazivLijek'
-                AND d.oblikJacinaPakiranjeLijek = '$ojpLijek'";
-            $resultDrugiSpace = $conn->query($sqlDrugiSpace);
-    
+        //Inicijalno postavljam brojač na 2
+        $brojac = 2;
+        //Na početku označavam da nisam pronašao izabrani lijek
+        $pronasao = FALSE;
+        //Dok ga nisam pronašao
+        while($pronasao !== TRUE){
+            //Splitam string da mu uzmem ime i oblik-jačinu-pakiranje (KREĆEM OD 2)
+            $polje = explode(" ",$lijek,$brojac);
+            //Dohvaćam oblik,jačinu i pakiranje lijeka
+            $ojpLijek = array_pop($polje);
+            //Dohvaćam ime lijeka
+            $imeLijek = implode(" ", $polje);
+            $sql = "SELECT d.cijenaLijek,d.cijenaZavod,d.doplataLijek FROM dopunskalistalijekova d 
+                    WHERE d.zasticenoImeLijek = '$imeLijek' 
+                    AND d.oblikJacinaPakiranjeLijek = '$ojpLijek'";
+            $result = $conn->query($sql);
+        
             //Ako ima pronađenih rezultata za navedenu pretragu
-            if ($resultDrugiSpace->num_rows > 0) {
-                while($row = $resultDrugiSpace->fetch_assoc()) {
+            if ($result->num_rows > 0) {
+                //Izađi iz petlje
+                $pronasao = TRUE;
+                while($row = $result->fetch_assoc()) {
                     $response[] = $row;
                 }
             }
+            //Inkrementiram brojač za 1
+            $brojac++;
         }
         return $response;
     }
@@ -214,7 +331,7 @@ class ReceptService{
         //Kreiram prazno polje odgovora
         $response = [];
 
-        $sql = "SELECT CONCAT(l.zasticenoImeLijek,' ',l.oblikJacinaPakiranjeLijek) AS zasticenoImeLijek FROM dopunskalistalijekova l 
+        $sql = "SELECT CONCAT(l.zasticenoImeLijek,' ',l.oblikJacinaPakiranjeLijek) AS zasticenoImeLijek,l.proizvodacLijek FROM dopunskalistalijekova l 
                 WHERE UPPER(l.zasticenoImeLijek) LIKE UPPER('%{$pretraga}%') 
                 LIMIT 8";
         $result = $conn->query($sql);
@@ -243,7 +360,7 @@ class ReceptService{
         //Kreiram prazno polje odgovora
         $response = [];
 
-        $sql = "SELECT CONCAT(l.zasticenoImeLijek,' ',l.oblikJacinaPakiranjeLijek) AS zasticenoImeLijek FROM osnovnalistalijekova l 
+        $sql = "SELECT CONCAT(l.zasticenoImeLijek,' ',l.oblikJacinaPakiranjeLijek) AS zasticenoImeLijek,l.proizvodacLijek FROM osnovnalistalijekova l 
                 WHERE UPPER(l.zasticenoImeLijek) LIKE UPPER('%{$pretraga}%') 
                 LIMIT 8";
         $result = $conn->query($sql);

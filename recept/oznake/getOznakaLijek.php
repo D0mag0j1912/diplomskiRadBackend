@@ -1,6 +1,6 @@
 <?php
 //Importam potrebne klase pomoću autoloadera
-require_once 'C:\wamp64\www\angularPHP\includes\autoloader2.inc.php';
+require_once 'C:\wamp64\www\angularPHP\includes\autoloader3.inc.php';
 
 //Dohvaćam liječnički servis
 $servis = new ReceptService();
@@ -20,14 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $lijek = urldecode($_GET['lijek']);
         //Dohvaćam vrijednost izabranog lijeka
         $lijek = mysqli_real_escape_string($conn, trim($lijek));
-        //Splitam string da mu uzmem ime i oblik-jačinu-pakiranje
-        $polje = explode(" ",$lijek,2);
-        //Dohvaćam ime lijeka
-        $imeLijek = $polje[0];
-        //Dohvaćam oblik,jačinu i pakiranje lijeka
-        $ojpLijek = $polje[1];
         //Punim polje sa odgovorom funkcije
-        $response = $servis->dohvatiOznakaLijek($imeLijek,$ojpLijek,$lijek);
+        $response = $servis->dohvatiOznakaLijek($lijek);
         //Vraćam odgovor frontendu
         echo json_encode($response);
     }

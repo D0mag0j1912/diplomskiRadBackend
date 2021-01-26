@@ -1,6 +1,6 @@
 <?php
 //Importam potrebne klase pomoću autoloadera
-require_once 'C:\wamp64\www\angularPHP\includes\autoloader3.inc.php';
+require_once 'C:\wamp64\www\angularPHP\includes\autoloader2.inc.php';
 
 //Dohvaćam liječnički servis
 $servis = new ReceptService();
@@ -15,14 +15,14 @@ $conn = $baza->spojiSBazom();
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     //Kreiram prazno polje
     $response = [];
-    //Ako je sa frontenda poslan parametar pretrage
-    if(isset($_GET['lijek'])){
-        $lijek = urldecode($_GET['lijek']);
-        //Dohvaćam vrijednost izabranog lijeka
-        $lijek = mysqli_real_escape_string($conn, trim($lijek));
+
+    //Ako je frontend poslao vrijednost pretrage
+    if(isset($_GET['dostatnost'])){
+        //Dohvaćam dostatnost
+        $dostatnost = mysqli_real_escape_string($conn, trim($_GET['dostatnost']));
         //Punim polje sa odgovorom funkcije
-        $response = $servis->dohvatiCijenaLijekDL($lijek);
-        //Vraćam odgovor frontendu
+        $response = $servis->dohvatiDatumDostatnost($dostatnost);
+        //Vraćam response frontendu
         echo json_encode($response);
     }
 }
