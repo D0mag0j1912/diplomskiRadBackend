@@ -36,7 +36,8 @@ class ImportService{
 
         //Kreiram prazno polje odgovora
         $response = []; 
-        $sql = "SELECT * FROM osnovnaListaMagistralnihPripravaka";
+        $sql = "SELECT * FROM osnovnaListaMagistralnihPripravaka 
+                WHERE oznakaMagPripravak IS NOT NULL";
 
         $result = $conn->query($sql);
 
@@ -57,7 +58,11 @@ class ImportService{
 
         //Kreiram prazno polje odgovora
         $response = []; 
-        $sql = "SELECT * FROM dopunskaListaLijekova";
+        $sql = "SELECT * FROM dopunskaListaLijekova 
+                WHERE zasticenoImeLijek IS NOT NULL 
+                AND oblikJacinaPakiranjeLijek IS NOT NULL 
+                AND dddLijek IS NOT NULL 
+                AND oznakaDopunskiLijek IS NOT NULL";
 
         $result = $conn->query($sql);
 
@@ -79,7 +84,10 @@ class ImportService{
         //Kreiram prazno polje odgovora
         $response = []; 
         $sql = "SELECT * FROM osnovnaListaLijekova 
-                WHERE zasticenoImeLijek IS NOT NULL";
+                WHERE zasticenoImeLijek IS NOT NULL 
+                AND oblikJacinaPakiranjeLijek IS NOT NULL 
+                AND dddLijek IS NOT NULL 
+                AND oznakaOsnovniLijek IS NOT NULL";
 
         $result = $conn->query($sql);
 
