@@ -426,7 +426,7 @@ class ReceptService{
 
         $sql = "SELECT m.nazivMagPripravak FROM osnovnalistamagistralnihpripravaka m  
                 WHERE UPPER(m.nazivMagPripravak) LIKE UPPER('%{$pretraga}%') 
-                WHERE m.oznakaMagPripravak IS NOT NULL
+                AND m.oznakaMagPripravak IS NOT NULL
                 LIMIT 8";
         $result = $conn->query($sql);
 
