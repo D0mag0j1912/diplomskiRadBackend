@@ -455,7 +455,7 @@ class ReceptService{
         $response = [];
 
         $sql = "SELECT CONCAT(l.zasticenoImeLijek,' ',l.oblikJacinaPakiranjeLijek) AS zasticenoImeLijek,l.proizvodacLijek FROM dopunskalistalijekova l 
-                WHERE UPPER(l.zasticenoImeLijek) LIKE UPPER('%{$pretraga}%') 
+                WHERE CONCAT(l.zasticenoImeLijek,' ',l.oblikJacinaPakiranjeLijek) LIKE UPPER('%{$pretraga}%') 
                 AND l.zasticenoImeLijek IS NOT NULL 
                 AND l.oblikJacinaPakiranjeLijek IS NOT NULL 
                 AND l.dddLijek IS NOT NULL 
@@ -488,7 +488,7 @@ class ReceptService{
         $response = [];
 
         $sql = "SELECT CONCAT(l.zasticenoImeLijek,' ',l.oblikJacinaPakiranjeLijek) AS zasticenoImeLijek,l.proizvodacLijek FROM osnovnalistalijekova l 
-                WHERE UPPER(l.zasticenoImeLijek) LIKE UPPER('%{$pretraga}%') 
+                WHERE CONCAT(l.zasticenoImeLijek,' ',l.oblikJacinaPakiranjeLijek) LIKE UPPER('%{$pretraga}%') 
                 AND l.zasticenoImeLijek IS NOT NULL 
                 AND l.oblikJacinaPakiranjeLijek IS NOT NULL 
                 AND l.dddLijek IS NOT NULL 
