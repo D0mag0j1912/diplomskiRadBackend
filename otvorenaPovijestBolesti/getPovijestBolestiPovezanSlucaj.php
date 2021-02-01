@@ -23,8 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $id = (int)$_GET['id'];
         //Uzmi vrijednost datuma i pretvori u format datuma iz baze
         $datum = date("Y-m-d",strtotime($_GET['datum']));
+        //Dekodiram razlog dolaska
+        $razlogDolaska = urldecode($_GET['razlogDolaska']);
         //Uzmi vrijednost razloga dolaska
-        $razlogDolaska = $_GET['razlogDolaska'];
+        $razlogDolaska = mysqli_real_escape_string($conn, trim($razlogDolaska));
         //Uzmi vrijednost šifre primarne dijagnoze
         $mkbSifraPrimarna = $_GET['mkbSifraPrimarna'];
         //Punim polje sa vrijednostima polja iz funkcije

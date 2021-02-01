@@ -17,12 +17,12 @@ class PovezanaPovijestBolestiService{
 
 
         $sql = "SELECT DISTINCT(d.imeDijagnoza) AS NazivPrimarna, 
-        IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d2.imeDijagnoza FROM dijagnoze d2 WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna,pb.* FROM povijestBolesti pb 
-        JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
-        WHERE pb.datum = '$datum' AND pb.razlogDolaska = '$razlogDolaska' 
-        AND pb.mkbSifraPrimarna = '$mkbSifraPrimarna' AND pb.mboPacijent IN 
-        (SELECT pacijent.mboPacijent FROM pacijent 
-        WHERE pacijent.idPacijent = '$id')";
+                IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d2.imeDijagnoza FROM dijagnoze d2 WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna,pb.* FROM povijestBolesti pb 
+                JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
+                WHERE pb.datum = '$datum' AND pb.razlogDolaska = '$razlogDolaska' 
+                AND pb.mkbSifraPrimarna = '$mkbSifraPrimarna' AND pb.mboPacijent IN 
+                (SELECT pacijent.mboPacijent FROM pacijent 
+                WHERE pacijent.idPacijent = '$id')";
         $result = $conn->query($sql);
 
         //Ako ima pronađenih rezultata za navedenu pretragu

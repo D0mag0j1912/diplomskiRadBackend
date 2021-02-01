@@ -20,8 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if(isset($_GET['id']) && isset($_GET['pretraga'])){
         //Uzmi tu vrijednosti ID-a i pretvori je u INTEGER
         $id = (int)$_GET['id'];
+        //Dekodiram parametar pretrage
+        $pretraga = urldecode($_GET['pretraga']);
         //Uzmi vrijednost pretrage
-        $pretraga = mysqli_real_escape_string($conn, trim($_GET['pretraga']));
+        $pretraga = mysqli_real_escape_string($conn, trim($pretraga));
         //Punim polje sa vrijednostima polja iz funkcije
         $response = $servis->dohvatiPovijestBolestiPretraga($id,$pretraga);
         //Vraćam frontendu rezultat

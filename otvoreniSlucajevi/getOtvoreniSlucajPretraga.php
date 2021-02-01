@@ -20,8 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if(isset($_GET['pretraga']) && isset($_GET['id']) && isset($_GET['tip'])){
         //Uzmi tu vrijednosti ID-a i pretvori je u INTEGER
         $id = (int)$_GET['id'];
+        //Dekodiram parametar pretrage
+        $pretraga = urldecode($_GET['pretraga']);
         //Uzmi tu vrijednost pretrage
-        $pretraga = mysqli_real_escape_string($conn, trim($_GET['pretraga']));
+        $pretraga = mysqli_real_escape_string($conn, trim($pretraga));
         //Dohvaćam tip prijavljenog korisnika
         $tip = mysqli_real_escape_string($conn, trim($_GET['tip']));
         //Punim polje sa vrijednostima polja iz funkcije

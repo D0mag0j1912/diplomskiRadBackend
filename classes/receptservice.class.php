@@ -64,12 +64,25 @@ class ReceptService{
                     if($periodDoziranje == "dnevno"){
                         //Računam dostatnost u danima
                         $dostatnost = ($kolicina * $brojTableta) / ($frekvencijaDoziranje);
+                        //Ako vrijednost dostatnosti NIJE integer 
+                        if(!is_int($dostatnost)){
+                            $dostatnost = round($dostatnost);
+                        }
                     }
                     //Ako je period doziranja "tjedno":
                     else if($periodDoziranje == "tjedno"){
                         //Računam dostatnost u danima
                         $dostatnost = ($kolicina * $brojTableta) / ($frekvencijaDoziranje) * 7;
+                        //Ako vrijednost dostatnosti NIJE integer 
+                        if(!is_int($dostatnost)){
+                            $dostatnost = round($dostatnost);
+                        }
                     }
+                }
+                //Ako ojp lijeka NE ZAVRŠAVA NA mg ili g
+                else{
+                    //Postavi inicijalno dostatnost na 30 dana
+                    $dostatnost = 30;
                 }
                 //Završi petlju
                 $pronasao = TRUE;
@@ -112,12 +125,25 @@ class ReceptService{
                         if($periodDoziranje == "dnevno"){
                             //Računam dostatnost u danima
                             $dostatnost = ($kolicina * $brojTableta) / ($frekvencijaDoziranje);
+                            //Ako vrijednost dostatnosti NIJE integer 
+                            if(!is_int($dostatnost)){
+                                $dostatnost = round($dostatnost);
+                            }
                         }
                         //Ako je period doziranja "tjedno":
                         else if($periodDoziranje == "tjedno"){
                             //Računam dostatnost u danima
                             $dostatnost = ($kolicina * $brojTableta) / ($frekvencijaDoziranje) * 7;
+                            //Ako vrijednost dostatnosti NIJE integer 
+                            if(!is_int($dostatnost)){
+                                $dostatnost = round($dostatnost);
+                            }
                         }
+                    }
+                    //Ako ojp lijeka NE ZAVRŠAVA NA mg ili g
+                    else{
+                        //Postavi inicijalno dostatnost na 30 dana
+                        $dostatnost = 30;
                     }
                     //Završi petlju
                     $pronasao = TRUE;
