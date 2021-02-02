@@ -7,6 +7,55 @@ date_default_timezone_set('Europe/Zagreb');
 
 class ReceptService{
 
+    //Funkcija koja dohvaća inicijalne dijagnoze u unosu novog recepta
+    function dohvatiInicijalneDijagnoze($idPacijent){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+        //Kreiram prazno polje
+        $response = [];
+
+        //Kreiram upit kojim dohvaćam ZADNJE UNESENU primarnu dijagnozu povijesti bolesti za određenog pacijenta
+        $sqlZadnjaPrimarna = "SELECT pb.mkbSifraPrimarna FROM povijestbolesti pb
+                            WHERE pb.idPovijestBolesti = 
+                            (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2
+                            WHERE pb.mboPacijent = pb2.mboPacijent)
+                            AND pb.mboPacijent IN 
+                            (SELECT pacijent.mboPacijent FROM pacijent 
+                            WHERE pacijent.idPacijent = '$idPacijent')
+                            GROUP BY pb.mboPacijent;";
+        $resultZadnjaPrimarna = $conn->query($sqlZadnjaPrimarna);
+        //Ako postoji primarna dijagnoza zabilježena u povijesti bolesti za OVOG PACIJENTA
+        if($resultZadnjaPrimarna->num_rows > 0){
+            while($rowZadnjaPrimarna = $resultZadnjaPrimarna->fetch_assoc()) {
+                //Dohvaćam tu primarnu dijagnozu
+                $mkbPrimarnaDijagnoza = $rowZadnjaPrimarna['mkbSifraPrimarna'];
+            }
+        }
+        //Ako NE POSTOJI primarna dijagnoza zabilježena u povijesti bolesti za OVOG PACIJENTA
+        else{
+            //Vrati null
+            return null;
+        } 
+
+        //Ako POSTOJI primarna dijagnoza, kreiram upit koji dohvaća sve njezine sekundarne dijagoze
+        $sql = "SELECT DISTINCT(d.imeDijagnoza) AS NazivPrimarna, 
+                IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d2.imeDijagnoza FROM dijagnoze d2 WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna FROM povijestBolesti pb 
+                JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
+                WHERE pb.mkbSifraPrimarna = '$mkbPrimarnaDijagnoza' 
+                AND pb.mboPacijent IN 
+                (SELECT pacijent.mboPacijent FROM pacijent 
+                WHERE pacijent.idPacijent = '$idPacijent')";
+        $result = $conn->query($sql);
+        //Ako ima rezultata
+        if($result->num_rows > 0){
+            while($row = $result->fetch_assoc()){
+                $response[] = $row;
+            }
+        }
+        return $response;
+    }
+
     //Funkcija koja izračunava dostatnost lijeka
     function izracunajDostatnost($lijek,$kolicina,$doza){
         //Dohvaćam bazu 
@@ -598,7 +647,7 @@ class ReceptService{
         //Ako ima pronađenih pacijenata
         else{
             //Kreiram upit koji dohvaća sve pacijente
-            $sql = "SELECT p.imePacijent,p.prezPacijent, 
+            $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent, 
                     DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS Datum,
                     p.mboPacijent FROM pacijent p
                     ORDER BY p.prezPacijent ASC";
