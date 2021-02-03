@@ -595,7 +595,7 @@ class ReceptService{
         //Kreiram prazno polje odgovora
         $response = [];
  
-        $sql = "SELECT p.imePacijent,p.prezPacijent, 
+        $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent, 
                 DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS Datum,
                 p.mboPacijent FROM pacijent p 
                 WHERE UPPER(p.imePacijent) LIKE UPPER('%{$pretraga}%') 
