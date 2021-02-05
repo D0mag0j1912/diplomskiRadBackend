@@ -57,7 +57,7 @@ class ReceptService{
     }
 
     //Funkcija koja izračunava dostatnost lijeka
-    function izracunajDostatnost($lijek,$kolicina,$doza){
+    function izracunajDostatnost($lijek,$kolicina,$doza,$brojPonavljanja){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -111,8 +111,16 @@ class ReceptService{
                     $periodDoziranje = substr($doza,strpos($doza,"x")+1,strlen($doza));
                     //Ako je period doziranja "dnevno":
                     if($periodDoziranje == "dnevno"){
-                        //Računam dostatnost u danima
-                        $dostatnost = ($kolicina * $brojTableta) / ($frekvencijaDoziranje);
+                        //Ako je broj ponavljanja 0 tj. ako je recept običan:
+                        if(empty($brojPonavljanja)){
+                            //Računam dostatnost u danima
+                            $dostatnost = ($kolicina * $brojTableta) / ($frekvencijaDoziranje);
+                        }
+                        //Ako je broj ponavljanja > 0, tj. ako je recept ponovljiv
+                        else{
+                            //Računam dostatnost u danima
+                            $dostatnost = ($kolicina * $brojTableta) / ($frekvencijaDoziranje) * ($brojPonavljanja + 1);
+                        }
                         //Ako vrijednost dostatnosti NIJE integer 
                         if(!is_int($dostatnost)){
                             $dostatnost = round($dostatnost);
@@ -120,8 +128,16 @@ class ReceptService{
                     }
                     //Ako je period doziranja "tjedno":
                     else if($periodDoziranje == "tjedno"){
-                        //Računam dostatnost u danima
-                        $dostatnost = ($kolicina * $brojTableta) / ($frekvencijaDoziranje) * 7;
+                        //Ako je broj ponavljanja 0 tj. ako je recept običan:
+                        if(empty($brojPonavljanja)){
+                            //Računam dostatnost u danima
+                            $dostatnost = ($kolicina * $brojTableta) / ($frekvencijaDoziranje) * 7;   
+                        }
+                        //Ako je broj ponavljanja > 0, tj. ako je recept ponovljiv:
+                        else{
+                            //Računam dostatnost u danima
+                            $dostatnost = ($kolicina * $brojTableta) / ($frekvencijaDoziranje) * 7 * ($brojPonavljanja + 1);
+                        }
                         //Ako vrijednost dostatnosti NIJE integer 
                         if(!is_int($dostatnost)){
                             $dostatnost = round($dostatnost);
@@ -130,8 +146,16 @@ class ReceptService{
                 }
                 //Ako ojp lijeka NE ZAVRŠAVA NA mg ili g
                 else{
-                    //Postavi inicijalno dostatnost na 30 dana
-                    $dostatnost = 30;
+                    //Ako je broj ponavljanja 0 tj. ako je recept običan:
+                    if(empty($brojPonavljanja)){
+                        //Inicijalno postavi trajanje terapije na 30 dana
+                        $dostatnost = 30;  
+                    }
+                    //Ako je broj ponavljanja > 0, tj. ako je recept ponovljiv:
+                    else{
+                        //Izračunaj dostatnost
+                        $dostatnost = 30 * ($brojPonavljanja + 1);
+                    }
                 }
                 //Završi petlju
                 $pronasao = TRUE;
@@ -172,8 +196,16 @@ class ReceptService{
                         $periodDoziranje = substr($doza,strpos($doza,"x")+1,strlen($doza));
                         //Ako je period doziranja "dnevno":
                         if($periodDoziranje == "dnevno"){
-                            //Računam dostatnost u danima
-                            $dostatnost = ($kolicina * $brojTableta) / ($frekvencijaDoziranje);
+                            //Ako je broj ponavljanja 0 tj. ako je recept običan:
+                            if(empty($brojPonavljanja)){
+                                //Računam dostatnost u danima
+                                $dostatnost = ($kolicina * $brojTableta) / ($frekvencijaDoziranje);
+                            }
+                            //Ako je broj ponavljanja > 0, tj. ako je recept ponovljiv
+                            else{
+                                //Računam dostatnost u danima
+                                $dostatnost = ($kolicina * $brojTableta) / ($frekvencijaDoziranje) * ($brojPonavljanja + 1);
+                            }
                             //Ako vrijednost dostatnosti NIJE integer 
                             if(!is_int($dostatnost)){
                                 $dostatnost = round($dostatnost);
@@ -181,8 +213,16 @@ class ReceptService{
                         }
                         //Ako je period doziranja "tjedno":
                         else if($periodDoziranje == "tjedno"){
-                            //Računam dostatnost u danima
-                            $dostatnost = ($kolicina * $brojTableta) / ($frekvencijaDoziranje) * 7;
+                            //Ako je broj ponavljanja 0 tj. ako je recept običan:
+                            if(empty($brojPonavljanja)){
+                                //Računam dostatnost u danima
+                                $dostatnost = ($kolicina * $brojTableta) / ($frekvencijaDoziranje) * 7;   
+                            }
+                            //Ako je broj ponavljanja > 0, tj. ako je recept ponovljiv:
+                            else{
+                                //Računam dostatnost u danima
+                                $dostatnost = ($kolicina * $brojTableta) / ($frekvencijaDoziranje) * 7 * ($brojPonavljanja + 1);
+                            }
                             //Ako vrijednost dostatnosti NIJE integer 
                             if(!is_int($dostatnost)){
                                 $dostatnost = round($dostatnost);
@@ -191,8 +231,16 @@ class ReceptService{
                     }
                     //Ako ojp lijeka NE ZAVRŠAVA NA mg ili g
                     else{
-                        //Postavi inicijalno dostatnost na 30 dana
-                        $dostatnost = 30;
+                        //Ako je broj ponavljanja 0 tj. ako je recept običan:
+                        if(empty($brojPonavljanja)){
+                            //Inicijalno postavi trajanje terapije na 30 dana
+                            $dostatnost = 30;  
+                        }
+                        //Ako je broj ponavljanja > 0, tj. ako je recept ponovljiv:
+                        else{
+                            //Izračunaj dostatnost
+                            $dostatnost = 30 * ($brojPonavljanja + 1);
+                        }
                     }
                     //Završi petlju
                     $pronasao = TRUE;
