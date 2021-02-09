@@ -39,56 +39,235 @@ else if( (int)(date('i',strtotime($vrijeme))) >= 45 && (int)(date('i',strtotime(
 
 echo $vrijeme; */
 
-//Funkcija koja dohvaća inicijalne dijagnoze u unosu novog recepta
-function dohvatiInicijalneDijagnoze($idPacijent){
+$mkbSifraPrimarna = "A00";
+$mkbSifraSekundarna = [];
+$osnovnaListaLijekDropdown = NULL;
+$osnovnaListaLijekText = NULL;
+$dopunskaListaLijekDropdown = NULL;
+$dopunskaListaLijekText = NULL;
+$osnovnaListaMagPripravakDropdown = NULL;
+$osnovnaListaMagPripravakText = NULL;
+$dopunskaListaMagPripravakDropdown = "Rp. Afloderm krema 20,0 Belobaza ad 100,0 M.D.S. krema";
+$dopunskaListaMagPripravakText = NULL;
+$kolicina = 1;
+$doziranje = "3xtjedno";
+$dostatnost = 10;
+$hitnost = NULL;
+$ponovljiv = NULL;
+$brojPonavljanja = NULL;
+//Funkcija koja dodava novi recept u bazu podataka
+function dodajRecept($mkbSifraPrimarna,$mkbSifraSekundarna,$osnovnaListaLijekDropdown,
+                    $osnovnaListaLijekText,$dopunskaListaLijekDropdown,$dopunskaListaLijekText,
+                    $osnovnaListaMagPripravakDropdown,$osnovnaListaMagPripravakText,$dopunskaListaMagPripravakDropdown,
+                    $dopunskaListaMagPripravakText,$kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja){
     //Dohvaćam bazu 
     $baza = new Baza();
     $conn = $baza->spojiSBazom();
-    //Kreiram prazno polje
+    //Kreiram prazno polje odgovora
     $response = [];
 
-    //Kreiram upit kojim dohvaćam ZADNJE UNESENU primarnu dijagnozu povijesti bolesti za određenog pacijenta
-    $sqlZadnjaPrimarna = "SELECT pb.mkbSifraPrimarna FROM povijestbolesti pb
-                        WHERE pb.idPovijestBolesti = 
-                        (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2
-                        WHERE pb.mboPacijent = pb2.mboPacijent)
-                        AND pb.mboPacijent IN 
-                        (SELECT pacijent.mboPacijent FROM pacijent 
-                        WHERE pacijent.idPacijent = '$idPacijent')
-                        GROUP BY pb.mboPacijent;";
-    $resultZadnjaPrimarna = $conn->query($sqlZadnjaPrimarna);
-    //Ako postoji primarna dijagnoza zabilježena u povijesti bolesti za OVOG PACIJENTA
-    if($resultZadnjaPrimarna->num_rows > 0){
-        while($rowZadnjaPrimarna = $resultZadnjaPrimarna->fetch_assoc()) {
-            //Dohvaćam tu primarnu dijagnozu
-            $mkbPrimarnaDijagnoza = $rowZadnjaPrimarna['mkbSifraPrimarna'];
+    //Ako nema sekundarnih dijagnoza
+    if(empty($mkbSifraSekundarna)){
+        //Kreiram upit za dodavanje novog recepta u bazu
+        $sql = "INSERT INTO recept (mkbSifraPrimarna,mkbSifraSekundarna,proizvod,oblikJacinaPakiranjeLijek, 
+                        kolicina,doziranje,dostatnost,hitnost,ponovljiv,brojPonavljanja) VALUES 
+                        (?,?,?,?,?,?,?,?,?,?)";
+        //Kreiranje prepared statementa
+        $stmt = mysqli_stmt_init($conn);
+        //Ako je statement neuspješan
+        if(!mysqli_stmt_prepare($stmt,$sql)){
+            $response["success"] = "false";
+            $response["message"] = "Prepared statement ne valja!";
         }
-    }
-    //Ako NE POSTOJI primarna dijagnoza zabilježena u povijesti bolesti za OVOG PACIJENTA
-    else{
-        //Vrati null
-        return null;
-    } 
+        //Ako je prepared statement u redu
+        else{
+            //Postavljam MKB šifru sekundarne dijagnoze na NULL
+            $prazna = NULL;
+            //Inicijalno postavljam proizvod na NULL
+            $proizvod = NULL;
+            //Inicijalno postavljam oblik, jačinu i pakiranje lijeka na NULL
+            $oblikJacinaPakiranjeLijek = NULL;
+            //Postavljam inicijalno da nisam pronašao lijek u bazi
+            $pronasao = false;
+            //Inicijalno postavljam brojač na 2
+            $brojac = 2;
+            if(empty($osnovnaListaLijekDropdown)){
+                $osnovnaListaLijekDropdown = NULL;
+            }
+            else{
+                //Dohvaćam OJP ako ga ima
+                while($pronasao !== true){
+                    //Splitam string da mu uzmem ime i oblik-jačinu-pakiranje (KREĆEM OD 2)
+                    $polje = explode(" ",$osnovnaListaLijekDropdown,$brojac);
+                    //Dohvaćam oblik,jačinu i pakiranje lijeka
+                    $ojpLijek = array_pop($polje);
+                    //Dohvaćam ime lijeka
+                    $imeLijek = implode(" ", $polje);
 
-    //Ako POSTOJI primarna dijagnoza, kreiram upit koji dohvaća sve njezine sekundarne dijagoze
-    $sql = "SELECT DISTINCT(d.imeDijagnoza) AS NazivPrimarna, 
-            IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d2.imeDijagnoza FROM dijagnoze d2 WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna,pb.* FROM povijestBolesti pb 
-            JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
-            WHERE pb.mkbSifraPrimarna = '$mkbPrimarnaDijagnoza' 
-            AND pb.mboPacijent IN 
-            (SELECT pacijent.mboPacijent FROM pacijent 
-            WHERE pacijent.idPacijent = '$idPacijent')";
-    $result = $conn->query($sql);
-    //Ako ima rezultata
-    if($result->num_rows > 0){
-        while($row = $result->fetch_assoc()){
-            $response = $row;
+                    //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
+                    $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovnalistalijekova o 
+                                    WHERE o.oblikJacinaPakiranjeLijek = '$ojpLijek' AND o.zasticenoImeLijek = '$imeLijek'";
+
+                    $resultOsnovnaLista = $conn->query($sqlOsnovnaLista);
+                    //Ako je lijek pronađen u OSNOVNOJ LISTI LIJEKOVA
+                    if ($resultOsnovnaLista->num_rows > 0) {
+                        while($rowOsnovnaLista = $resultOsnovnaLista->fetch_assoc()) {
+                            //Dohvaćam oblik, jačinu i pakiranje unesenog lijeka
+                            $oblikJacinaPakiranjeLijek = $rowOsnovnaLista['oblikJacinaPakiranjeLijek'];
+                            $proizvod = $rowOsnovnaLista['zasticenoImeLijek'];
+                        }
+                        //Izlazim iz petlje
+                        $pronasao = true;
+                    }
+                    //Povećavam brojač za 1
+                    $brojac++;
+                }
+            }
+            if(empty($osnovnaListaLijekText)){
+                $osnovnaListaLijekText = NULL;
+            }
+            else{
+                //Dohvaćam OJP ako ga ima
+                while($pronasao !== true){
+                    //Splitam string da mu uzmem ime i oblik-jačinu-pakiranje (KREĆEM OD 2)
+                    $polje = explode(" ",$osnovnaListaLijekText,$brojac);
+                    //Dohvaćam oblik,jačinu i pakiranje lijeka
+                    $ojpLijek = array_pop($polje);
+                    //Dohvaćam ime lijeka
+                    $imeLijek = implode(" ", $polje);
+
+                    //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
+                    $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovnalistalijekova o 
+                                    WHERE o.oblikJacinaPakiranjeLijek = '$ojpLijek' AND o.zasticenoImeLijek = '$imeLijek'";
+
+                    $resultOsnovnaLista = $conn->query($sqlOsnovnaLista);
+                    //Ako je lijek pronađen u OSNOVNOJ LISTI LIJEKOVA
+                    if ($resultOsnovnaLista->num_rows > 0) {
+                        while($rowOsnovnaLista = $resultOsnovnaLista->fetch_assoc()) {
+                            //Dohvaćam oblik, jačinu i pakiranje unesenog lijeka
+                            $oblikJacinaPakiranjeLijek = $rowOsnovnaLista['oblikJacinaPakiranjeLijek'];
+                            $proizvod = $rowOsnovnaLista['zasticenoImeLijek'];
+                        }
+                        //Izlazim iz petlje
+                        $pronasao = true;
+                    }
+                    //Povećavam brojač za 1
+                    $brojac++;
+                }
+            }
+            if(empty($dopunskaListaLijekDropdown)){
+                $dopunskaListaLijekDropdown = NULL;
+            }
+            else{
+                //Dohvaćam OJP ako ga ima
+                while($pronasao !== true){
+                    //Splitam string da mu uzmem ime i oblik-jačinu-pakiranje (KREĆEM OD 2)
+                    $polje = explode(" ",$dopunskaListaLijekDropdown,$brojac);
+                    //Dohvaćam oblik,jačinu i pakiranje lijeka
+                    $ojpLijek = array_pop($polje);
+                    //Dohvaćam ime lijeka
+                    $imeLijek = implode(" ", $polje);
+
+                    //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
+                    $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunskalistalijekova d 
+                                    WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' AND d.zasticenoImeLijek = '$imeLijek'";
+
+                    $resultDopunskaLista = $conn->query($sqlDopunskaLista);
+                    //Ako je lijek pronađen u DOPUNSKOJ LISTI LIJEKOVA
+                    if ($resultDopunskaLista->num_rows > 0) {
+                        while($rowDopunskaLista = $resultDopunskaLista->fetch_assoc()) {
+                            //Dohvaćam oblik, jačinu i pakiranje unesenog lijeka
+                            $oblikJacinaPakiranjeLijek = $rowDopunskaLista['oblikJacinaPakiranjeLijek'];
+                            $proizvod = $rowDopunskaLista['zasticenoImeLijek'];
+                        }
+                        //Izlazim iz petlje
+                        $pronasao = true;
+                    }
+                    //Povećavam brojač za 1
+                    $brojac++;
+                }
+            }
+            if(empty($dopunskaListaLijekText)){
+                $dopunskaListaLijekText = NULL;
+            }
+            else{
+                //Dohvaćam OJP ako ga ima
+                while($pronasao !== true){
+                    //Splitam string da mu uzmem ime i oblik-jačinu-pakiranje (KREĆEM OD 2)
+                    $polje = explode(" ",$dopunskaListaLijekText,$brojac);
+                    //Dohvaćam oblik,jačinu i pakiranje lijeka
+                    $ojpLijek = array_pop($polje);
+                    //Dohvaćam ime lijeka
+                    $imeLijek = implode(" ", $polje);
+
+                    //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
+                    $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunskalistalijekova d 
+                                    WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' AND d.zasticenoImeLijek = '$imeLijek'";
+
+                    $resultDopunskaLista = $conn->query($sqlDopunskaLista);
+                    //Ako je lijek pronađen u DOPUNSKOJ LISTI LIJEKOVA
+                    if ($resultDopunskaLista->num_rows > 0) {
+                        while($rowDopunskaLista = $resultDopunskaLista->fetch_assoc()) {
+                            //Dohvaćam oblik, jačinu i pakiranje unesenog lijeka
+                            $oblikJacinaPakiranjeLijek = $rowDopunskaLista['oblikJacinaPakiranjeLijek'];
+                            $proizvod = $rowDopunskaLista['zasticenoImeLijek'];
+                        }
+                        //Izlazim iz petlje
+                        $pronasao = true;
+                    }
+                    //Povećavam brojač za 1
+                    $brojac++;
+                }
+            }
+            if(empty($osnovnaListaMagPripravakDropdown)){
+                $osnovnaListaMagPripravakDropdown = NULL;
+            }
+            else{
+                $proizvod = $osnovnaListaMagPripravakDropdown;
+            }
+            if(empty($osnovnaListaMagPripravakText)){
+                $osnovnaListaMagPripravakText = NULL;
+            }
+            else{
+                $proizvod = $osnovnaListaMagPripravakText;
+            }
+            if(empty($dopunskaListaMagPripravakDropdown)){
+                $dopunskaListaMagPripravakDropdown = NULL;
+            }
+            else{
+                $proizvod = $dopunskaListaMagPripravakDropdown;
+            }
+            if(empty($dopunskaListaMagPripravakText)){
+                $dopunskaListaMagPripravakText = NULL;
+            }
+            else{
+                $proizvod = $dopunskaListaMagPripravakText;
+            }
+            if(empty($hitnost)){
+                $hitnost = NULL;
+            }
+            if(empty($ponovljiv)){
+                $ponovljiv = NULL;
+            }
+            //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+            mysqli_stmt_bind_param($stmt,"ssssisissi",$mkbSifraPrimarna,$prazna,$proizvod,$oblikJacinaPakiranjeLijek,
+                                            $kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja);
+            //Izvršavanje statementa
+            mysqli_stmt_execute($stmt);
+
+            //Vraćanje uspješnog odgovora serveru
+            $response["success"] = "true";
+            $response["message"] = "Recept uspješno dodan!";
         }
     }
+    //Vraćam odgovor frontendu
     return $response;
 }
 
-foreach(dohvatiInicijalneDijagnoze(4) as $vanjsko){
+foreach(dodajRecept($mkbSifraPrimarna,$mkbSifraSekundarna,$osnovnaListaLijekDropdown,
+$osnovnaListaLijekText,$dopunskaListaLijekDropdown,$dopunskaListaLijekText,
+$osnovnaListaMagPripravakDropdown,$osnovnaListaMagPripravakText,$dopunskaListaMagPripravakDropdown,
+$dopunskaListaMagPripravakText,$kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja) as $vanjsko){
     echo $vanjsko;
-} 
+}
 ?>
