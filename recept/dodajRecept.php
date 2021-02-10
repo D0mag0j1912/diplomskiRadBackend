@@ -57,14 +57,18 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $hitnost = mysqli_real_escape_string($conn, trim($request->hitnost));
         $ponovljiv = mysqli_real_escape_string($conn, trim($request->ponovljiv));
         $brojPonavljanja = mysqli_real_escape_string($conn, trim($request->brojPonavljanja));
+        $sifraSpecijalist = mysqli_real_escape_string($conn, trim($request->sifraSpecijalist));
         if(!empty($brojPonavljanja)){
             $brojPonavljanja = (int)$brojPonavljanja;
         }
-    
+        if(!empty($sifraSpecijalist)){
+            $sifraSpecijalist = (int)$sifraSpecijalist;
+        }
         $response = $servis->dodajRecept($mkbSifraPrimarna,$mkbSifraSekundarna,$osnovnaListaLijekDropdown,
                                         $osnovnaListaLijekText,$dopunskaListaLijekDropdown,$dopunskaListaLijekText,
                                         $osnovnaListaMagPripravakDropdown,$osnovnaListaMagPripravakText,$dopunskaListaMagPripravakDropdown,
-                                        $dopunskaListaMagPripravakText,$kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja);  
+                                        $dopunskaListaMagPripravakText,$kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja,
+                                        $sifraSpecijalist);  
         echo json_encode($response);
     }
 }

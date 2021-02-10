@@ -10,7 +10,8 @@ class DodajReceptService{
     function dodajRecept($mkbSifraPrimarna,$mkbSifraSekundarna,$osnovnaListaLijekDropdown,
                     $osnovnaListaLijekText,$dopunskaListaLijekDropdown,$dopunskaListaLijekText,
                     $osnovnaListaMagPripravakDropdown,$osnovnaListaMagPripravakText,$dopunskaListaMagPripravakDropdown,
-                    $dopunskaListaMagPripravakText,$kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja){
+                    $dopunskaListaMagPripravakText,$kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja,
+                    $sifraSpecijalist){
     //Dohvaćam bazu 
     $baza = new Baza();
     $conn = $baza->spojiSBazom();
@@ -21,8 +22,8 @@ class DodajReceptService{
     if(empty($mkbSifraSekundarna)){
         //Kreiram upit za dodavanje novog recepta u bazu
         $sql = "INSERT INTO recept (mkbSifraPrimarna,mkbSifraSekundarna,proizvod,oblikJacinaPakiranjeLijek, 
-                                    kolicina,doziranje,dostatnost,hitnost,ponovljiv,brojPonavljanja) VALUES 
-                                    (?,?,?,?,?,?,?,?,?,?)";
+                                    kolicina,doziranje,dostatnost,hitnost,ponovljiv,brojPonavljanja,sifraSpecijalist) VALUES 
+                                    (?,?,?,?,?,?,?,?,?,?,?)";
         //Kreiranje prepared statementa
         $stmt = mysqli_stmt_init($conn);
         //Ako je statement neuspješan
@@ -203,9 +204,12 @@ class DodajReceptService{
             if(empty($brojPonavljanja)){
                 $brojPonavljanja = NULL;
             }
+            if(empty($sifraSpecijalist)){
+                $sifraSpecijalist = NULL;
+            }
             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-            mysqli_stmt_bind_param($stmt,"ssssisissi",$mkbSifraPrimarna,$prazna,$proizvod,$oblikJacinaPakiranjeLijek,
-                                    $kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja);
+            mysqli_stmt_bind_param($stmt,"ssssisissii",$mkbSifraPrimarna,$prazna,$proizvod,$oblikJacinaPakiranjeLijek,
+                                    $kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja,$sifraSpecijalist);
             //Izvršavanje statementa
             mysqli_stmt_execute($stmt);
 
@@ -220,8 +224,8 @@ class DodajReceptService{
         foreach($mkbSifraSekundarna as $mkb){
             //Kreiram upit za dodavanje novog recepta u bazu
             $sql = "INSERT INTO recept (mkbSifraPrimarna,mkbSifraSekundarna,proizvod,oblikJacinaPakiranjeLijek, 
-                                        kolicina,doziranje,dostatnost,hitnost,ponovljiv,brojPonavljanja) VALUES 
-                                        (?,?,?,?,?,?,?,?,?,?)";
+                                        kolicina,doziranje,dostatnost,hitnost,ponovljiv,brojPonavljanja,sifraSpecijalist) VALUES 
+                                        (?,?,?,?,?,?,?,?,?,?,?)";
             //Kreiranje prepared statementa
             $stmt = mysqli_stmt_init($conn);
             //Ako je statement neuspješan
@@ -400,9 +404,12 @@ class DodajReceptService{
                 if(empty($brojPonavljanja)){
                     $brojPonavljanja = NULL;
                 }
+                if(empty($sifraSpecijalist)){
+                    $sifraSpecijalist = NULL;
+                }
                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                mysqli_stmt_bind_param($stmt,"ssssisissi",$mkbSifraPrimarna,$mkb,$proizvod,$oblikJacinaPakiranjeLijek,
-                        $kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja);
+                mysqli_stmt_bind_param($stmt,"ssssisissii",$mkbSifraPrimarna,$mkb,$proizvod,$oblikJacinaPakiranjeLijek,
+                        $kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja,$sifraSpecijalist);
                 //Izvršavanje statementa
                 mysqli_stmt_execute($stmt);
 
