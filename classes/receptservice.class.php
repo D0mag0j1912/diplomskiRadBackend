@@ -1030,67 +1030,173 @@ class ReceptService{
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
-
+        //Definiram inicijalno stanje obrade
+        $status = "Aktivan";
         //Kreiram prazno polje odgovora
         $response = [];
- 
-        $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent, 
-                DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS Datum,
-                p.mboPacijent FROM pacijent p 
-                WHERE UPPER(p.imePacijent) LIKE UPPER('%{$pretraga}%') 
-                OR UPPER(p.prezPacijent) LIKE UPPER('%{$pretraga}%') OR UPPER(p.datRodPacijent) LIKE UPPER('%{$pretraga}%') 
-                OR UPPER(p.mboPacijent) LIKE UPPER('%{$pretraga}%')
-                ORDER BY p.prezPacijent ASC";
-        $result = $conn->query($sql);
 
-        //Ako ima pronađenih rezultata za navedenu pretragu
-        if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                $response[] = $row;
+        //Ako je $pretraga prazan string
+        if(empty($pretraga)){
+            //Kreiram upit koji će provjeriti je li postoji aktivan pacijent u obradi
+            $sqlObrada = "SELECT COUNT(*) AS BrojAktivnihPacijenata FROM obrada_lijecnik o 
+                        WHERE o.statusObrada = '$status'";
+            //Rezultat upita spremam u varijablu $resultObrada
+            $resultObrada = mysqli_query($conn,$sqlObrada);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultObrada) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowObrada = mysqli_fetch_assoc($resultObrada)){
+                    //Vrijednost rezultata spremam u varijablu $brojAktivnihPacijenata
+                    $brojAktivnihPacijenata = $rowObrada['BrojAktivnihPacijenata'];
+                }
+            }
+            //Ako NEMA pronađenih pacijenata u obradi
+            if($brojAktivnihPacijenata == 0){
+                //Kreiram sql upit koji će provjeriti koliko ima pacijenata u bazi podataka
+                $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM pacijent";
+                //Rezultat upita spremam u varijablu $resultCountPacijent
+                $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
+                //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+                if(mysqli_num_rows($resultCountPacijent) > 0){
+                    //Idem redak po redak rezultata upita 
+                    while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                        //Vrijednost rezultata spremam u varijablu $brojPacijenata
+                        $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+                    }
+                }
+                //Ako nema pronađenih pacijenata
+                if($brojPacijenata == 0){
+                    $response["success"] = "false";
+                    $response["message"] = "Nema pronađenih pacijenata!";
+                }
+                //Ako ima pronađenih pacijenata
+                else{
+                    //Kreiram upit koji dohvaća sve pacijente
+                    $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent, 
+                            DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS Datum,
+                            p.mboPacijent FROM pacijent p
+                            ORDER BY p.prezPacijent ASC";
+
+                    $result = $conn->query($sql);
+
+                    if ($result->num_rows > 0) {
+                        while($row = $result->fetch_assoc()) {
+                            $response[] = $row;
+                        }
+                    }
+                }
+            }
+            //Ako IMA pronađenih pacijenata u obradi
+            else{
+                //Kreiram upit koji će dohvatiti podatke aktivnog pacijenta u obradi
+                $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent, 
+                        DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS Datum, p.mboPacijent FROM pacijent p 
+                        JOIN obrada_lijecnik o ON o.idPacijent = p.idPacijent 
+                        WHERE o.statusObrada = '$status'";
+
+                $result = $conn->query($sql);
+
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
+                }
             }
         }
-        //Ako nema pronađenih rezultata za ovu pretragu
+        //Ako $pretraga nije prazna
         else{
-            $response["success"] = "false";
-            $response["message"] = "Nema pronađenih rezultata za ključnu riječ: ".$pretraga;
-        } 
+            //Kreiram upit koji će dohvatiti pacijente ovisno o pretrazi liječnika
+            $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent, 
+                    DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS Datum,
+                    p.mboPacijent FROM pacijent p 
+                    WHERE UPPER(p.imePacijent) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(p.prezPacijent) LIKE UPPER('%{$pretraga}%') OR UPPER(p.datRodPacijent) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(p.mboPacijent) LIKE UPPER('%{$pretraga}%')
+                    ORDER BY p.prezPacijent ASC";
+            $result = $conn->query($sql);
+
+            //Ako ima pronađenih rezultata za navedenu pretragu
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $response[] = $row;
+                }
+            }
+            //Ako nema pronađenih rezultata za ovu pretragu
+            else{
+                $response["success"] = "false";
+                $response["message"] = "Nema pronađenih rezultata za ključnu riječ: ".$pretraga;
+            } 
+        }
         //Vraćam odgovor baze
         return $response;
     }
-    //Funkcija koja dohvaća sve registrirane pacijente
-    function dohvatiSvePacijente(){
+    //Funkcija koja dohvaća trenutno aktivnog pacijenta ili sve pacijente
+    function dohvatiInicijalnoAktivanPacijent(){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
-
+        //Definiram inicijalno stanje obrade
+        $status = "Aktivan";
         //Kreiram prazno polje odgovora
         $response = [];
 
-        //Kreiram sql upit koji će provjeriti koliko ima pacijenata u bazi podataka
-        $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM pacijent";
-        //Rezultat upita spremam u varijablu $resultCountPacijent
-        $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
+        //Kreiram upit koji će provjeriti je li postoji aktivan pacijent u obradi
+        $sqlObrada = "SELECT COUNT(*) AS BrojAktivnihPacijenata FROM obrada_lijecnik o 
+                    WHERE o.statusObrada = '$status'";
+        //Rezultat upita spremam u varijablu $resultObrada
+        $resultObrada = mysqli_query($conn,$sqlObrada);
         //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultCountPacijent) > 0){
+        if(mysqli_num_rows($resultObrada) > 0){
             //Idem redak po redak rezultata upita 
-            while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
-                //Vrijednost rezultata spremam u varijablu $brojPacijenata
-                $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+            while($rowObrada = mysqli_fetch_assoc($resultObrada)){
+                //Vrijednost rezultata spremam u varijablu $brojAktivnihPacijenata
+                $brojAktivnihPacijenata = $rowObrada['BrojAktivnihPacijenata'];
             }
         }
-        //Ako nema pronađenih pacijenata
-        if($brojPacijenata == 0){
-            $response["success"] = "false";
-            $response["message"] = "Nema pronađenih pacijenata!";
+        //Ako NEMA pronađenih pacijenata u obradi
+        if($brojAktivnihPacijenata == 0){
+            //Kreiram sql upit koji će provjeriti koliko ima pacijenata u bazi podataka
+            $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM pacijent";
+            //Rezultat upita spremam u varijablu $resultCountPacijent
+            $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountPacijent) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                    //Vrijednost rezultata spremam u varijablu $brojPacijenata
+                    $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+                }
+            }
+            //Ako nema pronađenih pacijenata
+            if($brojPacijenata == 0){
+                $response["success"] = "false";
+                $response["message"] = "Nema pronađenih pacijenata!";
+            }
+            //Ako ima pronađenih pacijenata
+            else{
+                //Kreiram upit koji dohvaća sve pacijente
+                $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent, 
+                        DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS Datum,
+                        p.mboPacijent FROM pacijent p
+                        ORDER BY p.prezPacijent ASC";
+    
+                $result = $conn->query($sql);
+
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
+                }
+            }
         }
-        //Ako ima pronađenih pacijenata
+        //Ako IMA pronađenih pacijenata u obradi
         else{
-            //Kreiram upit koji dohvaća sve pacijente
+            //Kreiram upit koji će dohvatiti podatke aktivnog pacijenta u obradi
             $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent, 
-                    DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS Datum,
-                    p.mboPacijent FROM pacijent p
-                    ORDER BY p.prezPacijent ASC";
-            
+                    DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS Datum, p.mboPacijent FROM pacijent p 
+                    JOIN obrada_lijecnik o ON o.idPacijent = p.idPacijent 
+                    WHERE o.statusObrada = '$status'";
+
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {
