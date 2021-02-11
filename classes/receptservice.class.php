@@ -540,12 +540,12 @@ class ReceptService{
                     //Ako je broj ponavljanja 0 tj. ako je recept običan:
                     if(empty($brojPonavljanja)){
                         //Inicijalno postavi trajanje terapije na 30 dana
-                        $dostatnost = 30;  
+                        $dostatnost = 30 * ($kolicina);  
                     }
                     //Ako je broj ponavljanja > 0, tj. ako je recept ponovljiv:
                     else{
                         //Izračunaj dostatnost
-                        $dostatnost = 30 * ($brojPonavljanja + 1);
+                        $dostatnost = 30 * ($kolicina) * ($brojPonavljanja + 1);
                     }
                 }
                 //Završi petlju
@@ -625,12 +625,12 @@ class ReceptService{
                         //Ako je broj ponavljanja 0 tj. ako je recept običan:
                         if(empty($brojPonavljanja)){
                             //Inicijalno postavi trajanje terapije na 30 dana
-                            $dostatnost = 30;  
+                            $dostatnost = 30 * ($kolicina);  
                         }
                         //Ako je broj ponavljanja > 0, tj. ako je recept ponovljiv:
                         else{
                             //Izračunaj dostatnost
-                            $dostatnost = 30 * ($brojPonavljanja + 1);
+                            $dostatnost = 30 * ($kolicina) * ($brojPonavljanja + 1);
                         }
                     }
                     //Završi petlju
