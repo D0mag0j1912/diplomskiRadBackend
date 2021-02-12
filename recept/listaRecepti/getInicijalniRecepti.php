@@ -1,9 +1,9 @@
 <?php
 //Importam potrebne klase pomoću autoloadera
-require_once 'C:\wamp64\www\angularPHP\includes\autoloader2.inc.php';
+require_once 'C:\wamp64\www\angularPHP\includes\autoloader3.inc.php';
 
 //Dohvaćam liječnički servis
-$servis = new ReceptService();
+$servis = new ReceptHandlerService();
 
 //Kreiram objekt tipa "Baza"
 $baza = new Baza();
@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     //Kreiram prazno polje
     $response = [];
 
-    $response = $servis->dohvatiInicijalnoAktivanPacijent();
+    $response = $servis->dohvatiInicijalneRecepte();
 
     echo json_encode($response);
 }

@@ -64,11 +64,13 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         if(!empty($sifraSpecijalist)){
             $sifraSpecijalist = (int)$sifraSpecijalist;
         }
+        $idPacijent = mysqli_real_escape_string($conn, trim($request->idPacijent));
+        $idPacijent = (int)$idPacijent;
         $response = $servis->dodajRecept($mkbSifraPrimarna,$mkbSifraSekundarna,$osnovnaListaLijekDropdown,
                                         $osnovnaListaLijekText,$dopunskaListaLijekDropdown,$dopunskaListaLijekText,
                                         $osnovnaListaMagPripravakDropdown,$osnovnaListaMagPripravakText,$dopunskaListaMagPripravakDropdown,
                                         $dopunskaListaMagPripravakText,$kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja,
-                                        $sifraSpecijalist);  
+                                        $sifraSpecijalist,$idPacijent);  
         echo json_encode($response);
     }
 }

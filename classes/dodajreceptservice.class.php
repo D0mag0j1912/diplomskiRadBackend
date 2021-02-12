@@ -11,19 +11,23 @@ class DodajReceptService{
                     $osnovnaListaLijekText,$dopunskaListaLijekDropdown,$dopunskaListaLijekText,
                     $osnovnaListaMagPripravakDropdown,$osnovnaListaMagPripravakText,$dopunskaListaMagPripravakDropdown,
                     $dopunskaListaMagPripravakText,$kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja,
-                    $sifraSpecijalist){
+                    $sifraSpecijalist,$idPacijent){
     //Dohvaćam bazu 
     $baza = new Baza();
     $conn = $baza->spojiSBazom();
     //Kreiram prazno polje odgovora
     $response = [];
-
+    //Trenutni datum
+    $datum = date('Y-m-d');
+    //Trenutno vrijeme za naručivanje
+    $vrijeme = date('H:i');
     //Ako nema sekundarnih dijagnoza
     if(empty($mkbSifraSekundarna)){
         //Kreiram upit za dodavanje novog recepta u bazu
         $sql = "INSERT INTO recept (mkbSifraPrimarna,mkbSifraSekundarna,proizvod,oblikJacinaPakiranjeLijek, 
-                                    kolicina,doziranje,dostatnost,hitnost,ponovljiv,brojPonavljanja,sifraSpecijalist) VALUES 
-                                    (?,?,?,?,?,?,?,?,?,?,?)";
+                                    kolicina,doziranje,dostatnost,hitnost,ponovljiv,brojPonavljanja, 
+                                    sifraSpecijalist,idPacijent,datumRecept,vrijemeRecept) VALUES 
+                                    (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         //Kreiranje prepared statementa
         $stmt = mysqli_stmt_init($conn);
         //Ako je statement neuspješan
@@ -208,8 +212,9 @@ class DodajReceptService{
                 $sifraSpecijalist = NULL;
             }
             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-            mysqli_stmt_bind_param($stmt,"ssssisissii",$mkbSifraPrimarna,$prazna,$proizvod,$oblikJacinaPakiranjeLijek,
-                                    $kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja,$sifraSpecijalist);
+            mysqli_stmt_bind_param($stmt,"ssssisissiiiss",$mkbSifraPrimarna,$prazna,$proizvod,$oblikJacinaPakiranjeLijek,
+                                    $kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv, 
+                                    $brojPonavljanja,$sifraSpecijalist,$idPacijent,$datum,$vrijeme);
             //Izvršavanje statementa
             mysqli_stmt_execute($stmt);
 
@@ -224,8 +229,9 @@ class DodajReceptService{
         foreach($mkbSifraSekundarna as $mkb){
             //Kreiram upit za dodavanje novog recepta u bazu
             $sql = "INSERT INTO recept (mkbSifraPrimarna,mkbSifraSekundarna,proizvod,oblikJacinaPakiranjeLijek, 
-                                        kolicina,doziranje,dostatnost,hitnost,ponovljiv,brojPonavljanja,sifraSpecijalist) VALUES 
-                                        (?,?,?,?,?,?,?,?,?,?,?)";
+                                        kolicina,doziranje,dostatnost,hitnost,ponovljiv,brojPonavljanja, 
+                                        sifraSpecijalist,idPacijent,datumRecept,vrijemeRecept) VALUES 
+                                        (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             //Kreiranje prepared statementa
             $stmt = mysqli_stmt_init($conn);
             //Ako je statement neuspješan
@@ -408,8 +414,9 @@ class DodajReceptService{
                     $sifraSpecijalist = NULL;
                 }
                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                mysqli_stmt_bind_param($stmt,"ssssisissii",$mkbSifraPrimarna,$mkb,$proizvod,$oblikJacinaPakiranjeLijek,
-                        $kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja,$sifraSpecijalist);
+                mysqli_stmt_bind_param($stmt,"ssssisissiiiss",$mkbSifraPrimarna,$mkb,$proizvod,$oblikJacinaPakiranjeLijek,
+                        $kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv, 
+                        $brojPonavljanja,$sifraSpecijalist,$idPacijent,$datum,$vrijeme);
                 //Izvršavanje statementa
                 mysqli_stmt_execute($stmt);
 
