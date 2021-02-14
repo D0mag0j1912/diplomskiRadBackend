@@ -234,7 +234,7 @@ class LijecnikService{
             return null;
         }
     }
-
+    //Funkcija koja ažurira liječnikovu lozinku
     function azurirajLozinka($id,$nova){
         //Dohvaćam bazu 
         $baza = new Baza();
@@ -285,76 +285,6 @@ class LijecnikService{
                 //Vraćam uspješni odgovor
                 $response["success"] = "true";
                 $response["message"] = "Lozinka liječnika je uspješno ažurirana!";
-            }
-        }
-        return $response;
-    }
-    /*******************************************/
-
-    //Funkcija koja briše pacijenta koji ima navedeni ID
-    function obrisiPacijenta($id){
-        //Dohvaćam bazu 
-        $baza = new Baza();
-        $conn = $baza->spojiSBazom();
-
-        //Kreiram prazno polje odgovora
-        $response = [];
-        
-        //Brišem podatke pacijenta iz tablice "osiguranje"
-        $sqlOsiguranje = "DELETE FROM osiguranje 
-                        WHERE mboPacijent IN 
-                        (SELECT mboPacijent FROM pacijent 
-                        WHERE idPacijent = ?)";
-        //Kreiram prepared statement
-        $stmtOsiguranje = mysqli_stmt_init($conn);
-        //Ako je prepared statment neuspješno izvršen
-        if(!mysqli_stmt_prepare($stmtOsiguranje,$sqlOsiguranje)){
-            $response["success"] = "false";
-            $response["message"] = "Prepared statement ne valja!";
-        }
-        //Ako je prepared statement uspješno izvršen
-        else{
-            //Uzima sve parametre i stavlja ih umjesto upitnika u upitu
-            mysqli_stmt_bind_param($stmtOsiguranje,"i",$id);
-            //Izvršavam statement
-            mysqli_stmt_execute($stmtOsiguranje);
-                
-            //Kreiram sql koji će izbrisati pacijenta iz tablice "pacijent"
-            $sqlPacijent = "DELETE FROM pacijent WHERE idPacijent = ?";
-            //Kreiram prepared statement
-            $stmtPacijent = mysqli_stmt_init($conn);
-            //Ako je prepared statment neuspješno izvršen
-            if(!mysqli_stmt_prepare($stmtPacijent,$sqlPacijent)){
-                $response["success"] = "false";
-                $response["message"] = "Prepared statement ne valja!";    
-            }
-            //Ako je prepared statement uspješno izvršen
-            else{
-                //Uzima sve parametre i stavlja ih umjesto upitnika u upitu
-                mysqli_stmt_bind_param($stmtPacijent,"i",$id);
-                //Izvršavam statement
-                mysqli_stmt_execute($stmtPacijent);
-
-                //Kreiram sql koji će izbrisati logove pacijenta kojega želimo izbrisati iz tablice "pacijent_dodatno" 
-                $sqlPacijentDodatno = "DELETE FROM pacijent_dodatno WHERE idPacijent = ?";
-                //Kreiram prepared statement
-                $stmtPacijentDodatno = mysqli_stmt_init($conn);
-                //Ako je prepared statment neuspješno izvršen
-                if(!mysqli_stmt_prepare($stmtPacijentDodatno,$sqlPacijentDodatno)){
-                    $response["success"] = "false";
-                    $response["message"] = "Prepared statement ne valja!";   
-                }
-                //Ako je prepared statement uspješno izvršen
-                else{
-                    //Uzima sve parametre i stavlja ih umjesto upitnika u upitu
-                    mysqli_stmt_bind_param($stmtPacijentDodatno,"i",$id);
-                    //Izvršavam statement
-                    mysqli_stmt_execute($stmtPacijentDodatno);
-
-                    //Vraćam uspješnu poruku frontendu
-                    $response["success"] = "true";
-                    $response["message"] = "Pacijent je uspješno obrisan!";
-                }
             }
         }
         return $response;

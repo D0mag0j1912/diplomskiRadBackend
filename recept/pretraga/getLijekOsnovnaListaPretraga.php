@@ -18,8 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     //Ako je sa frontenda poslan parametar pretrage
     if(isset($_GET['pretraga'])){
+        $pretraga = urldecode($_GET['pretraga']);
         //Dohvaćam vrijednost liječničke pretrage
-        $pretraga = mysqli_real_escape_string($conn, trim($_GET['pretraga']));
+        $pretraga = mysqli_real_escape_string($conn, trim($pretraga));
         //Punim polje sa odgovorom funkcije
         $response = $servis->dohvatiLijekoviOsnovnaListaPretraga($pretraga);
         //Vraćam odgovor frontendu
