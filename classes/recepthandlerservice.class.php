@@ -17,7 +17,9 @@ class ReceptHandlerService{
         $response = []; 
 
         //Ako polje nije prazno
-        if(!empty($statusi)){
+        if(!empty($ids)){
+            //Brojim koliko ID-eva pacijenata ima u ovom polju
+            $brojac = count($ids);
             //Prolazim poljem ID-ova pacijenata
             foreach($ids as $id){
                 //Kreiram SQL upit koji će dohvatiti recepte za ID pacijenta
@@ -28,13 +30,35 @@ class ReceptHandlerService{
                         r.dostatnost,r.idPacijent 
                         FROM recept r 
                         JOIN pacijent p ON p.idPacijent = r.idPacijent
-                        WHERE r.idPacijent = '$id'";
+                        WHERE r.idPacijent = '$id' 
+                        ORDER BY r.datumRecept DESC,r.vrijemeRecept DESC";
 
                 $result = $conn->query($sql);
-
+                
+                //Ako pacijent IMA evidentiranih recepata:
                 if ($result->num_rows > 0) {
                     while($row = $result->fetch_assoc()) {
                         $response[] = $row;
+                    }
+                }
+                //Ako pacijent NEMA evidentiranih recepata:
+                else{
+                    //Ako ima samo JEDAN ID pacijenta:
+                    if($brojac == 1){
+                        //Kreiram sql koji će dohvatiti ime i prezime pacijenta koji odgovara ID-u
+                        $sqlPacijent = "SELECT p.imePacijent,p.prezPacijent FROM pacijent p 
+                                WHERE p.idPacijent = '$id'";
+                        $resultPacijent = $conn->query($sqlPacijent);
+                        //Ako je baza vratila neke redove
+                        if ($resultPacijent->num_rows > 0) {
+                            while($rowPacijent = $resultPacijent->fetch_assoc()) {
+                                //Dohvaćam ime i prezime pacijenta koji nema evidentiranih recepata
+                                $imePacijent = $rowPacijent['imePacijent'];
+                                $prezimePacijent = $rowPacijent['prezPacijent'];
+                            }
+                        }
+                        $response["success"] = "false";
+                        $response["message"] = "Pacijent ".$imePacijent." ".$prezimePacijent." nema evidentiranih recepata!";
                     }
                 }
             }
@@ -89,7 +113,7 @@ class ReceptHandlerService{
                 }
                 //Ako ima pronađenih pacijenata
                 else{
-                    //Kreiram upit koji dohvaća zadnjih 7 pacijenata koje je liječnik stavio u obradu
+                    //Kreiram upit koji dohvaća podatke recepata zadnjih 7 pacijenata koje je liječnik stavio u obradu
                     $sql = "SELECT DISTINCT(r.mkbSifraPrimarna) AS mkbSifraPrimarna,CONCAT(p.imePacijent,' ',p.prezPacijent) AS Pacijent, 
                             DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
                             IF(r.oblikJacinaPakiranjeLijek IS NULL, 
@@ -130,7 +154,7 @@ class ReceptHandlerService{
                 //Ako nema pronađenih recepata
                 if($brojRecept == 0){
                     $response["success"] = "false";
-                    $response["message"] = "Trenutno aktivni pacijent nema evidentiranih recepata!";
+                    $response["message"] = "Aktivni pacijent nema evidentiranih recepata!";
                 }
                 //Ako ima pronađenih recepata za trenutno aktivnog pacijenta
                 else{
@@ -143,7 +167,8 @@ class ReceptHandlerService{
                             JOIN pacijent p ON p.idPacijent = r.idPacijent
                             WHERE r.idPacijent IN 
                             (SELECT o.idPacijent FROM obrada_lijecnik o 
-                            WHERE o.statusObrada = '$status');";
+                            WHERE o.statusObrada = '$status'); 
+                            ORDER BY r.datumRecept DESC, r.vrijemeRecept DESC";
 
                     $result = $conn->query($sql);
 
@@ -167,7 +192,7 @@ class ReceptHandlerService{
                     OR UPPER(DATE_FORMAT(r.datumRecept,'%d.%m.%Y')) LIKE '%a%' 
                     OR UPPER(IF(r.oblikJacinaPakiranjeLijek IS NULL,r.proizvod,CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek))) LIKE '%{$pretraga}%' 
                     OR UPPER(r.dostatnost) LIKE '%{$pretraga}%' 
-                    ORDER BY r.datumRecept DESC;";
+                    ORDER BY r.datumRecept DESC, r.vrijemeRecept DESC;";
             $result = $conn->query($sql);
 
             //Ako ima pronađenih rezultata za navedenu pretragu
@@ -271,7 +296,7 @@ class ReceptHandlerService{
             //Ako nema pronađenih recepata
             if($brojRecept == 0){
                 $response["success"] = "false";
-                $response["message"] = "Trenutno aktivni pacijent nema evidentiranih recepata!";
+                $response["message"] = "Aktivni pacijent nema evidentiranih recepata!";
             }
             //Ako ima pronađenih recepata:
             else{
@@ -285,7 +310,8 @@ class ReceptHandlerService{
                         JOIN pacijent p ON p.idPacijent = r.idPacijent
                         WHERE r.idPacijent IN 
                         (SELECT o.idPacijent FROM obrada_lijecnik o 
-                        WHERE o.statusObrada = '$status')";
+                        WHERE o.statusObrada = '$status') 
+                        ORDER BY r.datumRecept, r.vrijemeRecept DESC";
 
                 $result = $conn->query($sql);
 

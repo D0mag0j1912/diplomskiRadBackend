@@ -20,6 +20,10 @@ if($_SERVER["REQUEST_METHOD"] === "GET"){
     if(isset($_GET['ids'])){
         //Dohvaćam polje ID-ova pacijenata
         $ids = json_decode($_GET['ids']);
+        
+        foreach($ids as $id){
+            $id = (int)$id;
+        }
 
         $response = $servis->dohvatiReceptPoIDu($ids);
 
