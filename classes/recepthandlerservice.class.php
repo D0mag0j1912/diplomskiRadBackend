@@ -7,6 +7,41 @@ date_default_timezone_set('Europe/Zagreb');
 
 class ReceptHandlerService{
 
+    //Funkcija koja dohvaća pacijente na temelju ID-ova (pretraga recepata u listi)
+    function dohvatiPacijentPoIDu($ids){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = []; 
+
+        //Ako polje nije prazno
+        if(!empty($ids)){
+            //Prolazim poljem ID-ova pacijenata
+            foreach($ids as $id){
+                //Kreiram SQL upit koji će dohvatiti recepte za ID pacijenta
+                $sql = "SELECT p.idPacijent,p.imePacijent,p.prezPacijent, 
+                        DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS Datum,
+                        p.mboPacijent FROM pacijent p
+                        WHERE p.idPacijent = '$id'
+                        ORDER BY p.prezPacijent ASC
+                        LIMIT 7;";
+
+                $result = $conn->query($sql);
+                
+                //Ako postoji pacijent s ovim ID-om
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
+                }
+            }
+            //Vraća recepte frontendu
+            return $response;
+        }
+    }
+
     //Funkcija koja dohvaća recepte na temelju ID-ova pacijenata koji se nalaze u lijevoj tablici
     function dohvatiReceptPoIDu($ids){
         //Dohvaćam bazu 
@@ -27,7 +62,7 @@ class ReceptHandlerService{
                         DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
                         IF(r.oblikJacinaPakiranjeLijek IS NULL, 
                         r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod, 
-                        r.dostatnost,r.idPacijent 
+                        r.dostatnost,r.idPacijent,r.vrijemeRecept 
                         FROM recept r 
                         JOIN pacijent p ON p.idPacijent = r.idPacijent
                         WHERE r.idPacijent = '$id' 
@@ -47,7 +82,7 @@ class ReceptHandlerService{
                     if($brojac == 1){
                         //Kreiram sql koji će dohvatiti ime i prezime pacijenta koji odgovara ID-u
                         $sqlPacijent = "SELECT p.imePacijent,p.prezPacijent FROM pacijent p 
-                                WHERE p.idPacijent = '$id'";
+                                        WHERE p.idPacijent = '$id'";
                         $resultPacijent = $conn->query($sqlPacijent);
                         //Ako je baza vratila neke redove
                         if ($resultPacijent->num_rows > 0) {
@@ -118,7 +153,7 @@ class ReceptHandlerService{
                             DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
                             IF(r.oblikJacinaPakiranjeLijek IS NULL, 
                             r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod, 
-                            r.dostatnost,r.idPacijent FROM recept r 
+                            r.dostatnost,r.idPacijent,r.vrijemeRecept  FROM recept r 
                             JOIN pacijent p ON p.idPacijent = r.idPacijent
                             WHERE r.idPacijent IN 
                             (SELECT o.idPacijent FROM obrada_lijecnik o)
@@ -163,7 +198,7 @@ class ReceptHandlerService{
                             DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
                             IF(r.oblikJacinaPakiranjeLijek IS NULL, 
                             r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod, 
-                            r.dostatnost,r.idPacijent FROM recept r 
+                            r.dostatnost,r.idPacijent,r.vrijemeRecept  FROM recept r 
                             JOIN pacijent p ON p.idPacijent = r.idPacijent
                             WHERE r.idPacijent IN 
                             (SELECT o.idPacijent FROM obrada_lijecnik o 
@@ -186,7 +221,7 @@ class ReceptHandlerService{
                     DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
                     IF(r.oblikJacinaPakiranjeLijek IS NULL, 
                     r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod, 
-                    r.dostatnost,r.idPacijent FROM recept r 
+                    r.dostatnost,r.idPacijent,r.vrijemeRecept  FROM recept r 
                     JOIN pacijent p ON p.idPacijent = r.idPacijent
                     WHERE UPPER(r.mkbSifraPrimarna) LIKE '%{$pretraga}%' OR UPPER(CONCAT(p.imePacijent,' ',p.prezPacijent)) LIKE '%{$pretraga}%' 
                     OR UPPER(DATE_FORMAT(r.datumRecept,'%d.%m.%Y')) LIKE '%a%' 
@@ -260,7 +295,7 @@ class ReceptHandlerService{
                         DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
                         IF(r.oblikJacinaPakiranjeLijek IS NULL, 
                         r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod, 
-                        r.dostatnost,r.idPacijent FROM recept r 
+                        r.dostatnost,r.idPacijent,r.vrijemeRecept  FROM recept r 
                         JOIN pacijent p ON p.idPacijent = r.idPacijent
                         WHERE r.idPacijent IN 
                         (SELECT o.idPacijent FROM obrada_lijecnik o)
@@ -306,7 +341,7 @@ class ReceptHandlerService{
                         DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
                         IF(r.oblikJacinaPakiranjeLijek IS NULL, 
                         r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod, 
-                        r.dostatnost,r.idPacijent FROM recept r 
+                        r.dostatnost,r.idPacijent,r.vrijemeRecept  FROM recept r 
                         JOIN pacijent p ON p.idPacijent = r.idPacijent
                         WHERE r.idPacijent IN 
                         (SELECT o.idPacijent FROM obrada_lijecnik o 
