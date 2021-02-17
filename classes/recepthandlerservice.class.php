@@ -202,7 +202,7 @@ class ReceptHandlerService{
                             JOIN pacijent p ON p.idPacijent = r.idPacijent
                             WHERE r.idPacijent IN 
                             (SELECT o.idPacijent FROM obrada_lijecnik o 
-                            WHERE o.statusObrada = '$status'); 
+                            WHERE o.statusObrada = '$status') 
                             ORDER BY r.datumRecept DESC, r.vrijemeRecept DESC";
 
                     $result = $conn->query($sql);

@@ -23,7 +23,7 @@ if($_SERVER["REQUEST_METHOD"] === "GET"){
         //Dohvaćam polje statusa
         $statusi = json_decode($_GET['statusi']);
 
-        $response = $servis->dohvatiPacijentaPoStatusu($tip,$statusi);
+        $response = $servis->dohvatiPacijentaPoStatusu($tip,$statusi,$servis->dohvati10zadnjih($tip));
 
         echo json_encode($response);
     }

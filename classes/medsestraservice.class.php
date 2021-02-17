@@ -307,7 +307,9 @@ class MedSestraService{
                 //Definiram početni broj LIMIT-a (s koje n-torke se počinje)
                 $pocetak = ($trenutnaStranica-1)*$brojPacijenataStranica;
                 //Kreiram upit koji dohvaća osobne podatke pacijenta
-                $sql = "SELECT * FROM pacijent p 
+                $sql = "SELECT p.idPacijent,p.imePacijent, 
+                        p.prezPacijent,DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS Datum,
+                        p.adresaPacijent FROM pacijent p 
                         WHERE p.imePacijent = '$ime' 
                         OR p.prezPacijent = '$prezime' 
                         LIMIT $pocetak, $brojPacijenataStranica";
@@ -348,7 +350,9 @@ class MedSestraService{
                 //Definiram početni broj LIMIT-a (s koje n-torke se počinje)
                 $pocetak = ($trenutnaStranica-1)*$brojPacijenataStranica;
                 //Kreiram upit koji dohvaća osobne podatke pacijenta
-                $sql = "SELECT * FROM pacijent p 
+                $sql = "SELECT p.idPacijent,p.imePacijent, 
+                        p.prezPacijent,DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS Datum,
+                        p.adresaPacijent FROM pacijent p 
                         WHERE p.imePacijent = '$ime' 
                         AND p.prezPacijent = '$prezime' 
                         LIMIT $pocetak, $brojPacijenataStranica";

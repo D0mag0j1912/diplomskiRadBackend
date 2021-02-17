@@ -654,7 +654,7 @@ class CekaonicaService{
     }
 
     //Funkcija koja dohvaća pacijente iz čekaonice po njihovom statusu u čekaonici
-    function dohvatiPacijentaPoStatusu($tip,$statusi){
+    function dohvatiPacijentaPoStatusu($tip,$statusi,$dohvati10zadnjih){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -738,8 +738,13 @@ class CekaonicaService{
                     }
                 }
             }
-            return $response;
         }
+        //Kada su STATUSI PRAZNI
+        else{
+            //Kreiram upit koji dohvaća sve pacijente iz čekaonice
+            $response = $dohvati10zadnjih;
+        }
+        return $response;
     }
 }
 ?>
