@@ -3,7 +3,7 @@
 require_once 'C:\wamp64\www\angularPHP\includes\autoloader3.inc.php';
 
 //Dohvaćam liječnički servis
-$servis = new ReceptHandlerService();
+$servis = new PrikazReceptService();
 
 //Kreiram objekt tipa "Baza"
 $baza = new Baza();
@@ -16,13 +16,9 @@ if($_SERVER["REQUEST_METHOD"] === "GET"){
     //Deklariram prazno polje
     $response = [];
 
-    //Ako je frontend poslao tip prijavljenog korisnika i statuse 
-    if(isset($_GET['ids'])){
-        
-
-        $response = $servis->dohvatiPacijentPoIDu($ids);
-
-        echo json_encode($response);
-    }
+    //Punim polje odgovorom funkcije
+    $response = $servis->dohvatiZdrUst();
+    //Vraćam odgovor frontendu
+    echo json_encode($response);
 }
 ?>

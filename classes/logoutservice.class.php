@@ -10,7 +10,9 @@ class LogoutService{
     //Funkcija koja kao argumente ima tip korisnika i njegov token
     function logout($tip,$token){
         //Generiram trenutno vrijeme
-        $trenutniDatum = date("Y-m-d h:i:sa");
+        $trenutniDatum = date("Y-m-d");
+        //Trenutno vrijeme
+        $vrijeme = date('H:i');
         //Pokreće se nova sesija
         session_start();
 
@@ -26,7 +28,7 @@ class LogoutService{
 
             //Ubacivam datum odjave liječnika u tablicu "session_lijecnik":
             //Kreiram upit za ubacivanje podataka u tablicu "session_lijecnik" :
-            $sql = "UPDATE session_lijecnik sl SET sl.datOdjLijecnik = ? 
+            $sql = "UPDATE session_lijecnik sl SET sl.datOdjLijecnik = ?,sl.vrijemeOdjLijecnik = ? 
                     WHERE sl.tokenLijecnik = ?";
             //Kreiram prepared statment
             $stmt = mysqli_stmt_init($conn);
@@ -39,7 +41,7 @@ class LogoutService{
                 
                 //Ako je prepared statment uspješno izvršen
                 //Uzima sve parametre i stavlja ih umjesto upitnika
-                mysqli_stmt_bind_param($stmt,"ss",$trenutniDatum,$token);
+                mysqli_stmt_bind_param($stmt,"sss",$trenutniDatum,$vrijeme,$token);
                 //Izvršavam statement
                 mysqli_stmt_execute($stmt);
                 //$_SESSION polje se prazni 
@@ -55,7 +57,7 @@ class LogoutService{
         else if($tip == "sestra"){
             //Ubacivam datum odjave med. sestre u tablicu "session_med_ses":
             //Kreiram upit za ubacivanje podataka u tablicu "session_med_ses" :
-            $sql = "UPDATE session_med_sestra sms SET sms.datOdjMedSestra = ? 
+            $sql = "UPDATE session_med_sestra sms SET sms.datOdjMedSestra = ?, sms.vrijemeOdjMedSestra = ? 
                     WHERE sms.tokenMedSestra = ?";
             //Kreiram prepared statment
             $stmt = mysqli_stmt_init($conn);
@@ -68,7 +70,7 @@ class LogoutService{
                 
                 //Ako je prepared statment uspješno izvršen
                 //Uzima sve parametre i stavlja ih umjesto upitnika
-                mysqli_stmt_bind_param($stmt,"ss",$trenutniDatum,$token);
+                mysqli_stmt_bind_param($stmt,"sss",$trenutniDatum,$vrijeme,$token);
                 //Izvršavam statement
                 mysqli_stmt_execute($stmt);
                 //$_SESSION polje se prazni 

@@ -23,7 +23,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 		//Deklariram prazno polje
         $response = [];
 
-        //Dohvaćam ID koji je frontend poslao
+        //Dohvaćam ID pacijenta koji je frontend poslao
         $id = mysqli_real_escape_string($conn, trim($request->id));
         //Dohvaćam tip korisnika koji je frontend poslao
         $tip = mysqli_real_escape_string($conn, trim($request->tip));

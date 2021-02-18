@@ -19,7 +19,7 @@ class DodajReceptService{
     $response = [];
     //Trenutni datum
     $datum = date('Y-m-d');
-    //Trenutno vrijeme za naručivanje
+    //Trenutno vrijeme
     $vrijeme = date('H:i');
     //Ako nema sekundarnih dijagnoza
     if(empty($mkbSifraSekundarna)){

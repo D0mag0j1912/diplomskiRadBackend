@@ -14,9 +14,11 @@ class LoginService{
         //Kreiram objekt tipa "Baza"
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
-
+        //Trenutno vrijeme
+        $vrijeme = date('H:i');
+        //Kreiram upit koji provjerava postoji li uneseni email u bazi
         $sql = "SELECT * FROM korisnik k 
-        WHERE k.email = ?";
+                WHERE k.email = ?";
 
         //Kreiranje prepared statementa
         $stmt = mysqli_stmt_init($conn);
@@ -67,10 +69,10 @@ class LoginService{
                                 $_SESSION['email'] = $rowLijecnik['email'];
                                 //Kreiram token za liječnika
                                 $token = sha1(uniqid($_SESSION['email'], true));
-                                $_SESSION['datPrijLijecnik']=date("Y-m-d h:i:sa");
+                                $_SESSION['datPrijLijecnik']=date("Y-m-d");
                                 $_SESSION['tokenLijecnik'] = $token;
                                 //Kreiram upit za ubacivanje podataka u tablicu "session_lijecnik" :
-                                $sqlSessionLijecnik = "INSERT INTO session_lijecnik (idLijecnik,datPrijLijecnik,tokenLijecnik) VALUES (?,?,?)";
+                                $sqlSessionLijecnik = "INSERT INTO session_lijecnik (idLijecnik,datPrijLijecnik,tokenLijecnik,vrijemePrijLijecnik) VALUES (?,?,?,?)";
                                 //Kreiram prepared statment
                                 $stmtSessionLijecnik = mysqli_stmt_init($conn);
                                 //Ako je prepared statment neuspješno izvršen
@@ -81,7 +83,7 @@ class LoginService{
                                 else{
                                     //Ako je prepared statment uspješno izvršen
                                     //Uzima sve parametre što je liječnik unio i stavlja ih umjesto upitnika
-                                    mysqli_stmt_bind_param($stmtSessionLijecnik,"iss",$_SESSION['idLijecnik'],$_SESSION['datPrijLijecnik'],$_SESSION['tokenLijecnik']);
+                                    mysqli_stmt_bind_param($stmtSessionLijecnik,"isss",$_SESSION['idLijecnik'],$_SESSION['datPrijLijecnik'],$_SESSION['tokenLijecnik'],$vrijeme);
                                     //Izvršavam statement
                                     mysqli_stmt_execute($stmtSessionLijecnik);
 
@@ -116,10 +118,10 @@ class LoginService{
                                 $_SESSION['email'] = $rowSestra['email'];
                                 //Kreiram token za medicinsku sestru
                                 $token = sha1(uniqid($_SESSION['email'], true));
-                                $_SESSION['datPrijMedSestra']=date("Y-m-d h:i:sa");
+                                $_SESSION['datPrijMedSestra']=date("Y-m-d");
                                 $_SESSION['tokenMedSestra'] = $token;
                                 //Kreiram upit za ubacivanje podataka u tablicu "session_med_ses" :
-                                $sqlSessionMedSestra = "INSERT INTO session_med_sestra (idMedSestra,datPrijMedSestra,tokenMedSestra) VALUES (?,?,?)";
+                                $sqlSessionMedSestra = "INSERT INTO session_med_sestra (idMedSestra,datPrijMedSestra,tokenMedSestra,vrijemePrijMedSestra) VALUES (?,?,?,?)";
                                 //Kreiram prepared statment
                                 $stmtSessionMedSestra = mysqli_stmt_init($conn);
                                 //Ako je prepared statment neuspješno izvršen
@@ -130,7 +132,7 @@ class LoginService{
                                 else{
                                     //Ako je prepared statment uspješno izvršen
                                     //Uzima sve parametre što je medicinska sestra unijela i stavlja ih umjesto upitnika
-                                    mysqli_stmt_bind_param($stmtSessionMedSestra,"iss",$_SESSION['idMedSestra'],$_SESSION['datPrijMedSestra'],$_SESSION['tokenMedSestra']);
+                                    mysqli_stmt_bind_param($stmtSessionMedSestra,"isss",$_SESSION['idMedSestra'],$_SESSION['datPrijMedSestra'],$_SESSION['tokenMedSestra'],$vrijeme);
                                     //Izvršavam statement
                                     mysqli_stmt_execute($stmtSessionMedSestra);
 

@@ -278,6 +278,7 @@ class ObradaService{
 
                     $response["success"] = "true";
                     $response["message"] = "Pacijent je uspješno dodan u obradu!";
+                    
                 }
             }
         }
@@ -330,6 +331,7 @@ class ObradaService{
 
                     $response["success"] = "true";
                     $response["message"] = "Pacijent je uspješno dodan u obradu!";
+                    
                 }
             }
         }
