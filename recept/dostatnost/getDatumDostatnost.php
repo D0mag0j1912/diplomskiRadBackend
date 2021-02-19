@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if(isset($_GET['dostatnost'])){
         //Dohvaćam dostatnost
         $dostatnost = mysqli_real_escape_string($conn, trim($_GET['dostatnost']));
+        $dostatnost = (int)$dostatnost;
         //Punim polje sa odgovorom funkcije
         $response = $servis->dohvatiDatumDostatnost($dostatnost);
         //Vraćam response frontendu

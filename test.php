@@ -107,7 +107,7 @@ function dohvatiPacijentRecept($dostatnost,$datumRecept,
         $sql = "SELECT r.*,CONCAT(p.imePacijent,' ',p.prezPacijent) AS imePrezimePacijent, 
                 DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS DatumRodenja, p.adresaPacijent FROM recept r 
                 JOIN pacijent p ON p.idPacijent = r.idPacijent 
-                WHERE r.dostatnost = '$dostatnost' AND r.datumRecept = '$datumRecept' 
+                WHERE r.dostatnost = '$dostatnost' AND DATE_FORMAT(r.datumRecept,'%d.%m.%Y') = '$datumRecept' 
                 AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                 AND r.proizvod = '$zasticenoImeLijek' AND r.oblikJacinaPakiranjeLijek = '$oblikJacinaPakiranjeLijek' AND r.vrijemeRecept = '$vrijemeRecept'";
         $result = $conn->query($sql);
@@ -159,7 +159,7 @@ function dohvatiPacijentRecept($dostatnost,$datumRecept,
         $sql = "SELECT r.*,CONCAT(p.imePacijent,' ',p.prezPacijent) AS imePrezimePacijent, 
                 DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS DatumRodenja, p.adresaPacijent FROM recept r 
                 JOIN pacijent p ON p.idPacijent = r.idPacijent 
-                WHERE r.dostatnost = '$dostatnost' AND r.datumRecept = '$datumRecept' 
+                WHERE r.dostatnost = '$dostatnost' AND DATE_FORMAT(r.datumRecept,'%d.%m.%Y') = '$datumRecept' 
                 AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                 AND r.proizvod = '$zasticenoImeLijek' AND r.oblikJacinaPakiranjeLijek = '$oblikJacinaPakiranjeLijek' AND r.vrijemeRecept = '$vrijemeRecept'";
         $result = $conn->query($sql);
@@ -173,24 +173,26 @@ function dohvatiPacijentRecept($dostatnost,$datumRecept,
         }
     }
     //Ako su OJP i zaštićeno ime lijeka I DALJE NULL
-    //Kreiram sql upit koji će dohvatiti podatke pacijenta i recepta
-    $sql = "SELECT r.*,CONCAT(p.imePacijent,' ',p.prezPacijent) AS imePrezimePacijent, 
-            DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS DatumRodenja, p.adresaPacijent FROM recept r 
-            JOIN pacijent p ON p.idPacijent = r.idPacijent 
-            WHERE r.dostatnost = '$dostatnost' AND r.datumRecept = '$datumRecept' 
-            AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
-            AND r.proizvod = '$proizvod' AND r.vrijemeRecept = '$vrijemeRecept'";
-    $result = $conn->query($sql);
+    else{
+        //Kreiram sql upit koji će dohvatiti podatke pacijenta i recepta
+        $sql = "SELECT r.*,CONCAT(p.imePacijent,' ',p.prezPacijent) AS imePrezimePacijent, 
+                DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS DatumRodenja, p.adresaPacijent FROM recept r 
+                JOIN pacijent p ON p.idPacijent = r.idPacijent 
+                WHERE r.dostatnost = '$dostatnost' AND DATE_FORMAT(r.datumRecept,'%d.%m.%Y') = '$datumRecept' 
+                AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                AND r.proizvod = '$proizvod' AND r.vrijemeRecept = '$vrijemeRecept'";
+        $result = $conn->query($sql);
 
-    //Ako pacijent IMA evidentiranih recepata:
-    if ($result->num_rows > 0) {
-        while($row = $result->fetch_assoc()) {
-            $response[] = $row;
+        //Ako pacijent IMA evidentiranih recepata:
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
         }
-    }
 
-    //Vraćam odgovor 
-    return $response;
+        //Vraćam odgovor 
+        return $response;
+    }
 }
 foreach($response as $recept){
     foreach($recept as $r){
