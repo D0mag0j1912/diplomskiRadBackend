@@ -7,6 +7,32 @@ date_default_timezone_set('Europe/Zagreb');
 
 class ReceptHandlerService{
 
+    //Funkcija koja dohvaća sve podatke recepta u svrhu njihovog prikazivanja u formi (AŽURIRANJE RECEPTA)
+    function dohvatiRecept($dostatnost,$datumRecept, 
+                            $idPacijent,$mkbSifraPrimarna, 
+                            $proizvod,$vrijemeRecept){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+        //Kreiram prazno polje odgovora
+        $response = []; 
+
+        $sql = "SELECT * FROM recept r 
+                WHERE r.dostatnost = '$dostatnost' AND DATE_FORMAT(r.datumRecept,'%d.%m.%Y') = '$datumRecept' 
+                AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                AND r.proizvod = '$proizvod' 
+                AND r.vrijemeRecept = '$vrijemeRecept'";
+        $result = $conn->query($sql);
+                
+        //Ako postoji pacijent s ovim ID-om
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+        return $response;
+    }
+
     //Funkcija koja dohvaća pacijente na temelju ID-ova (pretraga recepata u listi)
     function dohvatiPacijentPoIDu($ids){
         //Dohvaćam bazu 
