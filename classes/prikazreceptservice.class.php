@@ -117,7 +117,7 @@ class PrikazReceptService {
             }
             //Povećavam brojač za 1
             $brojac++;
-            if($brojac === 20){
+            if($brojac == 20){
                 break;
             }
         }
@@ -131,7 +131,7 @@ class PrikazReceptService {
                     r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod,
                     CONCAT(p.imePacijent,' ',p.prezPacijent) AS imePrezimePacijent, 
                     r.kolicina,r.doziranje,r.dostatnost,r.brojPonavljanja,r.sifraSpecijalist,r.oblikJacinaPakiranjeLijek,
-                    DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS DatumRodenja, p.adresaPacijent FROM recept r 
+                    DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS DatumRodenja, p.adresaPacijent, r.hitnost FROM recept r 
                     JOIN pacijent p ON p.idPacijent = r.idPacijent 
                     JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
                     WHERE r.dostatnost = '$dostatnost' AND DATE_FORMAT(r.datumRecept,'%d.%m.%Y') = '$datumRecept' 
@@ -177,7 +177,7 @@ class PrikazReceptService {
                 }
                 //Povećavam brojač za 1
                 $brojac++;
-                if($brojac === 20){
+                if($brojac == 20){
                     break;
                 }
             }
@@ -191,7 +191,7 @@ class PrikazReceptService {
                         r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod,
                         CONCAT(p.imePacijent,' ',p.prezPacijent) AS imePrezimePacijent, 
                         r.kolicina,r.doziranje,r.dostatnost,r.brojPonavljanja,r.sifraSpecijalist,r.oblikJacinaPakiranjeLijek,
-                        DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS DatumRodenja, p.adresaPacijent FROM recept r 
+                        DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS DatumRodenja, p.adresaPacijent, r.hitnost FROM recept r 
                         JOIN pacijent p ON p.idPacijent = r.idPacijent 
                         JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
                         WHERE r.dostatnost = '$dostatnost' AND DATE_FORMAT(r.datumRecept,'%d.%m.%Y') = '$datumRecept' 
@@ -217,7 +217,7 @@ class PrikazReceptService {
                         r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod,
                         CONCAT(p.imePacijent,' ',p.prezPacijent) AS imePrezimePacijent, 
                         r.kolicina,r.doziranje,r.dostatnost,r.brojPonavljanja,r.sifraSpecijalist,r.oblikJacinaPakiranjeLijek,
-                        DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS DatumRodenja, p.adresaPacijent FROM recept r 
+                        DATE_FORMAT(p.datRodPacijent,'%d.%m.%Y') AS DatumRodenja, p.adresaPacijent, r.hitnost FROM recept r 
                         JOIN pacijent p ON p.idPacijent = r.idPacijent 
                         JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
                         WHERE r.dostatnost = '$dostatnost' AND DATE_FORMAT(r.datumRecept,'%d.%m.%Y') = '$datumRecept' 

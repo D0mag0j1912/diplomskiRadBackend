@@ -16,21 +16,145 @@ class ReceptHandlerService{
         $conn = $baza->spojiSBazom();
         //Kreiram prazno polje odgovora
         $response = []; 
+        //Inicijalno definiram da nisam pronašao recept
+        $pronasao = false;
+        //Inicijalno postavljam brojač na 2
+        $brojac = 2;
+        //Definiram zaštićeno ime lijeka i postavljam ga na NULL trenutno
+        $zasticenoImeLijek = NULL;
+        //Definiram oblik, jačinu i pakiranje lijeka i postavljam ga na NULL trenutno
+        $oblikJacinaPakiranjeLijek = NULL;
+        //Dohvaćam OJP u OSNOVNOJ LISTI ako ga ima
+        while($pronasao !== true){
+            //Splitam string da mu uzmem ime i oblik-jačinu-pakiranje (KREĆEM OD 2)
+            $polje = explode(" ",$proizvod,$brojac);
+            //Dohvaćam oblik,jačinu i pakiranje lijeka
+            $ojpLijek = array_pop($polje);
+            //Dohvaćam ime lijeka
+            $imeLijek = implode(" ", $polje);
 
-        $sql = "SELECT * FROM recept r 
-                WHERE r.dostatnost = '$dostatnost' AND DATE_FORMAT(r.datumRecept,'%d.%m.%Y') = '$datumRecept' 
-                AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
-                AND r.proizvod = '$proizvod' 
-                AND r.vrijemeRecept = '$vrijemeRecept'";
-        $result = $conn->query($sql);
-                
-        //Ako postoji pacijent s ovim ID-om
-        if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                $response[] = $row;
+            //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
+            $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovnalistalijekova o 
+                            WHERE o.oblikJacinaPakiranjeLijek = '$ojpLijek' AND o.zasticenoImeLijek = '$imeLijek'";
+
+            $resultOsnovnaLista = $conn->query($sqlOsnovnaLista);
+            //Ako je lijek pronađen u OSNOVNOJ LISTI LIJEKOVA
+            if ($resultOsnovnaLista->num_rows > 0) {
+                while($rowOsnovnaLista = $resultOsnovnaLista->fetch_assoc()) {
+                    //Dohvaćam oblik, jačinu i pakiranje unesenog lijeka
+                    $oblikJacinaPakiranjeLijek = $rowOsnovnaLista['oblikJacinaPakiranjeLijek'];
+                    $zasticenoImeLijek = $rowOsnovnaLista['zasticenoImeLijek'];
+                }
+                //Izlazim iz petlje
+                $pronasao = true;
+            }
+            //Povećavam brojač za 1
+            $brojac++;
+            if($brojac == 20){
+                break;
             }
         }
-        return $response;
+        //Ako je proizvod pronađen u OSNOVNOJ LISTI
+        if($pronasao == true){
+            //Kreiram sql upit koji će dohvatiti podatke pacijenta i recepta
+            $sql = "SELECT r.mkbSifraPrimarna, d.imeDijagnoza AS nazivPrimarna, GROUP_CONCAT(DISTINCT r.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna,
+                    r.proizvod, r.oblikJacinaPakiranjeLijek, r.kolicina, r.doziranje, 
+                    r.dostatnost, r.hitnost, r.ponovljiv, r.brojPonavljanja, r.sifraSpecijalist, 
+                    r.idPacijent, r.datumRecept, r.vrijemeRecept FROM recept r 
+                    JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
+                    WHERE r.dostatnost = '$dostatnost' AND DATE_FORMAT(r.datumRecept,'%d.%m.%Y') = '$datumRecept' 
+                    AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                    AND r.proizvod = '$zasticenoImeLijek' AND r.oblikJacinaPakiranjeLijek = '$oblikJacinaPakiranjeLijek' 
+                    AND r.vrijemeRecept = '$vrijemeRecept'";
+            $result = $conn->query($sql);
+                    
+            //Ako pacijent IMA evidentiranih recepata:
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $response[] = $row;
+                }
+                return $response;
+            }
+        }
+        //Ako su OJP i zaštićeno ime lijeka JOŠ NULL, sljedeće provjeravam u dopunskoj listi lijekova
+        else if($pronasao == false){
+            //Postavljam brojač inicijalno na 2
+            $brojac = 2;
+            //Dohvaćam OJP ako ga ima
+            while($pronasao !== true){
+                //Splitam string da mu uzmem ime i oblik-jačinu-pakiranje (KREĆEM OD 2)
+                $polje = explode(" ",$proizvod,$brojac);
+                //Dohvaćam oblik,jačinu i pakiranje lijeka
+                $ojpLijek = array_pop($polje);
+                //Dohvaćam ime lijeka
+                $imeLijek = implode(" ", $polje);
+
+                //Kreiram sql upit kojim provjeravam postoji li LIJEK u DOPUNSKOJ listi lijekova
+                $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunskalistalijekova d 
+                                    WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' AND d.zasticenoImeLijek = '$imeLijek'";
+
+                $resultDopunskaLista = $conn->query($sqlDopunskaLista);
+                //Ako je lijek pronađen u DOPUNSKOJ LISTI LIJEKOVA
+                if ($resultDopunskaLista->num_rows > 0) {
+                    while($rowDopunskaLista = $resultDopunskaLista->fetch_assoc()) {
+                        //Dohvaćam oblik, jačinu i pakiranje unesenog lijeka
+                        $oblikJacinaPakiranjeLijek = $rowDopunskaLista['oblikJacinaPakiranjeLijek'];
+                        $zasticenoImeLijek = $rowDopunskaLista['zasticenoImeLijek'];
+                    }
+                    //Izlazim iz petlje
+                    $pronasao = true;
+                }
+                //Povećavam brojač za 1
+                $brojac++;
+                if($brojac == 20){
+                    break;
+                }
+            }
+            //Ako je lijek PRONAĐEN u DOPUNSKOJ LISTI LIJEKOVA
+            if($pronasao == true){
+                //Kreiram sql upit koji će dohvatiti podatke pacijenta i recepta
+                $sql = "SELECT r.mkbSifraPrimarna,d.imeDijagnoza AS nazivPrimarna, GROUP_CONCAT(DISTINCT r.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna,
+                        r.proizvod, r.oblikJacinaPakiranjeLijek, r.kolicina, r.doziranje, 
+                        r.dostatnost, r.hitnost, r.ponovljiv, r.brojPonavljanja, r.sifraSpecijalist, 
+                        r.idPacijent, r.datumRecept, r.vrijemeRecept FROM recept r 
+                        JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
+                        WHERE r.dostatnost = '$dostatnost' AND DATE_FORMAT(r.datumRecept,'%d.%m.%Y') = '$datumRecept' 
+                        AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                        AND r.proizvod = '$zasticenoImeLijek' AND r.oblikJacinaPakiranjeLijek = '$oblikJacinaPakiranjeLijek' 
+                        AND r.vrijemeRecept = '$vrijemeRecept'";
+                $result = $conn->query($sql);
+                        
+                //Ako pacijent IMA evidentiranih recepata:
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
+                    return $response;
+                }
+            }
+            //Ako OJP i zaštićeno ime NISU pronađeni u DOPUNSKOJ LISTI lijekova
+            else if($pronasao == false){
+                //Kreiram sql upit koji će dohvatiti podatke pacijenta i recepta
+                $sql = "SELECT r.mkbSifraPrimarna, d.imeDijagnoza AS nazivPrimarna, GROUP_CONCAT(DISTINCT r.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna,
+                        r.proizvod, r.oblikJacinaPakiranjeLijek, r.kolicina, r.doziranje, 
+                        r.dostatnost, r.hitnost, r.ponovljiv, r.brojPonavljanja, r.sifraSpecijalist, 
+                        r.idPacijent, r.datumRecept, r.vrijemeRecept FROM recept r 
+                        JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
+                        WHERE r.dostatnost = '$dostatnost' AND DATE_FORMAT(r.datumRecept,'%d.%m.%Y') = '$datumRecept' 
+                        AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                        AND r.proizvod = '$proizvod' 
+                        AND r.vrijemeRecept = '$vrijemeRecept'";
+                $result = $conn->query($sql);
+                        
+                //Ako pacijent IMA evidentiranih recepata:
+                if ($result->num_rows > 0) {
+                    while($row = $result->fetch_assoc()) {
+                        $response[] = $row;
+                    }
+                    return $response;
+                }
+            }
+        }
     }
 
     //Funkcija koja dohvaća pacijente na temelju ID-ova (pretraga recepata u listi)
@@ -92,7 +216,8 @@ class ReceptHandlerService{
                         FROM recept r 
                         JOIN pacijent p ON p.idPacijent = r.idPacijent
                         WHERE r.idPacijent = '$id' 
-                        ORDER BY r.datumRecept DESC,r.vrijemeRecept DESC";
+                        ORDER BY r.datumRecept DESC,r.vrijemeRecept DESC 
+                        LIMIT 3";
 
                 $result = $conn->query($sql);
                 
@@ -174,23 +299,44 @@ class ReceptHandlerService{
                 }
                 //Ako ima pronađenih pacijenata
                 else{
-                    //Kreiram upit koji dohvaća podatke recepata zadnjih 7 pacijenata koje je liječnik stavio u obradu
-                    $sql = "SELECT DISTINCT(r.mkbSifraPrimarna) AS mkbSifraPrimarna,CONCAT(p.imePacijent,' ',p.prezPacijent) AS Pacijent, 
-                            DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
-                            IF(r.oblikJacinaPakiranjeLijek IS NULL, 
-                            r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod, 
-                            r.dostatnost,r.idPacijent,r.vrijemeRecept  FROM recept r 
-                            JOIN pacijent p ON p.idPacijent = r.idPacijent
-                            WHERE r.idPacijent IN 
-                            (SELECT o.idPacijent FROM obrada_lijecnik o)
-                            ORDER BY r.datumRecept DESC,r.vrijemeRecept DESC
-                            LIMIT 7;";
+                    //Kreiram upit koji provjerava imaju li pacijenti u liječnikovoj obradi zabilježenih recepata
+                    $sqlCountProvjera = "SELECT COUNT(*) AS BrojRecept  FROM recept r 
+                                        WHERE r.idPacijent IN 
+                                        (SELECT o.idPacijent FROM obrada_lijecnik o);";
+                    //Rezultat upita spremam u varijablu $resultCountProvjera
+                    $resultCountProvjera = mysqli_query($conn,$sqlCountProvjera);
+                    //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+                    if(mysqli_num_rows($resultCountProvjera) > 0){
+                        //Idem redak po redak rezultata upita 
+                        while($rowCountProvjera = mysqli_fetch_assoc($resultCountProvjera)){
+                            //Vrijednost rezultata spremam u varijablu $brojSvihRecepata
+                            $brojSvihRecepata = $rowCountProvjera['BrojRecept'];
+                        }
+                    }
+                    //Ako nema pronađenih recepata za pacijente koji su u liječnikovoj obradi
+                    if($brojSvihRecepata == 0){
+                        $response["success"] = "false";
+                        $response["message"] = "Nema evidentiranih recepata!";
+                    }
+                    else{
+                        //Kreiram upit koji dohvaća podatke recepata zadnjih 7 pacijenata koje je liječnik stavio u obradu
+                        $sql = "SELECT DISTINCT(r.mkbSifraPrimarna) AS mkbSifraPrimarna,CONCAT(p.imePacijent,' ',p.prezPacijent) AS Pacijent, 
+                                DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
+                                IF(r.oblikJacinaPakiranjeLijek IS NULL, 
+                                r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod, 
+                                r.dostatnost,r.idPacijent,r.vrijemeRecept  FROM recept r 
+                                JOIN pacijent p ON p.idPacijent = r.idPacijent
+                                WHERE r.idPacijent IN 
+                                (SELECT o.idPacijent FROM obrada_lijecnik o)
+                                ORDER BY r.datumRecept DESC,r.vrijemeRecept DESC
+                                LIMIT 7;";
 
-                    $result = $conn->query($sql);
+                        $result = $conn->query($sql);
 
-                    if ($result->num_rows > 0) {
-                        while($row = $result->fetch_assoc()) {
-                            $response[] = $row;
+                        if ($result->num_rows > 0) {
+                            while($row = $result->fetch_assoc()) {
+                                $response[] = $row;
+                            }
                         }
                     }
                 }
@@ -229,7 +375,8 @@ class ReceptHandlerService{
                             WHERE r.idPacijent IN 
                             (SELECT o.idPacijent FROM obrada_lijecnik o 
                             WHERE o.statusObrada = '$status') 
-                            ORDER BY r.datumRecept DESC, r.vrijemeRecept DESC";
+                            ORDER BY r.datumRecept DESC, r.vrijemeRecept DESC 
+                            LIMIT 3";
 
                     $result = $conn->query($sql);
 
@@ -316,23 +463,44 @@ class ReceptHandlerService{
             }
             //Ako ima pronađenih pacijenata
             else{
-                //Kreiram upit koji dohvaća recepte za zadnjih 7 pacijenata koje je liječnik stavio u obradu
-                $sql = "SELECT DISTINCT(r.mkbSifraPrimarna) AS mkbSifraPrimarna,CONCAT(p.imePacijent,' ',p.prezPacijent) AS Pacijent, 
-                        DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
-                        IF(r.oblikJacinaPakiranjeLijek IS NULL, 
-                        r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod, 
-                        r.dostatnost,r.idPacijent,r.vrijemeRecept  FROM recept r 
-                        JOIN pacijent p ON p.idPacijent = r.idPacijent
-                        WHERE r.idPacijent IN 
-                        (SELECT o.idPacijent FROM obrada_lijecnik o)
-                        ORDER BY r.datumRecept DESC,r.vrijemeRecept DESC
-                        LIMIT 7;";
-    
-                $result = $conn->query($sql);
+                //Kreiram upit koji provjerava imaju li pacijenti u liječnikovoj obradi zabilježenih recepata
+                $sqlCountProvjera = "SELECT COUNT(*) AS BrojRecept  FROM recept r 
+                                    WHERE r.idPacijent IN 
+                                    (SELECT o.idPacijent FROM obrada_lijecnik o);";
+                //Rezultat upita spremam u varijablu $resultCountProvjera
+                $resultCountProvjera = mysqli_query($conn,$sqlCountProvjera);
+                //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+                if(mysqli_num_rows($resultCountProvjera) > 0){
+                    //Idem redak po redak rezultata upita 
+                    while($rowCountProvjera = mysqli_fetch_assoc($resultCountProvjera)){
+                        //Vrijednost rezultata spremam u varijablu $brojSvihRecepata
+                        $brojSvihRecepata = $rowCountProvjera['BrojRecept'];
+                    }
+                }
+                //Ako nema pronađenih recepata za pacijente koji su u liječnikovoj obradi
+                if($brojSvihRecepata == 0){
+                    $response["success"] = "false";
+                    $response["message"] = "Nema evidentiranih recepata!";
+                }
+                else{
+                    //Kreiram upit koji dohvaća recepte za zadnjih 7 pacijenata koje je liječnik stavio u obradu
+                    $sql = "SELECT DISTINCT(r.mkbSifraPrimarna) AS mkbSifraPrimarna,CONCAT(p.imePacijent,' ',p.prezPacijent) AS Pacijent, 
+                            DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
+                            IF(r.oblikJacinaPakiranjeLijek IS NULL, 
+                            r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod, 
+                            r.dostatnost,r.idPacijent,r.vrijemeRecept  FROM recept r 
+                            JOIN pacijent p ON p.idPacijent = r.idPacijent
+                            WHERE r.idPacijent IN 
+                            (SELECT o.idPacijent FROM obrada_lijecnik o)
+                            ORDER BY r.datumRecept DESC,r.vrijemeRecept DESC
+                            LIMIT 7;";
 
-                if ($result->num_rows > 0) {
-                    while($row = $result->fetch_assoc()) {
-                        $response[] = $row;
+                    $result = $conn->query($sql);
+
+                    if ($result->num_rows > 0) {
+                        while($row = $result->fetch_assoc()) {
+                            $response[] = $row;
+                        }
                     }
                 }
             }

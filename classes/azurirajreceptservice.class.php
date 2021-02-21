@@ -5,13 +5,13 @@ require_once 'C:\wamp64\www\angularPHP\includes\autoloader.inc.php';
 //Postavljam vremensku zonu
 date_default_timezone_set('Europe/Zagreb');
 
-class DodajReceptService{
+class AzurirajReceptService{
     //Funkcija koja dodava novi recept u bazu podataka
-    function dodajRecept($mkbSifraPrimarna,$mkbSifraSekundarna,$osnovnaListaLijekDropdown,
+    function azurirajRecept($mkbSifraPrimarna,$mkbSifraSekundarna,$osnovnaListaLijekDropdown,
                     $osnovnaListaLijekText,$dopunskaListaLijekDropdown,$dopunskaListaLijekText,
                     $osnovnaListaMagPripravakDropdown,$osnovnaListaMagPripravakText,$dopunskaListaMagPripravakDropdown,
                     $dopunskaListaMagPripravakText,$kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja,
-                    $sifraSpecijalist,$idPacijent){
+                    $sifraSpecijalist,$idPacijent,$datumRecept,$vrijemeRecept){
     //Dohvaćam bazu 
     $baza = new Baza();
     $conn = $baza->spojiSBazom();
@@ -24,10 +24,11 @@ class DodajReceptService{
     //Ako nema sekundarnih dijagnoza
     if(empty($mkbSifraSekundarna)){
         //Kreiram upit za dodavanje novog recepta u bazu
-        $sql = "INSERT INTO recept (mkbSifraPrimarna,mkbSifraSekundarna,proizvod,oblikJacinaPakiranjeLijek, 
-                                    kolicina,doziranje,dostatnost,hitnost,ponovljiv,brojPonavljanja, 
-                                    sifraSpecijalist,idPacijent,datumRecept,vrijemeRecept) VALUES 
-                                    (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        $sql = "UPDATE recept r SET r.mkbSifraPrimarna = ?, r.mkbSifraSekundarna = ?, r.proizvod = ?, 
+                                    r.oblikJacinaPakiranjeLijek = ?, r.kolicina = ?, r.doziranje = ?,
+                                    r.dostatnost = ?, r.hitnost = ?, r.ponovljiv = ?, r.brojPonavljanja = ?, 
+                                    r.sifraSpecijalist = ?, r.idPacijent = ? 
+                WHERE r.idPacijent = ? AND r.datumRecept = ? AND r.vrijemeRecept = ?";
         //Kreiranje prepared statementa
         $stmt = mysqli_stmt_init($conn);
         //Ako je statement neuspješan
@@ -212,15 +213,15 @@ class DodajReceptService{
                 $sifraSpecijalist = NULL;
             }
             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-            mysqli_stmt_bind_param($stmt,"ssssisissiiiss",$mkbSifraPrimarna,$prazna,$proizvod,$oblikJacinaPakiranjeLijek,
+            mysqli_stmt_bind_param($stmt,"ssssisissiiiiss",$mkbSifraPrimarna,$prazna,$proizvod,$oblikJacinaPakiranjeLijek,
                                     $kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv, 
-                                    $brojPonavljanja,$sifraSpecijalist,$idPacijent,$datum,$vrijeme);
+                                    $brojPonavljanja,$sifraSpecijalist,$idPacijent,$idPacijent,$datumRecept,$vrijemeRecept);
             //Izvršavanje statementa
             mysqli_stmt_execute($stmt);
 
             //Vraćanje uspješnog odgovora serveru
             $response["success"] = "true";
-            $response["message"] = "Recept uspješno dodan!";
+            $response["message"] = "Recept uspješno ažuriran!";
         }
     }
     //Ako IMA MKB šifri sek. dijagnoza
@@ -228,10 +229,11 @@ class DodajReceptService{
         //Prolazim kroz svaku MKB šifru polja sekundarnih dijagnoza
         foreach($mkbSifraSekundarna as $mkb){
             //Kreiram upit za dodavanje novog recepta u bazu
-            $sql = "INSERT INTO recept (mkbSifraPrimarna,mkbSifraSekundarna,proizvod,oblikJacinaPakiranjeLijek, 
-                                        kolicina,doziranje,dostatnost,hitnost,ponovljiv,brojPonavljanja, 
-                                        sifraSpecijalist,idPacijent,datumRecept,vrijemeRecept) VALUES 
-                                        (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            $sql = "UPDATE recept r SET r.mkbSifraPrimarna = ?, r.mkbSifraSekundarna = ?, r.proizvod = ?, 
+                                        r.oblikJacinaPakiranjeLijek = ?, r.kolicina = ?, r.doziranje = ?,
+                                        r.dostatnost = ?, r.hitnost = ?, r.ponovljiv = ?, r.brojPonavljanja = ?, 
+                                        r.sifraSpecijalist = ?, r.idPacijent = ? 
+                    WHERE r.idPacijent = ? AND r.datumRecept = ? AND r.vrijemeRecept = ?";
             //Kreiranje prepared statementa
             $stmt = mysqli_stmt_init($conn);
             //Ako je statement neuspješan
@@ -360,7 +362,7 @@ class DodajReceptService{
 
                         //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
                         $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunskalistalijekova d 
-                                WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' AND d.zasticenoImeLijek = '$imeLijek'";
+                                            WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' AND d.zasticenoImeLijek = '$imeLijek'";
 
                         $resultDopunskaLista = $conn->query($sqlDopunskaLista);
                         //Ako je lijek pronađen u DOPUNSKOJ LISTI LIJEKOVA
@@ -414,15 +416,15 @@ class DodajReceptService{
                     $sifraSpecijalist = NULL;
                 }
                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                mysqli_stmt_bind_param($stmt,"ssssisissiiiss",$mkbSifraPrimarna,$mkb,$proizvod,$oblikJacinaPakiranjeLijek,
-                        $kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv, 
-                        $brojPonavljanja,$sifraSpecijalist,$idPacijent,$datum,$vrijeme);
+                mysqli_stmt_bind_param($stmt,"ssssisissiiiiss",$mkbSifraPrimarna,$mkb,$proizvod,$oblikJacinaPakiranjeLijek,
+                                                            $kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv, 
+                                                            $brojPonavljanja,$sifraSpecijalist,$idPacijent,$idPacijent,$datumRecept,$vrijemeRecept);
                 //Izvršavanje statementa
                 mysqli_stmt_execute($stmt);
 
                 //Vraćanje uspješnog odgovora serveru
                 $response["success"] = "true";
-                $response["message"] = "Recept uspješno dodan!";
+                $response["message"] = "Recept uspješno ažuriran!";
             }
         }
     }
