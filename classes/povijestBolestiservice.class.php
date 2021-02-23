@@ -479,8 +479,9 @@ class PovijestBolestiService{
                         }
                         //Kreiram upit za spremanje prvog dijela podataka u bazu
                         $sql = "UPDATE povijestBolesti pb SET pb.razlogDolaska = ?, pb.anamneza = ?, pb.statusPacijent = ?, 
-                                pb.nalaz = ?, pb.mkbSifraPrimarna = ?,pb.mkbSifraSekundarna = ?,pb.tipSlucaj = ?, pb.terapija = ?,
-                                pb.preporukaLijecnik = ?,pb.napomena = ?,pb.datum = ?,pb.narucen = ?, pb.mboPacijent = ?,pb.idObradaLijecnik = ?,pb.vrijeme = ? 
+                                                            pb.nalaz = ?, pb.mkbSifraPrimarna = ?,pb.mkbSifraSekundarna = ?,pb.tipSlucaj = ?, pb.terapija = ?,
+                                                            pb.preporukaLijecnik = ?,pb.napomena = ?,pb.datum = ?,pb.narucen = ?, 
+                                                            pb.mboPacijent = ?,pb.idObradaLijecnik = ?,pb.vrijeme = ? 
                                 WHERE pb.idPovijestBolesti = ?";
                         //Kreiranje prepared statementa
                         $stmt = mysqli_stmt_init($conn);

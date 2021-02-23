@@ -248,6 +248,11 @@ class ReceptHandlerService{
                     }
                 }
             }
+            //Ako je polje $response još prazno, znači da ima više od 1 pacijenta u tablici i nitko od njih nema evidentiranih recepata
+            if(empty($response)){
+                $response["success"] = "false";
+                $response["message"] = "Nema evidentiranih recepata!";
+            }
             //Vraća recepte frontendu
             return $response;
         }
