@@ -34,15 +34,18 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $nazivDrzave = mysqli_real_escape_string($conn, trim($request->nazivDrzave));
         $mbo = mysqli_real_escape_string($conn, trim($request->mbo));
         $brIskDopunsko = mysqli_real_escape_string($conn, trim($request->brIskDopunsko));
-        $primarnaDijagnoza = mysqli_real_escape_string($conn, trim($request->primarnaDijagnoza));
-        $sekundarneDijagnoze = $request->sekundarnaDijagnoza;
+        $mkbPrimarnaDijagnoza = mysqli_real_escape_string($conn, trim($request->mkbPrimarnaDijagnoza));
+        $mkbSifre = $request->mkbSifre;
+        foreach($mkbSifre as $mkb){
+            $mkb = mysqli_real_escape_string($conn, trim($mkb));
+        }
         $tipSlucaj = mysqli_real_escape_string($conn, trim($request->tipSlucaj));
         $idObrada = mysqli_real_escape_string($conn, trim($request->idObrada));
         $idObrada = (int)$idObrada;
 
         $response = $servis->dodajOpcePodatkePregleda($idMedSestra,$idPacijent,$nacinPlacanja, $podrucniUredHZZO, $podrucniUredOzljeda, $nazivPoduzeca,
-                                                    $oznakaOsiguranika, $nazivDrzave, $mbo, $brIskDopunsko, $primarnaDijagnoza,
-                                                    $sekundarneDijagnoze, $tipSlucaj,$idObrada);
+                                                    $oznakaOsiguranika, $nazivDrzave, $mbo, $brIskDopunsko, $mkbPrimarnaDijagnoza,
+                                                    $mkbSifre, $tipSlucaj,$idObrada);
 
         echo json_encode($response);
     }

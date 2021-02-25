@@ -31,8 +31,11 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $anamneza = mysqli_real_escape_string($conn, trim($request->anamneza));
         $status = mysqli_real_escape_string($conn, trim($request->status));
         $nalaz = mysqli_real_escape_string($conn, trim($request->nalaz));
-        $primarnaDijagnoza = mysqli_real_escape_string($conn, trim($request->primarnaDijagnoza));
-        $sekundarneDijagnoze = $request->sekundarnaDijagnoza;
+        $mkbPrimarnaDijagnoza = mysqli_real_escape_string($conn, trim($request->mkbPrimarnaDijagnoza));
+        $mkbSifre = $request->mkbSifre;
+        foreach($mkbSifre as $mkb){
+            $mkb = mysqli_real_escape_string($conn, trim($mkb));
+        }
         $tipSlucaj = mysqli_real_escape_string($conn, trim($request->tipSlucaj));
         $terapija = mysqli_real_escape_string($conn, trim($request->terapija));
         $preporukaLijecnik = mysqli_real_escape_string($conn, trim($request->preporukaLijecnik));
@@ -41,7 +44,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $idObrada = (int)$idObrada;
 
         $response = $servis->potvrdiPovijestBolesti($idLijecnik,$idPacijent,$razlogDolaska,$anamneza,$status,
-                                                    $nalaz,$primarnaDijagnoza,$sekundarneDijagnoze,$tipSlucaj,
+                                                    $nalaz,$mkbPrimarnaDijagnoza,$mkbSifre,$tipSlucaj,
                                                     $terapija,$preporukaLijecnik,$napomena,$idObrada);
         //Vrati odgovor frontendu
         echo json_encode($response);
