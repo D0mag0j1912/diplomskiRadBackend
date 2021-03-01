@@ -42,7 +42,6 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $napomena = mysqli_real_escape_string($conn, trim($request->napomena));
         $idObrada = mysqli_real_escape_string($conn, trim($request->idObrada));
         $idObrada = (int)$idObrada;
-
         $response = $servis->potvrdiPovijestBolesti($idLijecnik,$idPacijent,$razlogDolaska,$anamneza,$status,
                                                     $nalaz,$mkbPrimarnaDijagnoza,$mkbSifre,$tipSlucaj,
                                                     $terapija,$preporukaLijecnik,$napomena,$idObrada);
