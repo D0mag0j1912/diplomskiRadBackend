@@ -436,7 +436,8 @@ class ReceptService{
                 WHERE pb.mkbSifraPrimarna = '$mkbPrimarnaDijagnoza' 
                 AND pb.mboPacijent IN 
                 (SELECT pacijent.mboPacijent FROM pacijent 
-                WHERE pacijent.idPacijent = '$idPacijent')";
+                WHERE pacijent.idPacijent = '$idPacijent') 
+                AND pb.idRecept IS NULL";
         $result = $conn->query($sql);
         //Ako ima rezultata
         if($result->num_rows > 0){

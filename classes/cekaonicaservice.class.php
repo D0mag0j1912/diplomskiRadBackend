@@ -66,7 +66,7 @@ class CekaonicaService{
         //Kreiram prazno polje odgovora
         $response = []; 
         
-        $sql = "SELECT pb.anamneza,pb.terapija,TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
+        $sql = "SELECT pb.anamneza,pb.razlogDolaska,TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
                 GROUP_CONCAT(DISTINCT pb.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna FROM povijestbolesti pb 
                 JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                 WHERE pb.idObradaLijecnik = '$idObrada'

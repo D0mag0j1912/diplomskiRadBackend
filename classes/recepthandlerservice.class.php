@@ -7,6 +7,58 @@ date_default_timezone_set('Europe/Zagreb');
 
 class ReceptHandlerService{
 
+    //Funkcija koja provjerava je li unesena povijest bolesti za određenog pacijenta (BEZ OBRADE)
+    function provjeraPovijestBolestiBezObrade($idPacijent){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+        //Trenutni datum
+        $datum = date('Y-m-d');
+        //Kreiram upit koji provjerava postoji li unesena povijest bolesti 
+        $sql = "SELECT COUNT(*) AS BrojPovijestBolesti FROM povijestbolesti pb 
+                WHERE pb.mboPacijent IN 
+                (SELECT pacijent.mboPacijent FROM pacijent 
+                WHERE pacijent.idPacijent = '$idPacijent') 
+                AND pb.idRecept IS NULL AND pb.datum = '$datum';";
+        //Rezultat upita spremam u varijablu $result
+        $result = mysqli_query($conn,$sql);
+        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+        if(mysqli_num_rows($result) > 0){
+            //Idem redak po redak rezultata upita 
+            while($row = mysqli_fetch_assoc($result)){
+                //Vrijednost rezultata spremam u varijablu $brojPovijestBolesti
+                $brojPovijestBolesti = $row['BrojPovijestBolesti'];
+            }
+        }
+        return $brojPovijestBolesti;
+    }
+
+    //Funkcija koja provjerava je li unesena povijest bolesti za određenog pacijenta
+    function provjeraPovijestBolestiPremaObradi($idObrada,$idPacijent){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+        //Trenutni datum
+        $datum = date('Y-m-d');
+        //Kreiram upit koji provjerava postoji li unesena povijest bolesti 
+        $sql = "SELECT COUNT(*) AS BrojPovijestBolesti FROM povijestbolesti pb 
+                WHERE pb.idObradaLijecnik = '$idObrada' AND pb.mboPacijent IN 
+                (SELECT pacijent.mboPacijent FROM pacijent 
+                WHERE pacijent.idPacijent = '$idPacijent') 
+                AND pb.idRecept IS NULL AND pb.datum = '$datum';";
+        //Rezultat upita spremam u varijablu $result
+        $result = mysqli_query($conn,$sql);
+        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+        if(mysqli_num_rows($result) > 0){
+            //Idem redak po redak rezultata upita 
+            while($row = mysqli_fetch_assoc($result)){
+                //Vrijednost rezultata spremam u varijablu $brojPovijestBolesti
+                $brojPovijestBolesti = $row['BrojPovijestBolesti'];
+            }
+        }
+        return $brojPovijestBolesti;
+    }
+
     //Funkcija koja dohvaća sve podatke recepta u svrhu njihovog prikazivanja u formi (AŽURIRANJE RECEPTA)
     function dohvatiRecept($dostatnost,$datumRecept, 
                             $idPacijent,$mkbSifraPrimarna, 
