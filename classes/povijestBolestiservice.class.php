@@ -26,20 +26,33 @@ class PovijestBolestiService{
         $statusObrada = "Aktivan";
         //Varijabla koja određuje je li pacijent naručen ili nije
         $narucen = NULL;
-        //Ako je prazan ID obrade
         if(empty($idObrada)){
-            //Postavljam ga na NULL
             $idObrada = NULL;
+        }
+        //Inicijaliziram na početku zadnju primarnu dijagnozu na ""
+        $zadnjaPrimarna = "";
+        //Prvo dohvaćam ZADNJE UNESENU PRIMARNU DIJAGNOZU u tablici povijesti bolesti
+        $sqlZadnjaPrimarna = "SELECT pb.mkbSifraPrimarna FROM povijestbolesti pb 
+                            WHERE pb.idObradaLijecnik = '$idObrada' AND pb.mboPacijent IN 
+                            (SELECT pacijent.mboPacijent FROM pacijent 
+                            WHERE pacijent.idPacijent = '$idPacijent') 
+                            AND pb.idPovijestBolesti = 
+                            (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
+                            WHERE pb2.mboPacijent = pb.mboPacijent);";
+        //Rezultat upita spremam u varijablu $resultZadnjaPrimarna
+        $resultZadnjaPrimarna = mysqli_query($conn,$sqlZadnjaPrimarna);
+        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+        if(mysqli_num_rows($resultZadnjaPrimarna) > 0){
+            //Idem redak po redak rezultata upita 
+            while($rowZadnjaPrimarna = mysqli_fetch_assoc($resultZadnjaPrimarna)){
+                //Vrijednost rezultata spremam u varijablu $zadnjaPrimarna
+                $zadnjaPrimarna = $rowZadnjaPrimarna['mkbSifraPrimarna'];
+            }
         }
         //Provjeravam je li već unesen ID recepta za ovu sesiju obrade, za određenog pacijenta te se gleda ZADNJI UNESENI REDAK povijesti bolesti
         //jer npr. prvi redak može imati ID recepta, a drugi (zadnji) redak može imati idRecept == NULL jer je tek unijet povijest bolesti
         $sqlRecept =  "SELECT COUNT(pb.idRecept) AS BrojRecept FROM povijestBolesti pb 
-                    WHERE pb.idObradaLijecnik = '$idObrada' AND pb.mboPacijent IN 
-                    (SELECT pacijent.mboPacijent FROM pacijent 
-                    WHERE pacijent.idPacijent = '$idPacijent') 
-                    AND pb.idPovijestBolesti = 
-                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
-                    WHERE pb.mboPacijent = pb2.mboPacijent);";
+                    WHERE pb.mkbSifraPrimarna = '$zadnjaPrimarna'";
         //Rezultat upita spremam u varijablu $resultCountPacijent
         $resultRecept = mysqli_query($conn,$sqlRecept);
         //Ako rezultat upita ima podataka u njemu (znači nije prazan)
@@ -48,6 +61,58 @@ class PovijestBolestiService{
             while($rowRecept = mysqli_fetch_assoc($resultRecept)){
                 //Vrijednost rezultata spremam u varijablu $brojRecept
                 $brojRecept = $rowRecept['BrojRecept'];
+            }
+        }
+        /******************************** */
+        //Provjera je postoji već ova primarna dijagnoza u bazi kada je ID recepta već unesen
+        $sqlProvjera = "SELECT pb.mkbSifraPrimarna FROM povijestBolesti pb 
+                        WHERE pb.idObradaLijecnik = '$idObrada' AND pb.mboPacijent IN 
+                        (SELECT pacijent.mboPacijent FROM pacijent 
+                        WHERE pacijent.idPacijent = '$idPacijent')";
+        //Rezultat upita spremam u varijablu $resultProvjera
+        $resultProvjera = mysqli_query($conn,$sqlProvjera);
+        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+        if(mysqli_num_rows($resultProvjera) > 0){
+            //Idem redak po redak rezultata upita 
+            while($rowProvjera = mysqli_fetch_assoc($resultProvjera)){
+                if($mkbPrimarnaDijagnoza == $rowProvjera['mkbSifraPrimarna'] && $brojRecept > 0){
+                    $response["success"] = "false";
+                    $response["message"] = "Već ste unijeli ovu primarnu dijagnozu u ovoj sesiji obrade!";
+                    return $response;
+                }
+            }
+        }
+        /******************************** */
+        //Na osnovu zadnje unesene primarne dijagnoze, brojim koliko ima sekundarnih dijagnoza za tu primarnu dijagnozu za tog pacijenta za tu sesiju obrade
+        $sqlCountSekundarna = "SELECT COUNT(pb.mkbSifraSekundarna) AS BrojSekundarna FROM povijestBolesti pb
+                            WHERE pb.idObradaLijecnik = '$idObrada' AND pb.mkbSifraPrimarna = '$zadnjaPrimarna'
+                            AND pb.mboPacijent IN 
+                            (SELECT pacijent.mboPacijent FROM pacijent 
+                            WHERE pacijent.idPacijent = '$idPacijent');";
+        //Rezultat upita spremam u varijablu $resultCountPrimarna
+        $resultCountSekundarna = mysqli_query($conn,$sqlCountSekundarna);
+        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+        if(mysqli_num_rows($resultCountSekundarna) > 0){
+            //Idem redak po redak rezultata upita 
+            while($rowCountSekundarna = mysqli_fetch_assoc($resultCountSekundarna)){
+                //Vrijednost rezultata spremam u varijablu $brojSekundarnaBaza
+                $brojSekundarnaBaza = $rowCountSekundarna['BrojSekundarna'];
+            }
+        }
+        //Kreiram sql upit koji provjerava postoji li uopće primarnih dijagnoza za sesiju obrade ovog pacijenta
+        $sqlCountPrimarna = "SELECT COUNT(*) AS BrojPrimarna FROM povijestBolesti pb 
+                            WHERE pb.idObradaLijecnik = '$idObrada'
+                            AND pb.mboPacijent IN 
+                            (SELECT pacijent.mboPacijent FROM pacijent 
+                            WHERE pacijent.idPacijent = '$idPacijent');";
+        //Rezultat upita spremam u varijablu $resultCountPrimarna
+        $resultCountPrimarna = mysqli_query($conn,$sqlCountPrimarna);
+        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+        if(mysqli_num_rows($resultCountPrimarna) > 0){
+            //Idem redak po redak rezultata upita 
+            while($rowCountPrimarna = mysqli_fetch_assoc($resultCountPrimarna)){
+                //Vrijednost rezultata spremam u varijablu $brojPrimarna
+                $brojPrimarna = $rowCountPrimarna['BrojPrimarna'];
             }
         }
         //Kreiram upit za dohvaćanjem MBO-a pacijenta kojemu se upisiva povijest bolesti
@@ -108,78 +173,6 @@ class PovijestBolestiService{
         }
         else{
             $narucen = "Da";
-        }
-        //Inicijaliziram na početku zadnju primarnu dijagnozu na ""
-        $zadnjaPrimarna = "";
-        //Prvo dohvaćam ZADNJE UNESENU PRIMARNU DIJAGNOZU u tablici povijesti bolesti
-        $sqlZadnjaPrimarna = "SELECT pb.mkbSifraPrimarna FROM povijestbolesti pb 
-                            WHERE pb.idObradaLijecnik = '$idObrada' AND pb.mboPacijent IN 
-                            (SELECT pacijent.mboPacijent FROM pacijent 
-                            WHERE pacijent.idPacijent = '$idPacijent') 
-                            AND pb.idPovijestBolesti = 
-                            (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
-                            WHERE pb2.mboPacijent = pb.mboPacijent);";
-        //Rezultat upita spremam u varijablu $resultZadnjaPrimarna
-        $resultZadnjaPrimarna = mysqli_query($conn,$sqlZadnjaPrimarna);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultZadnjaPrimarna) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowZadnjaPrimarna = mysqli_fetch_assoc($resultZadnjaPrimarna)){
-                //Vrijednost rezultata spremam u varijablu $zadnjaPrimarna
-                $zadnjaPrimarna = $rowZadnjaPrimarna['mkbSifraPrimarna'];
-            }
-        }
-        /******************************** */
-        //Provjera je postoji već ova primarna dijagnoza u bazi kada je ID recepta već unesen
-        $sqlProvjera = "SELECT pb.mkbSifraPrimarna FROM povijestBolesti pb 
-                        WHERE pb.idObradaLijecnik = '$idObrada' AND pb.mboPacijent IN 
-                        (SELECT pacijent.mboPacijent FROM pacijent 
-                        WHERE pacijent.idPacijent = '$idPacijent')";
-        //Rezultat upita spremam u varijablu $resultProvjera
-        $resultProvjera = mysqli_query($conn,$sqlProvjera);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultProvjera) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowProvjera = mysqli_fetch_assoc($resultProvjera)){
-                if($mkbPrimarnaDijagnoza == $rowProvjera['mkbSifraPrimarna'] && $brojRecept > 0){
-                    $response["success"] = "false";
-                    $response["message"] = "Već ste unijeli ovu primarnu dijagnozu u ovoj sesiji obrade!";
-                    return $response;
-                }
-            }
-        }
-        /******************************** */
-        //Na osnovu zadnje unesene primarne dijagnoze, brojim koliko ima sekundarnih dijagnoza za tu primarnu dijagnozu za tog pacijenta za tu sesiju obrade
-        $sqlCountSekundarna = "SELECT COUNT(pb.mkbSifraSekundarna) AS BrojSekundarna FROM povijestBolesti pb
-                            WHERE pb.idObradaLijecnik = '$idObrada' AND pb.mkbSifraPrimarna = '$zadnjaPrimarna'
-                            AND pb.mboPacijent IN 
-                            (SELECT pacijent.mboPacijent FROM pacijent 
-                            WHERE pacijent.idPacijent = '$idPacijent');";
-        //Rezultat upita spremam u varijablu $resultCountPrimarna
-        $resultCountSekundarna = mysqli_query($conn,$sqlCountSekundarna);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultCountSekundarna) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowCountSekundarna = mysqli_fetch_assoc($resultCountSekundarna)){
-                //Vrijednost rezultata spremam u varijablu $brojSekundarnaBaza
-                $brojSekundarnaBaza = $rowCountSekundarna['BrojSekundarna'];
-            }
-        }
-        //Kreiram sql upit koji provjerava postoji li uopće primarnih dijagnoza za sesiju obrade ovog pacijenta
-        $sqlCountPrimarna = "SELECT COUNT(*) AS BrojPrimarna FROM povijestBolesti pb 
-                            WHERE pb.idObradaLijecnik = '$idObrada'
-                            AND pb.mboPacijent IN 
-                            (SELECT pacijent.mboPacijent FROM pacijent 
-                            WHERE pacijent.idPacijent = '$idPacijent');";
-        //Rezultat upita spremam u varijablu $resultCountPrimarna
-        $resultCountPrimarna = mysqli_query($conn,$sqlCountPrimarna);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultCountPrimarna) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowCountPrimarna = mysqli_fetch_assoc($resultCountPrimarna)){
-                //Vrijednost rezultata spremam u varijablu $brojPrimarna
-                $brojPrimarna = $rowCountPrimarna['BrojPrimarna'];
-            }
         }
         //Ako je polje sekundarnih dijagnoza prazno
         if(empty($mkbSifre)){
