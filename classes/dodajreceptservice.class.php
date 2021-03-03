@@ -429,19 +429,6 @@ class DodajReceptService{
             $brojacSekundarnaForma = count($mkbSifraSekundarna); 
             //Inicijaliziram varijablu $brisanje na false na početku
             $brisanje = false;
-            //Definiram varijable koje će poslužiti pri ubacivanju novih redaka npr. (BAZA = 3, FORMA = 2)
-            $razlogDolaska = "";
-            $anamneza = "";
-            $status = "";
-            $nalaz = "";
-            $tipSlucaj = "";
-            $terapija = "";
-            $preporukaLijecnik = "";
-            $napomena = "";
-            $datumPovijestiBolesti = "";
-            $narucen = "";
-            $mboPacijent = "";
-            $vrijemePovijestiBolesti = "";
             //Ako je broj dijagnoza u bazi VEĆI od broja dijagnoza u formi
             if($brojSekundarnaBaza > $brojacSekundarnaForma){
                 //Označavam da treba obrisati sve retke pa nadodati kasnije
