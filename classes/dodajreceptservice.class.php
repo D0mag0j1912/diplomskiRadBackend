@@ -23,9 +23,30 @@ class DodajReceptService{
     $vrijeme = date('H:i');
     //Ako je ID obrade prazan
     if(!empty($idObrada)){
-        //Kreiram sql upit koji će prebrojiti koliko ima SEKUNDARNIH DIJAGNOZA TRENUTNO U BAZI za određenog pacijenta, za određenu sesiju obrade
-        $sqlCountSekundarna = "SELECT COUNT(pb.mkbSifraSekundarna) AS BrojSekundarna FROM povijestBolesti pb
+        //Inicijaliziram na početku zadnju primarnu dijagnozu na ""
+        $zadnjaPrimarna = "";
+        //Prvo dohvaćam ZADNJE UNESENU PRIMARNU DIJAGNOZU u tablici povijesti bolesti
+        $sqlZadnjaPrimarna = "SELECT pb.mkbSifraPrimarna FROM povijestbolesti pb 
                             WHERE pb.idObradaLijecnik = '$idObrada' AND pb.mboPacijent IN 
+                            (SELECT pacijent.mboPacijent FROM pacijent 
+                            WHERE pacijent.idPacijent = '$idPacijent') 
+                            AND pb.idPovijestBolesti = 
+                            (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
+                            WHERE pb2.mboPacijent = pb.mboPacijent);";
+        //Rezultat upita spremam u varijablu $resultZadnjaPrimarna
+        $resultZadnjaPrimarna = mysqli_query($conn,$sqlZadnjaPrimarna);
+        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+        if(mysqli_num_rows($resultZadnjaPrimarna) > 0){
+            //Idem redak po redak rezultata upita 
+            while($rowZadnjaPrimarna = mysqli_fetch_assoc($resultZadnjaPrimarna)){
+                //Vrijednost rezultata spremam u varijablu $zadnjaPrimarna
+                $zadnjaPrimarna = $rowZadnjaPrimarna['mkbSifraPrimarna'];
+            }
+        }
+        //Kreiram sql upit koji će prebrojiti koliko ima SEKUNDARNIH DIJAGNOZA TRENUTNO U BAZI za određenog pacijenta, za određenu sesiju obrade, za zadnje unesenu primarnu dijagnozu
+        $sqlCountSekundarna = "SELECT COUNT(pb.mkbSifraSekundarna) AS BrojSekundarna FROM povijestBolesti pb
+                            WHERE pb.idObradaLijecnik = '$idObrada' AND pb.mkbSifraPrimarna = '$zadnjaPrimarna'
+                            AND pb.mboPacijent IN 
                             (SELECT pacijent.mboPacijent FROM pacijent 
                             WHERE pacijent.idPacijent = '$idPacijent');";
         //Rezultat upita spremam u varijablu $resultCountPrimarna
@@ -247,10 +268,10 @@ class DodajReceptService{
                 if(($brojSekundarnaBaza == 0 || $brojSekundarnaBaza == 1)){
                     //Kreiram upit kojim ću unijeti ID recepta u tablicu "povijestBolesti"
                     $sqlUpdate ="UPDATE povijestBolesti pb SET pb.idRecept = ? 
-                        WHERE pb.idRecept IS NULL AND pb.mboPacijent IN 
-                        (SELECT pacijent.mboPacijent FROM pacijent 
-                        WHERE pacijent.idPacijent = ?) 
-                        AND pb.idObradaLijecnik = ?";
+                                WHERE pb.idRecept IS NULL AND pb.mboPacijent IN 
+                                (SELECT pacijent.mboPacijent FROM pacijent 
+                                WHERE pacijent.idPacijent = ?) 
+                                AND pb.idObradaLijecnik = ? AND pb.mkbSifraPrimarna = ?";
                     //Kreiranje prepared statementa
                     $stmtUpdate = mysqli_stmt_init($conn);
                     //Ako je statement neuspješan
@@ -261,7 +282,7 @@ class DodajReceptService{
                     //Ako je prepared statement u redu
                     else{
                         //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                        mysqli_stmt_bind_param($stmtUpdate,"iii",$idRecept,$idPacijent,$idObrada);
+                        mysqli_stmt_bind_param($stmtUpdate,"iiis",$idRecept,$idPacijent,$idObrada,$zadnjaPrimarna);
                         //Izvršavanje statementa
                         mysqli_stmt_execute($stmtUpdate);
                         //Vraćanje uspješnog odgovora serveru
