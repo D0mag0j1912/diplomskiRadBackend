@@ -410,11 +410,11 @@ class ReceptService{
         $sqlZadnjaPrimarna = "SELECT pb.mkbSifraPrimarna FROM povijestbolesti pb
                             WHERE pb.idPovijestBolesti = 
                             (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2
-                            WHERE pb.mboPacijent = pb2.mboPacijent)
+                            WHERE pb.mboPacijent = pb2.mboPacijent 
+                            AND pb2.idRecept IS NULL)
                             AND pb.mboPacijent IN 
                             (SELECT pacijent.mboPacijent FROM pacijent 
-                            WHERE pacijent.idPacijent = '$idPacijent')
-                            GROUP BY pb.mboPacijent;";
+                            WHERE pacijent.idPacijent = '$idPacijent')";
         $resultZadnjaPrimarna = $conn->query($sqlZadnjaPrimarna);
         //Ako postoji primarna dijagnoza zabilježena u povijesti bolesti za OVOG PACIJENTA
         if($resultZadnjaPrimarna->num_rows > 0){
@@ -433,11 +433,7 @@ class ReceptService{
         $sql = "SELECT DISTINCT(d.imeDijagnoza) AS NazivPrimarna, 
                 IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d2.imeDijagnoza FROM dijagnoze d2 WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna FROM povijestBolesti pb 
                 JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
-                WHERE pb.mkbSifraPrimarna = '$mkbPrimarnaDijagnoza' 
-                AND pb.mboPacijent IN 
-                (SELECT pacijent.mboPacijent FROM pacijent 
-                WHERE pacijent.idPacijent = '$idPacijent') 
-                AND pb.idRecept IS NULL";
+                WHERE pb.mkbSifraPrimarna = '$mkbPrimarnaDijagnoza'";
         $result = $conn->query($sql);
         //Ako ima rezultata
         if($result->num_rows > 0){

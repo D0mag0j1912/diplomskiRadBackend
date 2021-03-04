@@ -10,7 +10,7 @@ class PovijestBolestiService{
     //Kreiram funkciju koja će potvrditi povijest bolesti
     function potvrdiPovijestBolesti($idLijecnik,$idPacijent,$razlogDolaska,$anamneza,$status,
                                     $nalaz,$mkbPrimarnaDijagnoza,$mkbSifre,$tipSlucaj,
-                                    $terapija,$preporukaLijecnik,$napomena,$idObrada){
+                                    $terapija,$preporukaLijecnik,$napomena,$idObrada,$prethodnaPrimarna){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -26,98 +26,9 @@ class PovijestBolestiService{
         $statusObrada = "Aktivan";
         //Varijabla koja određuje je li pacijent naručen ili nije
         $narucen = NULL;
-        if(empty($idObrada)){
-            $idObrada = NULL;
-        }
-        //Inicijaliziram na početku zadnju primarnu dijagnozu na ""
-        $zadnjaPrimarna = "";
-        //Prvo dohvaćam ZADNJE UNESENU PRIMARNU DIJAGNOZU u tablici povijesti bolesti
-        $sqlZadnjaPrimarna = "SELECT pb.mkbSifraPrimarna FROM povijestbolesti pb 
-                            WHERE pb.idObradaLijecnik = '$idObrada' AND pb.mboPacijent IN 
-                            (SELECT pacijent.mboPacijent FROM pacijent 
-                            WHERE pacijent.idPacijent = '$idPacijent') 
-                            AND pb.idPovijestBolesti = 
-                            (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
-                            WHERE pb2.mboPacijent = pb.mboPacijent);";
-        //Rezultat upita spremam u varijablu $resultZadnjaPrimarna
-        $resultZadnjaPrimarna = mysqli_query($conn,$sqlZadnjaPrimarna);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultZadnjaPrimarna) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowZadnjaPrimarna = mysqli_fetch_assoc($resultZadnjaPrimarna)){
-                //Vrijednost rezultata spremam u varijablu $zadnjaPrimarna
-                $zadnjaPrimarna = $rowZadnjaPrimarna['mkbSifraPrimarna'];
-            }
-        }
-        //Provjeravam je li već unesen ID recepta za ovu sesiju obrade, za određenog pacijenta te se gleda ZADNJI UNESENI REDAK povijesti bolesti
-        //jer npr. prvi redak može imati ID recepta, a drugi (zadnji) redak može imati idRecept == NULL jer je tek unijet povijest bolesti
-        $sqlRecept =  "SELECT COUNT(pb.idRecept) AS BrojRecept FROM povijestBolesti pb 
-                    WHERE pb.mkbSifraPrimarna = '$zadnjaPrimarna'";
-        //Rezultat upita spremam u varijablu $resultCountPacijent
-        $resultRecept = mysqli_query($conn,$sqlRecept);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultRecept) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowRecept = mysqli_fetch_assoc($resultRecept)){
-                //Vrijednost rezultata spremam u varijablu $brojRecept
-                $brojRecept = $rowRecept['BrojRecept'];
-            }
-        }
-        /******************************** */
-        //Provjera je postoji već ova primarna dijagnoza u bazi kada je ID recepta već unesen
-        $sqlProvjera = "SELECT pb.mkbSifraPrimarna FROM povijestBolesti pb 
-                        WHERE pb.idObradaLijecnik = '$idObrada' AND pb.mboPacijent IN 
-                        (SELECT pacijent.mboPacijent FROM pacijent 
-                        WHERE pacijent.idPacijent = '$idPacijent')";
-        //Rezultat upita spremam u varijablu $resultProvjera
-        $resultProvjera = mysqli_query($conn,$sqlProvjera);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultProvjera) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowProvjera = mysqli_fetch_assoc($resultProvjera)){
-                if($mkbPrimarnaDijagnoza == $rowProvjera['mkbSifraPrimarna'] && $brojRecept > 0){
-                    $response["success"] = "false";
-                    $response["message"] = "Već ste unijeli ovu primarnu dijagnozu u ovoj sesiji obrade!";
-                    return $response;
-                }
-            }
-        }
-        /******************************** */
-        //Na osnovu zadnje unesene primarne dijagnoze, brojim koliko ima sekundarnih dijagnoza za tu primarnu dijagnozu za tog pacijenta za tu sesiju obrade
-        $sqlCountSekundarna = "SELECT COUNT(pb.mkbSifraSekundarna) AS BrojSekundarna FROM povijestBolesti pb
-                            WHERE pb.idObradaLijecnik = '$idObrada' AND pb.mkbSifraPrimarna = '$zadnjaPrimarna'
-                            AND pb.mboPacijent IN 
-                            (SELECT pacijent.mboPacijent FROM pacijent 
-                            WHERE pacijent.idPacijent = '$idPacijent');";
-        //Rezultat upita spremam u varijablu $resultCountPrimarna
-        $resultCountSekundarna = mysqli_query($conn,$sqlCountSekundarna);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultCountSekundarna) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowCountSekundarna = mysqli_fetch_assoc($resultCountSekundarna)){
-                //Vrijednost rezultata spremam u varijablu $brojSekundarnaBaza
-                $brojSekundarnaBaza = $rowCountSekundarna['BrojSekundarna'];
-            }
-        }
-        //Kreiram sql upit koji provjerava postoji li uopće primarnih dijagnoza za sesiju obrade ovog pacijenta
-        $sqlCountPrimarna = "SELECT COUNT(*) AS BrojPrimarna FROM povijestBolesti pb 
-                            WHERE pb.idObradaLijecnik = '$idObrada'
-                            AND pb.mboPacijent IN 
-                            (SELECT pacijent.mboPacijent FROM pacijent 
-                            WHERE pacijent.idPacijent = '$idPacijent');";
-        //Rezultat upita spremam u varijablu $resultCountPrimarna
-        $resultCountPrimarna = mysqli_query($conn,$sqlCountPrimarna);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultCountPrimarna) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowCountPrimarna = mysqli_fetch_assoc($resultCountPrimarna)){
-                //Vrijednost rezultata spremam u varijablu $brojPrimarna
-                $brojPrimarna = $rowCountPrimarna['BrojPrimarna'];
-            }
-        }
         //Kreiram upit za dohvaćanjem MBO-a pacijenta kojemu se upisiva povijest bolesti
         $sqlMBO = "SELECT p.mboPacijent AS MBO FROM pacijent p 
-                    WHERE p.idPacijent = '$idPacijent'";
+                WHERE p.idPacijent = '$idPacijent'";
         //Rezultat upita spremam u varijablu $resultMBO
         $resultMBO = mysqli_query($conn,$sqlMBO);
         //Ako rezultat upita ima podataka u njemu (znači nije prazan)
@@ -174,87 +85,51 @@ class PovijestBolestiService{
         else{
             $narucen = "Da";
         }
-        //Ako je polje sekundarnih dijagnoza prazno
-        if(empty($mkbSifre)){
-            //Ako NE postoji unesenih primarnih dijagnoza za ovu sesiju obrade, unesi željenu primarnu dijagnozu
-            if($brojPrimarna == 0){
-                //Kreiram upit za spremanje prvog dijela podataka u bazu
-                $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
-                        nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                        preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme) 
-                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-                //Kreiranje prepared statementa
-                $stmt = mysqli_stmt_init($conn);
-                //Ako je statement neuspješan
-                if(!mysqli_stmt_prepare($stmt,$sql)){
-                    $response["success"] = "false";
-                    $response["message"] = "Prepared statement ne valja!";
-                }
-                //Ako je prepared statement u redu
-                else{
-                    $prazna = NULL;
-                    if(empty($status)){
-                        $status = NULL;
-                    }
-                    if(empty($nalaz)){
-                        $nalaz = NULL;
-                    }
-                    if(empty($terapija)){
-                        $terapija = NULL;
-                    }
-                    if(empty($preporukaLijecnik)){
-                        $preporukaLijecnik = NULL;
-                    }
-                    if(empty($napomena)){
-                        $napomena = NULL;
-                    }
-                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                    mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$prazna,
-                                                    $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
-                    //Izvršavanje statementa
-                    mysqli_stmt_execute($stmt);
-
-                    //Dohvaćam ID povijesti bolesti kojega sam upravo unio
-                    $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
-                        //Ulazim u polje rezultata i idem redak po redak
-                        while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
-                            //Dohvaćam željeni ID povijesti bolesti
-                            $idPovijestBolesti = $rowPovijestBolesti['ID'];
-                    }
-
-                    //Ubacivam nove podatke u tablicu "ambulanta"
-                    $sqlAmbulanta = "INSERT INTO ambulanta (idLijecnik,idPacijent,idPovijestBolesti) VALUES (?,?,?)";
-                    //Kreiranje prepared statementa
-                    $stmtAmbulanta = mysqli_stmt_init($conn);
-                    //Ako je statement neuspješan
-                    if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
-                        $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
-                    }
-                    //Ako je prepared statement u redu
-                    else{
-                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                        mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
-                        //Izvršavanje statementa
-                        mysqli_stmt_execute($stmtAmbulanta);
-
-                        $response["success"] = "true";
-                        $response["message"] = "Podatci uspješno dodani!";
-                    }
+        //Ako JE UNESEN ID obrade
+        if(!empty($idObrada)){
+            //Na osnovu zadnje unesene primarne dijagnoze, brojim koliko ima sekundarnih dijagnoza za tu primarnu dijagnozu za tog pacijenta za tu sesiju obrade
+            $sqlCountSekundarna = "SELECT COUNT(pb.mkbSifraSekundarna) AS BrojSekundarna FROM povijestBolesti pb
+                                WHERE pb.mkbSifraPrimarna = '$prethodnaPrimarna' AND pb.mboPacijent = '$mboPacijent' 
+                                AND pb.idObradaLijecnik = '$idObrada'";
+            //Rezultat upita spremam u varijablu $resultCountPrimarna
+            $resultCountSekundarna = mysqli_query($conn,$sqlCountSekundarna);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultCountSekundarna) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowCountSekundarna = mysqli_fetch_assoc($resultCountSekundarna)){
+                    //Vrijednost rezultata spremam u varijablu $brojSekundarnaBaza
+                    $brojSekundarnaBaza = $rowCountSekundarna['BrojSekundarna'];
                 }
             }
-            //Ako ID recepta NIJE UNESEN
-            if($brojRecept == 0){
-                //Ako VEĆ POSTOJI neka upisana primarna dijagnoza za sesiju obrade ovog pacijenta, RADIM UPDATE primarne dijagnoze
-                if($brojPrimarna > 0 && ($brojSekundarnaBaza == 0 || $brojSekundarnaBaza == 1)){
-                    $sql ="UPDATE povijestBolesti pb SET pb.razlogDolaska = ?, pb.anamneza = ?, 
-                                                            pb.statusPacijent = ?, pb.nalaz = ?, pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?, 
-                                                            pb.tipSlucaj = ?, pb.terapija = ?, pb.preporukaLijecnik = ?, pb.napomena = ?, pb.datum = ?, 
-                                                            pb.narucen = ?, pb.vrijeme = ?, pb.mboPacijent = ?
-                            WHERE pb.idObradaLijecnik = ? AND pb.mkbSifraPrimarna = ?
-                            AND pb.mboPacijent IN 
-                            (SELECT pacijent.mboPacijent FROM pacijent 
-                            WHERE pacijent.idPacijent = ?);";
+            //Ako je polje sekundarnih dijagnoza prazno
+            if(empty($mkbSifre)){
+                //Ako je novi slučaj
+                if($tipSlucaj == 'noviSlucaj'){
+                    /******************************** */
+                    //Provjera je li postoji već ova primarna dijagnoza u bazi kada je ID recepta već unesen
+                    $sqlProvjera = "SELECT pb.mkbSifraPrimarna FROM povijestBolesti pb 
+                                    WHERE pb.idObradaLijecnik = '$idObrada' AND pb.mboPacijent IN 
+                                    (SELECT pacijent.mboPacijent FROM pacijent 
+                                    WHERE pacijent.idPacijent = '$idPacijent')";
+                    //Rezultat upita spremam u varijablu $resultProvjera
+                    $resultProvjera = mysqli_query($conn,$sqlProvjera);
+                    //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+                    if(mysqli_num_rows($resultProvjera) > 0){
+                        //Idem redak po redak rezultata upita 
+                        while($rowProvjera = mysqli_fetch_assoc($resultProvjera)){
+                            if($mkbPrimarnaDijagnoza == $rowProvjera['mkbSifraPrimarna']){
+                                $response["success"] = "false";
+                                $response["message"] = "Već ste unijeli ovu primarnu dijagnozu u ovoj sesiji obrade!";
+                                return $response;
+                            }
+                        }
+                    }
+                    /******************************** */
+                    //Kreiram upit za spremanje prvog dijela podataka u bazu
+                    $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
+                            nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
+                            preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme) 
+                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                     //Kreiranje prepared statementa
                     $stmt = mysqli_stmt_init($conn);
                     //Ako je statement neuspješan
@@ -281,56 +156,65 @@ class PovijestBolestiService{
                             $napomena = NULL;
                         }
                         //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                        mysqli_stmt_bind_param($stmt,"ssssssssssssssisi",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$prazna,
-                                            $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$vrijemePregled,$mboPacijent, 
-                                            $idObrada,$zadnjaPrimarna,$idPacijent);
+                        mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$prazna,
+                                                        $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
                         //Izvršavanje statementa
                         mysqli_stmt_execute($stmt);
-                        $response["success"] = "true";
-                        $response["message"] = "Podatci uspješno dodani!";
-                    }
-                } 
-                //Ako već postoji ova primarna dijagnoza u povijesti bolesti ove sesije obrade te ima više od jedne sek. dijagnoze u bazi trenutno
-                else if($brojPrimarna > 0 && $brojSekundarnaBaza > 1){
-                    //Brišem sve retke iz tablice ambulanta za ovu povijest bolesti
-                    $sqlDeleteAmbulanta = "DELETE a FROM ambulanta a
-                                        JOIN povijestbolesti pb ON pb.idPovijestBolesti = a.idPovijestBolesti 
-                                        WHERE pb.idObradaLijecnik = ? AND a.idPacijent = ? AND pb.mkbSifraPrimarna = ?;";
-                    //Kreiranje prepared statementa
-                    $stmtDeleteAmbulanta = mysqli_stmt_init($conn);
-                    //Ako je statement neuspješan
-                    if(!mysqli_stmt_prepare($stmtDeleteAmbulanta,$sqlDeleteAmbulanta)){
-                        $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
-                    }
-                    else{
-                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                        mysqli_stmt_bind_param($stmtDeleteAmbulanta,"iis",$idObrada,$idPacijent,$zadnjaPrimarna);
-                        //Izvršavanje statementa
-                        mysqli_stmt_execute($stmtDeleteAmbulanta);
-                        //Brišem sve retke iz tablice povijesti bolesti
-                        $sqlDelete = "DELETE FROM povijestBolesti 
-                                    WHERE idObradaLijecnik = ? AND mboPacijent IN 
-                                    (SELECT pacijent.mboPacijent FROM pacijent 
-                                    WHERE pacijent.idPacijent = ?) 
-                                    AND mkbSifraPrimarna = ?";
+
+                        //Dohvaćam ID povijesti bolesti kojega sam upravo unio
+                        $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
+                            //Ulazim u polje rezultata i idem redak po redak
+                            while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
+                                //Dohvaćam željeni ID povijesti bolesti
+                                $idPovijestBolesti = $rowPovijestBolesti['ID'];
+                        }
+
+                        //Ubacivam nove podatke u tablicu "ambulanta"
+                        $sqlAmbulanta = "INSERT INTO ambulanta (idLijecnik,idPacijent,idPovijestBolesti) VALUES (?,?,?)";
                         //Kreiranje prepared statementa
-                        $stmtDelete = mysqli_stmt_init($conn);
+                        $stmtAmbulanta = mysqli_stmt_init($conn);
                         //Ako je statement neuspješan
-                        if(!mysqli_stmt_prepare($stmtDelete,$sqlDelete)){
+                        if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
                             $response["success"] = "false";
                             $response["message"] = "Prepared statement ne valja!";
                         }
+                        //Ako je prepared statement u redu
                         else{
                             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                            mysqli_stmt_bind_param($stmtDelete,"iis",$idObrada,$idPacijent,$zadnjaPrimarna);
+                            mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
                             //Izvršavanje statementa
-                            mysqli_stmt_execute($stmtDelete);  
-                            //Kreiram upit za dodavanje novog recepta u bazu
-                            $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
-                                    nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                                    preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme) 
-                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                            mysqli_stmt_execute($stmtAmbulanta);
+
+                            $response["success"] = "true";
+                            $response["message"] = "Podatci uspješno dodani!";
+                        }
+                    }
+                }
+                //Ako je POVEZAN SLUČAJ
+                else if($tipSlucaj == 'povezanSlucaj'){
+                    //Gledam je li ovaj redak ima zapisanu obradu liječnika
+                    $sqlObrada = "SELECT pb.idObradaLijecnik FROM povijestbolesti pb 
+                                WHERE pb.mkbSifraPrimarna = '$prethodnaPrimarna' 
+                                AND pb.mboPacijent = '$mboPacijent';";
+                    //Rezultat upita spremam u varijablu $resultObrada
+                    $resultObrada = mysqli_query($conn,$sqlObrada);
+                    //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+                    if(mysqli_num_rows($resultObrada) > 0){
+                        //Idem redak po redak rezultata upita 
+                        while($rowObrada = mysqli_fetch_assoc($resultObrada)){
+                            //Vrijednost rezultata spremam u varijablu $obrada
+                            $obrada = $rowObrada['idObradaLijecnik'];
+                        }
+                    } 
+                    //Ako je obrada zapisana
+                    if(!empty($obrada)){
+                        //Ažuriram prethodnu dijagnozu novog slučaja
+                        if(($brojSekundarnaBaza == 0 || $brojSekundarnaBaza == 1)){
+                            $sql ="UPDATE povijestBolesti pb SET pb.razlogDolaska = ?, pb.anamneza = ?, 
+                                                                    pb.statusPacijent = ?, pb.nalaz = ?, pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?, 
+                                                                    pb.tipSlucaj = ?, pb.terapija = ?, pb.preporukaLijecnik = ?, pb.napomena = ?, pb.datum = ?, 
+                                                                    pb.narucen = ?, pb.vrijeme = ?, pb.mboPacijent = ?, pb.idObradaLijecnik = ?
+                                    WHERE pb.mkbSifraPrimarna = ? AND pb.mboPacijent = ? AND pb.idObradaLijecnik = ?";
                             //Kreiranje prepared statementa
                             $stmt = mysqli_stmt_init($conn);
                             //Ako je statement neuspješan
@@ -338,6 +222,7 @@ class PovijestBolestiService{
                                 $response["success"] = "false";
                                 $response["message"] = "Prepared statement ne valja!";
                             }
+                            //Ako je prepared statement u redu
                             else{
                                 $prazna = NULL;
                                 if(empty($status)){
@@ -356,584 +241,331 @@ class PovijestBolestiService{
                                     $napomena = NULL;
                                 }
                                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                                mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$prazna,
-                                                                $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
+                                mysqli_stmt_bind_param($stmt,"ssssssssssssssissi",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$prazna,
+                                                    $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$vrijemePregled,$mboPacijent, 
+                                                    $idObrada,$prethodnaPrimarna,$mboPacijent,$idObrada);
                                 //Izvršavanje statementa
                                 mysqli_stmt_execute($stmt);
-
-                                //Dohvaćam ID povijesti bolesti kojega sam upravo unio
-                                $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
-                                //Ulazim u polje rezultata i idem redak po redak
-                                while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
-                                    //Dohvaćam željeni ID povijesti bolesti
-                                    $idPovijestBolesti = $rowPovijestBolesti['ID'];
-                                } 
-                                //Ubacivam nove podatke u tablicu "ambulanta"
-                                $sqlAmbulanta = "INSERT INTO ambulanta (idLijecnik,idPacijent,idPovijestBolesti) VALUES (?,?,?)";
+                                $response["success"] = "true";
+                                $response["message"] = "Podatci uspješno dodani!";
+                            }
+                        } 
+                        //Ako već postoji ova primarna dijagnoza u povijesti bolesti ove sesije obrade te ima više od jedne sek. dijagnoze u bazi trenutno
+                        else if($brojSekundarnaBaza > 1){
+                            //Brišem sve retke iz tablice ambulanta za ovu povijest bolesti
+                            $sqlDeleteAmbulanta = "DELETE a FROM ambulanta a
+                                                JOIN povijestbolesti pb ON pb.idPovijestBolesti = a.idPovijestBolesti 
+                                                WHERE pb.mkbSifraPrimarna = ? AND pb.mboPacijent = ? AND pb.idObradaLijecnik = ?;";
+                            //Kreiranje prepared statementa
+                            $stmtDeleteAmbulanta = mysqli_stmt_init($conn);
+                            //Ako je statement neuspješan
+                            if(!mysqli_stmt_prepare($stmtDeleteAmbulanta,$sqlDeleteAmbulanta)){
+                                $response["success"] = "false";
+                                $response["message"] = "Prepared statement ne valja!";
+                            }
+                            else{
+                                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                mysqli_stmt_bind_param($stmtDeleteAmbulanta,"ssi",$prethodnaPrimarna,$mboPacijent,$idObrada);
+                                //Izvršavanje statementa
+                                mysqli_stmt_execute($stmtDeleteAmbulanta);
+                                //Brišem sve retke iz tablice povijesti bolesti
+                                $sqlDelete = "DELETE FROM povijestBolesti 
+                                            WHERE mkbSifraPrimarna = ? AND pb.mboPacijent = ? AND pb.idObradaLijecnik = ?;";
                                 //Kreiranje prepared statementa
-                                $stmtAmbulanta = mysqli_stmt_init($conn);
+                                $stmtDelete = mysqli_stmt_init($conn);
                                 //Ako je statement neuspješan
-                                if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
+                                if(!mysqli_stmt_prepare($stmtDelete,$sqlDelete)){
                                     $response["success"] = "false";
                                     $response["message"] = "Prepared statement ne valja!";
                                 }
-                                //Ako je prepared statement u redu
                                 else{
                                     //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                                    mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
+                                    mysqli_stmt_bind_param($stmtDelete,"ssi",$prethodnaPrimarna,$mboPacijent,$idObrada);
                                     //Izvršavanje statementa
-                                    mysqli_stmt_execute($stmtAmbulanta);
-                                    //Vraćanje uspješnog odgovora serveru
-                                    $response["success"] = "true";
-                                    $response["message"] = "Podatci uspješno dodani!";
-                                }
-                            } 
-                        }
-                    }
-                }
-            }
-            //Ako je već unesen ID recepta
-            else if($brojRecept > 0){
-                //Kreiram upit za dodavanje novog recepta u bazu
-                $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
-                                                    nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                                                    preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme) 
-                                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-                //Kreiranje prepared statementa
-                $stmt = mysqli_stmt_init($conn);
-                //Ako je statement neuspješan
-                if(!mysqli_stmt_prepare($stmt,$sql)){
-                    $response["success"] = "false";
-                    $response["message"] = "Prepared statement ne valja!";
-                }
-                else{
-                    $prazna = NULL;
-                    if(empty($status)){
-                        $status = NULL;
-                    }
-                    if(empty($nalaz)){
-                        $nalaz = NULL;
-                    }
-                    if(empty($terapija)){
-                        $terapija = NULL;
-                    }
-                    if(empty($preporukaLijecnik)){
-                        $preporukaLijecnik = NULL;
-                    }
-                    if(empty($napomena)){
-                        $napomena = NULL;
-                    }
-                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                    mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$prazna,
-                                                    $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
-                    //Izvršavanje statementa
-                    mysqli_stmt_execute($stmt);
+                                    mysqli_stmt_execute($stmtDelete);  
+                                    //Kreiram upit za dodavanje novog recepta u bazu
+                                    $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
+                                            nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
+                                            preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme) 
+                                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                    //Kreiranje prepared statementa
+                                    $stmt = mysqli_stmt_init($conn);
+                                    //Ako je statement neuspješan
+                                    if(!mysqli_stmt_prepare($stmt,$sql)){
+                                        $response["success"] = "false";
+                                        $response["message"] = "Prepared statement ne valja!";
+                                    }
+                                    else{
+                                        $prazna = NULL;
+                                        if(empty($status)){
+                                            $status = NULL;
+                                        }
+                                        if(empty($nalaz)){
+                                            $nalaz = NULL;
+                                        }
+                                        if(empty($terapija)){
+                                            $terapija = NULL;
+                                        }
+                                        if(empty($preporukaLijecnik)){
+                                            $preporukaLijecnik = NULL;
+                                        }
+                                        if(empty($napomena)){
+                                            $napomena = NULL;
+                                        }
+                                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                        mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$prazna,
+                                                                        $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
+                                        //Izvršavanje statementa
+                                        mysqli_stmt_execute($stmt);
 
-                    //Dohvaćam ID povijesti bolesti kojega sam upravo unio
-                    $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
-                    //Ulazim u polje rezultata i idem redak po redak
-                    while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
-                        //Dohvaćam željeni ID povijesti bolesti
-                        $idPovijestBolesti = $rowPovijestBolesti['ID'];
+                                        //Dohvaćam ID povijesti bolesti kojega sam upravo unio
+                                        $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
+                                        //Ulazim u polje rezultata i idem redak po redak
+                                        while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
+                                            //Dohvaćam željeni ID povijesti bolesti
+                                            $idPovijestBolesti = $rowPovijestBolesti['ID'];
+                                        } 
+                                        //Ubacivam nove podatke u tablicu "ambulanta"
+                                        $sqlAmbulanta = "INSERT INTO ambulanta (idLijecnik,idPacijent,idPovijestBolesti) VALUES (?,?,?)";
+                                        //Kreiranje prepared statementa
+                                        $stmtAmbulanta = mysqli_stmt_init($conn);
+                                        //Ako je statement neuspješan
+                                        if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
+                                            $response["success"] = "false";
+                                            $response["message"] = "Prepared statement ne valja!";
+                                        }
+                                        //Ako je prepared statement u redu
+                                        else{
+                                            //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                            mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
+                                            //Izvršavanje statementa
+                                            mysqli_stmt_execute($stmtAmbulanta);
+                                            //Vraćanje uspješnog odgovora serveru
+                                            $response["success"] = "true";
+                                            $response["message"] = "Podatci uspješno dodani!";
+                                        }
+                                    } 
+                                }
+                            }
+                        } 
                     } 
-                    //Ubacivam nove podatke u tablicu "ambulanta"
-                    $sqlAmbulanta = "INSERT INTO ambulanta (idLijecnik,idPacijent,idPovijestBolesti) VALUES (?,?,?)";
-                    //Kreiranje prepared statementa
-                    $stmtAmbulanta = mysqli_stmt_init($conn);
-                    //Ako je statement neuspješan
-                    if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
-                        $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
-                    }
-                    //Ako je prepared statement u redu
+                    //Ako idObradaLijecnik = NULL
                     else{
-                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                        mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
-                        //Izvršavanje statementa
-                        mysqli_stmt_execute($stmtAmbulanta);
-                        //Vraćanje uspješnog odgovora serveru
-                        $response["success"] = "true";
-                        $response["message"] = "Podatci uspješno dodani!";
-                    }
-                } 
+                        //Ažuriram prethodnu dijagnozu novog slučaja
+                        if(($brojSekundarnaBaza == 0 || $brojSekundarnaBaza == 1)){
+                            $sql ="UPDATE povijestBolesti pb SET pb.razlogDolaska = ?, pb.anamneza = ?, 
+                                                                    pb.statusPacijent = ?, pb.nalaz = ?, pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?, 
+                                                                    pb.tipSlucaj = ?, pb.terapija = ?, pb.preporukaLijecnik = ?, pb.napomena = ?, pb.datum = ?, 
+                                                                    pb.narucen = ?, pb.vrijeme = ?, pb.mboPacijent = ?, pb.idObradaLijecnik = ?
+                                    WHERE pb.mkbSifraPrimarna = ? AND pb.mboPacijent = ?";
+                            //Kreiranje prepared statementa
+                            $stmt = mysqli_stmt_init($conn);
+                            //Ako je statement neuspješan
+                            if(!mysqli_stmt_prepare($stmt,$sql)){
+                                $response["success"] = "false";
+                                $response["message"] = "Prepared statement ne valja!";
+                            }
+                            //Ako je prepared statement u redu
+                            else{
+                                $prazna = NULL;
+                                if(empty($status)){
+                                    $status = NULL;
+                                }
+                                if(empty($nalaz)){
+                                    $nalaz = NULL;
+                                }
+                                if(empty($terapija)){
+                                    $terapija = NULL;
+                                }
+                                if(empty($preporukaLijecnik)){
+                                    $preporukaLijecnik = NULL;
+                                }
+                                if(empty($napomena)){
+                                    $napomena = NULL;
+                                }
+                                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                mysqli_stmt_bind_param($stmt,"ssssssssssssssiss",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$prazna,
+                                                    $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$vrijemePregled,$mboPacijent, 
+                                                    $idObrada,$prethodnaPrimarna,$mboPacijent);
+                                //Izvršavanje statementa
+                                mysqli_stmt_execute($stmt);
+                                $response["success"] = "true";
+                                $response["message"] = "Podatci uspješno dodani!";
+                            }
+                        } 
+                        //Ako već postoji ova primarna dijagnoza u povijesti bolesti ove sesije obrade te ima više od jedne sek. dijagnoze u bazi trenutno
+                        else if($brojSekundarnaBaza > 1){
+                            //Brišem sve retke iz tablice ambulanta za ovu povijest bolesti
+                            $sqlDeleteAmbulanta = "DELETE a FROM ambulanta a
+                                                JOIN povijestbolesti pb ON pb.idPovijestBolesti = a.idPovijestBolesti 
+                                                WHERE pb.mkbSifraPrimarna = ? AND pb.mboPacijent = ?;";
+                            //Kreiranje prepared statementa
+                            $stmtDeleteAmbulanta = mysqli_stmt_init($conn);
+                            //Ako je statement neuspješan
+                            if(!mysqli_stmt_prepare($stmtDeleteAmbulanta,$sqlDeleteAmbulanta)){
+                                $response["success"] = "false";
+                                $response["message"] = "Prepared statement ne valja!";
+                            }
+                            else{
+                                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                mysqli_stmt_bind_param($stmtDeleteAmbulanta,"ss",$prethodnaPrimarna,$mboPacijent);
+                                //Izvršavanje statementa
+                                mysqli_stmt_execute($stmtDeleteAmbulanta);
+                                //Brišem sve retke iz tablice povijesti bolesti
+                                $sqlDelete = "DELETE FROM povijestBolesti 
+                                            WHERE mkbSifraPrimarna = ? AND pb.mboPacijent = ?;";
+                                //Kreiranje prepared statementa
+                                $stmtDelete = mysqli_stmt_init($conn);
+                                //Ako je statement neuspješan
+                                if(!mysqli_stmt_prepare($stmtDelete,$sqlDelete)){
+                                    $response["success"] = "false";
+                                    $response["message"] = "Prepared statement ne valja!";
+                                }
+                                else{
+                                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                    mysqli_stmt_bind_param($stmtDelete,"ss",$prethodnaPrimarna,$mboPacijent);
+                                    //Izvršavanje statementa
+                                    mysqli_stmt_execute($stmtDelete);  
+                                    //Kreiram upit za dodavanje novog recepta u bazu
+                                    $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
+                                            nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
+                                            preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme) 
+                                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                    //Kreiranje prepared statementa
+                                    $stmt = mysqli_stmt_init($conn);
+                                    //Ako je statement neuspješan
+                                    if(!mysqli_stmt_prepare($stmt,$sql)){
+                                        $response["success"] = "false";
+                                        $response["message"] = "Prepared statement ne valja!";
+                                    }
+                                    else{
+                                        $prazna = NULL;
+                                        if(empty($status)){
+                                            $status = NULL;
+                                        }
+                                        if(empty($nalaz)){
+                                            $nalaz = NULL;
+                                        }
+                                        if(empty($terapija)){
+                                            $terapija = NULL;
+                                        }
+                                        if(empty($preporukaLijecnik)){
+                                            $preporukaLijecnik = NULL;
+                                        }
+                                        if(empty($napomena)){
+                                            $napomena = NULL;
+                                        }
+                                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                        mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$prazna,
+                                                                        $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
+                                        //Izvršavanje statementa
+                                        mysqli_stmt_execute($stmt);
+
+                                        //Dohvaćam ID povijesti bolesti kojega sam upravo unio
+                                        $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
+                                        //Ulazim u polje rezultata i idem redak po redak
+                                        while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
+                                            //Dohvaćam željeni ID povijesti bolesti
+                                            $idPovijestBolesti = $rowPovijestBolesti['ID'];
+                                        } 
+                                        //Ubacivam nove podatke u tablicu "ambulanta"
+                                        $sqlAmbulanta = "INSERT INTO ambulanta (idLijecnik,idPacijent,idPovijestBolesti) VALUES (?,?,?)";
+                                        //Kreiranje prepared statementa
+                                        $stmtAmbulanta = mysqli_stmt_init($conn);
+                                        //Ako je statement neuspješan
+                                        if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
+                                            $response["success"] = "false";
+                                            $response["message"] = "Prepared statement ne valja!";
+                                        }
+                                        //Ako je prepared statement u redu
+                                        else{
+                                            //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                            mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
+                                            //Izvršavanje statementa
+                                            mysqli_stmt_execute($stmtAmbulanta);
+                                            //Vraćanje uspješnog odgovora serveru
+                                            $response["success"] = "true";
+                                            $response["message"] = "Podatci uspješno dodani!";
+                                        }
+                                    } 
+                                }
+                            }
+                        } 
+                    } 
+                }
+                return $response;
             }
-            return $response;
-        }
-        //Ako polje sekundarnih dijagnoza nije prazno
-        else{
-            //Kreiram upit koji dohvaća MINIMALNI ID povijesti bolesti za određenog pacijenta i određenu sesiju obrade
-            $sqlMin = "SELECT pb.idPovijestBolesti FROM povijestbolesti pb 
-                        WHERE pb.idObradaLijecnik = '$idObrada' AND pb.mboPacijent IN 
-                        (SELECT pacijent.mboPacijent FROM pacijent 
-                        WHERE pacijent.idPacijent = '$idPacijent') 
+            //Ako polje sekundarnih dijagnoza nije prazno
+            else{
+                //Kreiram upit koji dohvaća MINIMALNI ID povijesti bolesti za određenog pacijenta i određenu sesiju obrade
+                $sqlMin = "SELECT pb.idPovijestBolesti FROM povijestbolesti pb 
+                        WHERE pb.mkbSifraPrimarna = '$prethodnaPrimarna' 
+                        AND pb.mboPacijent = '$mboPacijent' AND pb.idObradaLijecnik = '$idObrada';
                         AND pb.idPovijestBolesti = 
                         (SELECT MIN(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
-                        WHERE pb2.idObradaLijecnik = '$idObrada' 
-                        AND pb2.mkbSifraPrimarna = '$zadnjaPrimarna'
-                        AND pb2.mboPacijent IN 
-                        (SELECT pacijent.mboPacijent FROM pacijent 
-                        WHERE pacijent.idPacijent = '$idPacijent')) 
-                        AND pb.mkbSifraPrimarna = '$zadnjaPrimarna'";
-            $resultMin = $conn->query($sqlMin);
-                    
-            //Ako pacijent IMA evidentiranih recepata:
-            if ($resultMin->num_rows > 0) {
-                while($rowMin = $resultMin->fetch_assoc()) {
-                    //Dohvaćam povijest bolesti sa MINIMALNIM ID-om
-                    $idMinPovijestBolesti = $rowMin['idPovijestBolesti'];
+                        WHERE pb2.mkbSifraPrimarna = '$prethodnaPrimarna' 
+                        AND pb.mboPacijent = '$mboPacijent' AND pb.idObradaLijecnik = '$idObrada')";
+                $resultMin = $conn->query($sqlMin);
+                        
+                //Ako pacijent IMA evidentiranih recepata:
+                if ($resultMin->num_rows > 0) {
+                    while($rowMin = $resultMin->fetch_assoc()) {
+                        //Dohvaćam povijest bolesti sa MINIMALNIM ID-om
+                        $idMinPovijestBolesti = $rowMin['idPovijestBolesti'];
+                    }
                 }
-            }
-            //Postavljam inicijalno brojač ažuriranih redaka na 0
-            $brojacAzuriranihRedaka = 0;
-            //Postavljam brojač na 0 (on služi da napravi razliku između prve sekundarne dijagnoze (ažuriranja retka) i drugih sekundarnih dijagnoza (dodavanja redaka))
-            $brojacIteracija = 0;
-            //Brojim koliko ima sekundarnih dijagnoza u polju
-            $brojacSekundarnaForma = count($mkbSifre); 
-            //Inicijaliziram varijablu $brisanje na false na početku
-            $brisanje = false;
-            //Ako je broj dijagnoza u bazi VEĆI od broja dijagnoza u formi
-            if($brojSekundarnaBaza > $brojacSekundarnaForma){
-                //Označavam da treba obrisati sve retke pa nadodati kasnije
-                $brisanje = true;
-                //Brišem sve retke iz tablice ambulanta za ovu povijest bolesti
-                $sqlDeleteAmbulanta = "DELETE a FROM ambulanta a
-                                    JOIN povijestbolesti pb ON pb.idPovijestBolesti = a.idPovijestBolesti 
-                                    WHERE pb.idObradaLijecnik = ? AND a.idPacijent = ? AND pb.mkbSifraPrimarna = ?;";
-                //Kreiranje prepared statementa
-                $stmtDeleteAmbulanta = mysqli_stmt_init($conn);
-                //Ako je statement neuspješan
-                if(!mysqli_stmt_prepare($stmtDeleteAmbulanta,$sqlDeleteAmbulanta)){
-                    $response["success"] = "false";
-                    $response["message"] = "Prepared statement ne valja!";
-                }
-                else{
-                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                    mysqli_stmt_bind_param($stmtDeleteAmbulanta,"iis",$idObrada,$idPacijent,$zadnjaPrimarna);
-                    //Izvršavanje statementa
-                    mysqli_stmt_execute($stmtDeleteAmbulanta);
-                    //Brišem sve retke iz tablice povijesti bolesti
-                    $sqlDelete = "DELETE FROM povijestBolesti 
-                                WHERE idObradaLijecnik = ? AND mboPacijent IN 
-                                (SELECT pacijent.mboPacijent FROM pacijent 
-                                WHERE pacijent.idPacijent = ?) 
-                                AND mkbSifraPrimarna = ?";
+                //Postavljam inicijalno brojač ažuriranih redaka na 0
+                $brojacAzuriranihRedaka = 0;
+                //Postavljam brojač na 0 (on služi da napravi razliku između prve sekundarne dijagnoze (ažuriranja retka) i drugih sekundarnih dijagnoza (dodavanja redaka))
+                $brojacIteracija = 0;
+                //Brojim koliko ima sekundarnih dijagnoza u polju
+                $brojacSekundarnaForma = count($mkbSifre); 
+                //Inicijaliziram varijablu $brisanje na false na početku
+                $brisanje = false;
+                //Ako je broj dijagnoza u bazi VEĆI od broja dijagnoza u formi
+                if($brojSekundarnaBaza > $brojacSekundarnaForma){
+                    //Označavam da treba obrisati sve retke pa nadodati kasnije
+                    $brisanje = true;
+                    //Brišem sve retke iz tablice ambulanta za ovu povijest bolesti
+                    $sqlDeleteAmbulanta = "DELETE a FROM ambulanta a
+                                        JOIN povijestbolesti pb ON pb.idPovijestBolesti = a.idPovijestBolesti 
+                                        WHERE pb.mkbSifraPrimarna = ? AND pb.mboPacijent = ? AND pb.idObradaLijecnik = ?;";
                     //Kreiranje prepared statementa
-                    $stmtDelete = mysqli_stmt_init($conn);
+                    $stmtDeleteAmbulanta = mysqli_stmt_init($conn);
                     //Ako je statement neuspješan
-                    if(!mysqli_stmt_prepare($stmtDelete,$sqlDelete)){
+                    if(!mysqli_stmt_prepare($stmtDeleteAmbulanta,$sqlDeleteAmbulanta)){
                         $response["success"] = "false";
                         $response["message"] = "Prepared statement ne valja!";
                     }
                     else{
                         //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                        mysqli_stmt_bind_param($stmtDelete,"iis",$idObrada,$idPacijent,$zadnjaPrimarna);
+                        mysqli_stmt_bind_param($stmtDeleteAmbulanta,"ssi",$prethodnaPrimarna,$mboPacijent,$idObrada);
                         //Izvršavanje statementa
-                        mysqli_stmt_execute($stmtDelete);
-                    }
-                }
-            }
-            //Prolazim kroz polje sekundarnih dijagnoza i za svaku sekundarnu dijagnoze ubacivam novu n-torku u bazu
-            foreach($mkbSifre as $mkb){
-                //Povećavam brojač za 1
-                $brojacIteracija = $brojacIteracija + 1;   
-
-                //Ako NE POSTOJI evidentiranih primarnih dijagnoza za ovu sesiju obrade pacijenta
-                if($brojPrimarna == 0){
-                    //Kreiram upit za spremanje prvog dijela podataka u bazu
-                    $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
-                            nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                            preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme) 
-                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-                    //Kreiranje prepared statementa
-                    $stmt = mysqli_stmt_init($conn);
-                    //Ako je statement neuspješan
-                    if(!mysqli_stmt_prepare($stmt,$sql)){
-                        $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
-                    }
-                    //Ako je prepared statement u redu
-                    else{
-                        if(empty($status)){
-                            $status = NULL;
-                        }
-                        if(empty($nalaz)){
-                            $nalaz = NULL;
-                        }
-                        if(empty($terapija)){
-                            $terapija = NULL;
-                        }
-                        if(empty($preporukaLijecnik)){
-                            $preporukaLijecnik = NULL;
-                        }
-                        if(empty($napomena)){
-                            $napomena = NULL;
-                        }
-                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                        mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
-                                                                    $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
-                        //Izvršavanje statementa
-                        mysqli_stmt_execute($stmt);
-        
-                        //Dohvaćam ID povijesti bolesti kojega sam upravo unio
-                        $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
-                        //Ulazim u polje rezultata i idem redak po redak
-                        while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
-                            //Dohvaćam željeni ID povijesti bolesti
-                            $idPovijestBolesti = $rowPovijestBolesti['ID'];
-                        } 
-
-                        //Ubacivam nove podatke u tablicu "ambulanta"
-                        $sqlAmbulanta = "INSERT INTO ambulanta (idLijecnik,idPacijent,idPovijestBolesti) VALUES (?,?,?)";
+                        mysqli_stmt_execute($stmtDeleteAmbulanta);
+                        //Brišem sve retke iz tablice povijesti bolesti
+                        $sqlDelete = "DELETE FROM povijestBolesti 
+                                    WHERE mkbSifraPrimarna = ? AND pb.mboPacijent = ? AND pb.idObradaLijecnik = ?";
                         //Kreiranje prepared statementa
-                        $stmtAmbulanta = mysqli_stmt_init($conn);
+                        $stmtDelete = mysqli_stmt_init($conn);
                         //Ako je statement neuspješan
-                        if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
+                        if(!mysqli_stmt_prepare($stmtDelete,$sqlDelete)){
                             $response["success"] = "false";
                             $response["message"] = "Prepared statement ne valja!";
                         }
-                        //Ako je prepared statement u redu
                         else{
                             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                            mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
+                            mysqli_stmt_bind_param($stmtDelete,"ssi",$prethodnaPrimarna,$mboPacijent,$idObrada);
                             //Izvršavanje statementa
-                            mysqli_stmt_execute($stmtAmbulanta);
-    
-                            $response["success"] = "true";
-                            $response["message"] = "Podatci uspješno dodani!";
+                            mysqli_stmt_execute($stmtDelete);
                         }
                     }
                 }
-                //Ako idRecept NIJE UNESEN 
-                if($brojRecept == 0){
-                    //Ako VEĆ POSTOJI primarna dijagnoza za ovu obradu TE npr. (BAZA = 0, FORMA = 1) ILI (BAZA = 1, FORMA = 1)
-                    if($brojPrimarna > 0 && $brojSekundarnaBaza <= $brojacSekundarnaForma && $brojacSekundarnaForma == 1){
-                        $sql ="UPDATE povijestBolesti pb SET pb.razlogDolaska = ?, pb.anamneza = ?, 
-                                                        pb.statusPacijent = ?, pb.nalaz = ?, pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?, 
-                                                        pb.tipSlucaj = ?, pb.terapija = ?, pb.preporukaLijecnik = ?, pb.napomena = ?, pb.datum = ?, 
-                                                        pb.narucen = ?, pb.vrijeme = ?, pb.mboPacijent = ?
-                                    WHERE pb.idObradaLijecnik = ? AND pb.mboPacijent IN 
-                                    (SELECT pacijent.mboPacijent FROM pacijent 
-                                    WHERE pacijent.idPacijent = ?) AND pb.mkbSifraPrimarna = ?;";
-                            //Kreiranje prepared statementa
-                            $stmt = mysqli_stmt_init($conn);
-                            //Ako je statement neuspješan
-                            if(!mysqli_stmt_prepare($stmt,$sql)){
-                                $response["success"] = "false";
-                                $response["message"] = "Prepared statement ne valja!";
-                            }
-                            //Ako je prepared statement u redu
-                            else{
-                                if(empty($status)){
-                                    $status = NULL;
-                                }
-                                if(empty($nalaz)){
-                                    $nalaz = NULL;
-                                }
-                                if(empty($terapija)){
-                                    $terapija = NULL;
-                                }
-                                if(empty($preporukaLijecnik)){
-                                    $preporukaLijecnik = NULL;
-                                }
-                                if(empty($napomena)){
-                                    $napomena = NULL;
-                                }
-                                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                                mysqli_stmt_bind_param($stmt,"ssssssssssssssiis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
-                                                                $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$vrijemePregled, 
-                                                                $mboPacijent,$idObrada,$idPacijent,$zadnjaPrimarna);
-                                //Izvršavanje statementa
-                                mysqli_stmt_execute($stmt);
-                                $response["success"] = "true";
-                                $response["message"] = "Podatci uspješno dodani!";
-                            }
-                    }
-                    //Ako VEĆ POSTOJI unesena primarna dijagnoza te npr. (BAZA = 1, FORMA = 2, BAZA = 2, FORMA = 2)
-                    else if($brojPrimarna > 0 && $brojSekundarnaBaza <= $brojacSekundarnaForma && $brojacSekundarnaForma > 1){
-                        //Ako je broj sek. dijagnoza u bazi JEDNAK 0 te je prva iteracija (tj. prva dijagnoza forme)
-                        if($brojSekundarnaBaza == 0 && $brojacIteracija == 1){
-                            $sql ="UPDATE povijestBolesti pb SET pb.razlogDolaska = ?, pb.anamneza = ?, 
-                                                        pb.statusPacijent = ?, pb.nalaz = ?, pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?, 
-                                                        pb.tipSlucaj = ?, pb.terapija = ?, pb.preporukaLijecnik = ?, pb.napomena = ?, pb.datum = ?, 
-                                                        pb.narucen = ?, pb.vrijeme = ?, pb.mboPacijent = ?
-                                    WHERE pb.idObradaLijecnik = ? AND pb.mboPacijent IN 
-                                    (SELECT pacijent.mboPacijent FROM pacijent 
-                                    WHERE pacijent.idPacijent = ?) AND pb.mkbSifraPrimarna = ?;";
-                            //Kreiranje prepared statementa
-                            $stmt = mysqli_stmt_init($conn);
-                            //Ako je statement neuspješan
-                            if(!mysqli_stmt_prepare($stmt,$sql)){
-                                $response["success"] = "false";
-                                $response["message"] = "Prepared statement ne valja!";
-                            }
-                            //Ako je prepared statement u redu
-                            else{
-                                if(empty($status)){
-                                    $status = NULL;
-                                }
-                                if(empty($nalaz)){
-                                    $nalaz = NULL;
-                                }
-                                if(empty($terapija)){
-                                    $terapija = NULL;
-                                }
-                                if(empty($preporukaLijecnik)){
-                                    $preporukaLijecnik = NULL;
-                                }
-                                if(empty($napomena)){
-                                    $napomena = NULL;
-                                }
-                                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                                mysqli_stmt_bind_param($stmt,"ssssssssssssssiis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
-                                                                $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$vrijemePregled, 
-                                                                $mboPacijent,$idObrada,$idPacijent,$zadnjaPrimarna);
-                                //Izvršavanje statementa
-                                mysqli_stmt_execute($stmt);
-                            }
-                        }
-                        //Ako je broj sek. dijagnoza u BAZI JENDAK 0 te je n-ta iteracija (tj. n-ta dijagnoza forme)
-                        else if($brojSekundarnaBaza == 0 && $brojacIteracija > 1){
-                            //Kreiram upit za spremanje prvog dijela podataka u bazu
-                            $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
-                                    nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                                    preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme) 
-                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-                            //Kreiranje prepared statementa
-                            $stmt = mysqli_stmt_init($conn);
-                            //Ako je statement neuspješan
-                            if(!mysqli_stmt_prepare($stmt,$sql)){
-                                $response["success"] = "false";
-                                $response["message"] = "Prepared statement ne valja!";
-                            }
-                            //Ako je prepared statement u redu
-                            else{
-                                if(empty($status)){
-                                    $status = NULL;
-                                }
-                                if(empty($nalaz)){
-                                    $nalaz = NULL;
-                                }
-                                if(empty($terapija)){
-                                    $terapija = NULL;
-                                }
-                                if(empty($preporukaLijecnik)){
-                                    $preporukaLijecnik = NULL;
-                                }
-                                if(empty($napomena)){
-                                    $napomena = NULL;
-                                }
-                                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                                mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
-                                                                            $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
-                                //Izvršavanje statementa
-                                mysqli_stmt_execute($stmt);
-
-                                //Dohvaćam ID povijesti bolesti kojega sam upravo unio
-                                $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
-                                //Ulazim u polje rezultata i idem redak po redak
-                                while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
-                                    //Dohvaćam željeni ID povijesti bolesti
-                                    $idPovijestBolesti = $rowPovijestBolesti['ID'];
-                                } 
-
-                                //Ubacivam nove podatke u tablicu "ambulanta"
-                                $sqlAmbulanta = "INSERT INTO ambulanta (idLijecnik,idPacijent,idPovijestBolesti) VALUES (?,?,?)";
-                                //Kreiranje prepared statementa
-                                $stmtAmbulanta = mysqli_stmt_init($conn);
-                                //Ako je statement neuspješan
-                                if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
-                                    $response["success"] = "false";
-                                    $response["message"] = "Prepared statement ne valja!";
-                                }
-                                //Ako je prepared statement u redu
-                                else{
-                                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                                    mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
-                                    //Izvršavanje statementa
-                                    mysqli_stmt_execute($stmtAmbulanta);
-
-                                    $response["success"] = "true";
-                                    $response["message"] = "Podatci uspješno dodani!";
-                                }
-                            }
-                        }
-                        //Ako je broj obrađenih redaka manji od broja dijagnoza u bazi te je prva iteracija (koristim PRVI MINIMALNI ID povijesti bolesti) te je idRecept === NULL
-                        if($brojacAzuriranihRedaka < $brojSekundarnaBaza && $brojacIteracija == 1){
-                            $sql ="UPDATE povijestBolesti pb SET pb.razlogDolaska = ?, pb.anamneza = ?, 
-                                                        pb.statusPacijent = ?, pb.nalaz = ?, pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?, 
-                                                        pb.tipSlucaj = ?, pb.terapija = ?, pb.preporukaLijecnik = ?, pb.napomena = ?, pb.datum = ?, 
-                                                        pb.narucen = ?, pb.vrijeme = ?, pb.mboPacijent = ?
-                                WHERE pb.idPovijestBolesti = ?;";
-                            //Kreiranje prepared statementa
-                            $stmt = mysqli_stmt_init($conn);
-                            //Ako je statement neuspješan
-                            if(!mysqli_stmt_prepare($stmt,$sql)){
-                                $response["success"] = "false";
-                                $response["message"] = "Prepared statement ne valja!";
-                            }
-                            //Ako je prepared statement u redu
-                            else{
-                                if(empty($status)){
-                                    $status = NULL;
-                                }
-                                if(empty($nalaz)){
-                                    $nalaz = NULL;
-                                }
-                                if(empty($terapija)){
-                                    $terapija = NULL;
-                                }
-                                if(empty($preporukaLijecnik)){
-                                    $preporukaLijecnik = NULL;
-                                }
-                                if(empty($napomena)){
-                                    $napomena = NULL;
-                                }
-                                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                                mysqli_stmt_bind_param($stmt,"ssssssssssssssi",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
-                                                                $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$vrijemePregled, 
-                                                                $mboPacijent,$idMinPovijestBolesti);
-                                //Izvršavanje statementa
-                                mysqli_stmt_execute($stmt);
-                                //Povećavam broj ažuriranih redaka za 1
-                                $brojacAzuriranihRedaka++;
-                            }
-                        }
-                        //Ako je broj obrađenih redaka manji od broja dijagnoza u bazi te NIJE prva iteracija
-                        else if($brojacAzuriranihRedaka < $brojSekundarnaBaza && $brojacIteracija > 1){
-                            //Kreiram upit koji dohvaća SLJEDEĆI MINIMALNI ID povijesti bolesti za ovog pacijenta za ovu sesiju obrade
-                            $sqlSljedeciMin = "SELECT pb.idPovijestBolesti FROM povijestbolesti pb 
-                                            WHERE pb.idObradaLijecnik = '$idObrada' 
-                                            AND pb.mboPacijent IN 
-                                            (SELECT pacijent.mboPacijent FROM pacijent 
-                                            WHERE pacijent.idPacijent = '$idPacijent') 
-                                            AND pb.idPovijestBolesti = 
-                                            (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
-                                            WHERE pb2.idObradaLijecnik = '$idObrada'  
-                                            AND pb2.mkbSifraPrimarna = '$zadnjaPrimarna' AND pb2.mboPacijent IN 
-                                            (SELECT pacijent.mboPacijent FROM pacijent 
-                                            WHERE pacijent.idPacijent = '$idPacijent') AND pb2.idPovijestBolesti > '$idMinPovijestBolesti' 
-                                            LIMIT 1)";
-                            $resultSljedeciMin = $conn->query($sqlSljedeciMin);
-                                    
-                            //Ako pacijent IMA evidentiranih povijesti bolesti
-                            if ($resultSljedeciMin->num_rows > 0) {
-                                while($rowSljedeciMin = $resultSljedeciMin->fetch_assoc()) {
-                                    //Dohvaćam povijesti bolesti sa SLJEDEĆIM MINIMALNIM ID-om
-                                    $idMinPovijestBolesti = $rowSljedeciMin['idPovijestBolesti'];
-                                }
-                            }
-                            $sql ="UPDATE povijestBolesti pb SET pb.razlogDolaska = ?, pb.anamneza = ?, 
-                                                        pb.statusPacijent = ?, pb.nalaz = ?, pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?, 
-                                                        pb.tipSlucaj = ?, pb.terapija = ?, pb.preporukaLijecnik = ?, pb.napomena = ?, pb.datum = ?, 
-                                                        pb.narucen = ?, pb.vrijeme = ?, pb.mboPacijent = ?
-                                WHERE pb.idPovijestBolesti = ?;";
-                            //Kreiranje prepared statementa
-                            $stmt = mysqli_stmt_init($conn);
-                            //Ako je statement neuspješan
-                            if(!mysqli_stmt_prepare($stmt,$sql)){
-                                $response["success"] = "false";
-                                $response["message"] = "Prepared statement ne valja!";
-                            }
-                            //Ako je prepared statement u redu
-                            else{
-                                if(empty($status)){
-                                    $status = NULL;
-                                }
-                                if(empty($nalaz)){
-                                    $nalaz = NULL;
-                                }
-                                if(empty($terapija)){
-                                    $terapija = NULL;
-                                }
-                                if(empty($preporukaLijecnik)){
-                                    $preporukaLijecnik = NULL;
-                                }
-                                if(empty($napomena)){
-                                    $napomena = NULL;
-                                }
-                                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                                mysqli_stmt_bind_param($stmt,"ssssssssssssssi",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
-                                                                $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$vrijemePregled, 
-                                                                $mboPacijent,$idMinPovijestBolesti);
-                                //Izvršavanje statementa
-                                mysqli_stmt_execute($stmt);
-                                $response["success"] = "true";
-                                $response["message"] = "Podatci uspješno dodani!";
-                                //Povećavam broj ažuriranih redaka za 1
-                                $brojacAzuriranihRedaka++;
-                            }
-                        }
-                        //Ako je broj ažuriranih redak JEDNAK broju sek. dijagnoza u bazi (npr. 2 == 2) I brojač iteracija JE VEĆI od broja sek. dijagnoza u bazi (npr. 3 > 2) 
-                        //te da je broj sek. dijagnoza u BAZI VEĆI OD 0
-                        if($brojacAzuriranihRedaka == $brojSekundarnaBaza && $brojacIteracija > $brojSekundarnaBaza && $brojSekundarnaBaza > 0){
-                            //Kreiram upit za spremanje prvog dijela podataka u bazu
-                            $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
-                                    nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                                    preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme) 
-                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-                            //Kreiranje prepared statementa
-                            $stmt = mysqli_stmt_init($conn);
-                            //Ako je statement neuspješan
-                            if(!mysqli_stmt_prepare($stmt,$sql)){
-                                $response["success"] = "false";
-                                $response["message"] = "Prepared statement ne valja!";
-                            }
-                            //Ako je prepared statement u redu
-                            else{
-                                if(empty($status)){
-                                    $status = NULL;
-                                }
-                                if(empty($nalaz)){
-                                    $nalaz = NULL;
-                                }
-                                if(empty($terapija)){
-                                    $terapija = NULL;
-                                }
-                                if(empty($preporukaLijecnik)){
-                                    $preporukaLijecnik = NULL;
-                                }
-                                if(empty($napomena)){
-                                    $napomena = NULL;
-                                }
-                                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                                mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
-                                                                            $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
-                                //Izvršavanje statementa
-                                mysqli_stmt_execute($stmt);
-
-                                //Dohvaćam ID povijesti bolesti kojega sam upravo unio
-                                $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
-                                //Ulazim u polje rezultata i idem redak po redak
-                                while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
-                                    //Dohvaćam željeni ID povijesti bolesti
-                                    $idPovijestBolesti = $rowPovijestBolesti['ID'];
-                                } 
-
-                                //Ubacivam nove podatke u tablicu "ambulanta"
-                                $sqlAmbulanta = "INSERT INTO ambulanta (idLijecnik,idPacijent,idPovijestBolesti) VALUES (?,?,?)";
-                                //Kreiranje prepared statementa
-                                $stmtAmbulanta = mysqli_stmt_init($conn);
-                                //Ako je statement neuspješan
-                                if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
-                                    $response["success"] = "false";
-                                    $response["message"] = "Prepared statement ne valja!";
-                                }
-                                //Ako je prepared statement u redu
-                                else{
-                                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                                    mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
-                                    //Izvršavanje statementa
-                                    mysqli_stmt_execute($stmtAmbulanta);
-
-                                    $response["success"] = "true";
-                                    $response["message"] = "Podatci uspješno dodani!";
-                                }
-                            }
-                        }
-                    }
-                    /**************************************** */
-                    //Ako su retci izbrisani, treba nadodati nove dijagnoze iz forme
-                    else if($brisanje == true){
+                //Prolazim kroz polje sekundarnih dijagnoza i za svaku sekundarnu dijagnoze ubacivam novu n-torku u bazu
+                foreach($mkbSifre as $mkb){
+                    //Povećavam brojač za 1
+                    $brojacIteracija = $brojacIteracija + 1;   
+                    //Ako NE POSTOJI evidentiranih primarnih dijagnoza za ovu sesiju obrade pacijenta
+                    if($tipSlucaj == 'noviSlucaj'){
                         //Kreiram upit za spremanje prvog dijela podataka u bazu
                         $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                                 nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
@@ -968,7 +600,7 @@ class PovijestBolestiService{
                                                                         $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
                             //Izvršavanje statementa
                             mysqli_stmt_execute($stmt);
-
+            
                             //Dohvaćam ID povijesti bolesti kojega sam upravo unio
                             $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
                             //Ulazim u polje rezultata i idem redak po redak
@@ -992,15 +624,488 @@ class PovijestBolestiService{
                                 mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
                                 //Izvršavanje statementa
                                 mysqli_stmt_execute($stmtAmbulanta);
-
+        
                                 $response["success"] = "true";
                                 $response["message"] = "Podatci uspješno dodani!";
                             }
-                        } 
+                        }
+                    }
+                    //Ako slučaj povezan
+                    else if($tipSlucaj == 'povezanSlucaj'){
+                        //Ako VEĆ POSTOJI primarna dijagnoza za ovu obradu TE npr. (BAZA = 0, FORMA = 1) ILI (BAZA = 1, FORMA = 1)
+                        if($brojSekundarnaBaza <= $brojacSekundarnaForma && $brojacSekundarnaForma == 1){
+                            $sql ="UPDATE povijestBolesti pb SET pb.razlogDolaska = ?, pb.anamneza = ?, 
+                                                            pb.statusPacijent = ?, pb.nalaz = ?, pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?, 
+                                                            pb.tipSlucaj = ?, pb.terapija = ?, pb.preporukaLijecnik = ?, pb.napomena = ?, pb.datum = ?, 
+                                                            pb.narucen = ?, pb.vrijeme = ?, pb.mboPacijent = ?, pb.idObradaLijecnik = ?
+                                        WHERE pb.mkbSifraPrimarna = ? AND pb.mboPacijent = ? AND pb.idObradaLijecnik = ?;";
+                                //Kreiranje prepared statementa
+                                $stmt = mysqli_stmt_init($conn);
+                                //Ako je statement neuspješan
+                                if(!mysqli_stmt_prepare($stmt,$sql)){
+                                    $response["success"] = "false";
+                                    $response["message"] = "Prepared statement ne valja!";
+                                }
+                                //Ako je prepared statement u redu
+                                else{
+                                    if(empty($status)){
+                                        $status = NULL;
+                                    }
+                                    if(empty($nalaz)){
+                                        $nalaz = NULL;
+                                    }
+                                    if(empty($terapija)){
+                                        $terapija = NULL;
+                                    }
+                                    if(empty($preporukaLijecnik)){
+                                        $preporukaLijecnik = NULL;
+                                    }
+                                    if(empty($napomena)){
+                                        $napomena = NULL;
+                                    }
+                                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                    mysqli_stmt_bind_param($stmt,"ssssssssssssssissi",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
+                                                                    $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$vrijemePregled, 
+                                                                    $mboPacijent,$idObrada,$prethodnaPrimarna,$mboPacijent,$idObrada);
+                                    //Izvršavanje statementa
+                                    mysqli_stmt_execute($stmt);
+                                    $response["success"] = "true";
+                                    $response["message"] = "Podatci uspješno dodani!";
+                                }
+                        }
+                        //Ako VEĆ POSTOJI unesena primarna dijagnoza te npr. (BAZA = 1, FORMA = 2, BAZA = 2, FORMA = 2)
+                        else if($brojSekundarnaBaza <= $brojacSekundarnaForma && $brojacSekundarnaForma > 1){
+                            //Ako je broj sek. dijagnoza u bazi JEDNAK 0 te je prva iteracija (tj. prva dijagnoza forme)
+                            if($brojSekundarnaBaza == 0 && $brojacIteracija == 1){
+                                $sql ="UPDATE povijestBolesti pb SET pb.razlogDolaska = ?, pb.anamneza = ?, 
+                                                            pb.statusPacijent = ?, pb.nalaz = ?, pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?, 
+                                                            pb.tipSlucaj = ?, pb.terapija = ?, pb.preporukaLijecnik = ?, pb.napomena = ?, pb.datum = ?, 
+                                                            pb.narucen = ?, pb.vrijeme = ?, pb.mboPacijent = ?,pb.idObradaLijecnik = ?
+                                        WHERE pb.mkbSifraPrimarna = ? AND pb.mboPacijent = ? AND pb.idObradaLijecnik = ?;";
+                                //Kreiranje prepared statementa
+                                $stmt = mysqli_stmt_init($conn);
+                                //Ako je statement neuspješan
+                                if(!mysqli_stmt_prepare($stmt,$sql)){
+                                    $response["success"] = "false";
+                                    $response["message"] = "Prepared statement ne valja!";
+                                }
+                                //Ako je prepared statement u redu
+                                else{
+                                    if(empty($status)){
+                                        $status = NULL;
+                                    }
+                                    if(empty($nalaz)){
+                                        $nalaz = NULL;
+                                    }
+                                    if(empty($terapija)){
+                                        $terapija = NULL;
+                                    }
+                                    if(empty($preporukaLijecnik)){
+                                        $preporukaLijecnik = NULL;
+                                    }
+                                    if(empty($napomena)){
+                                        $napomena = NULL;
+                                    }
+                                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                    mysqli_stmt_bind_param($stmt,"ssssssssssssssissi",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
+                                                                    $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$vrijemePregled, 
+                                                                    $mboPacijent,$idObrada,$prethodnaPrimarna,$mboPacijent,$idObrada);
+                                    //Izvršavanje statementa
+                                    mysqli_stmt_execute($stmt);
+                                }
+                            }
+                            //Ako je broj sek. dijagnoza u BAZI JENDAK 0 te je n-ta iteracija (tj. n-ta dijagnoza forme)
+                            else if($brojSekundarnaBaza == 0 && $brojacIteracija > 1){
+                                //Kreiram upit za spremanje prvog dijela podataka u bazu
+                                $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
+                                        nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
+                                        preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme) 
+                                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                //Kreiranje prepared statementa
+                                $stmt = mysqli_stmt_init($conn);
+                                //Ako je statement neuspješan
+                                if(!mysqli_stmt_prepare($stmt,$sql)){
+                                    $response["success"] = "false";
+                                    $response["message"] = "Prepared statement ne valja!";
+                                }
+                                //Ako je prepared statement u redu
+                                else{
+                                    if(empty($status)){
+                                        $status = NULL;
+                                    }
+                                    if(empty($nalaz)){
+                                        $nalaz = NULL;
+                                    }
+                                    if(empty($terapija)){
+                                        $terapija = NULL;
+                                    }
+                                    if(empty($preporukaLijecnik)){
+                                        $preporukaLijecnik = NULL;
+                                    }
+                                    if(empty($napomena)){
+                                        $napomena = NULL;
+                                    }
+                                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                    mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
+                                                                                $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen, 
+                                                                                $mboPacijent,$idObrada,$vrijemePregled);
+                                    //Izvršavanje statementa
+                                    mysqli_stmt_execute($stmt);
+
+                                    //Dohvaćam ID povijesti bolesti kojega sam upravo unio
+                                    $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
+                                    //Ulazim u polje rezultata i idem redak po redak
+                                    while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
+                                        //Dohvaćam željeni ID povijesti bolesti
+                                        $idPovijestBolesti = $rowPovijestBolesti['ID'];
+                                    } 
+
+                                    //Ubacivam nove podatke u tablicu "ambulanta"
+                                    $sqlAmbulanta = "INSERT INTO ambulanta (idLijecnik,idPacijent,idPovijestBolesti) VALUES (?,?,?)";
+                                    //Kreiranje prepared statementa
+                                    $stmtAmbulanta = mysqli_stmt_init($conn);
+                                    //Ako je statement neuspješan
+                                    if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
+                                        $response["success"] = "false";
+                                        $response["message"] = "Prepared statement ne valja!";
+                                    }
+                                    //Ako je prepared statement u redu
+                                    else{
+                                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                        mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
+                                        //Izvršavanje statementa
+                                        mysqli_stmt_execute($stmtAmbulanta);
+
+                                        $response["success"] = "true";
+                                        $response["message"] = "Podatci uspješno dodani!";
+                                    }
+                                }
+                            }
+                            //Ako je broj obrađenih redaka manji od broja dijagnoza u bazi te je prva iteracija (koristim PRVI MINIMALNI ID povijesti bolesti) te je idRecept === NULL
+                            if($brojacAzuriranihRedaka < $brojSekundarnaBaza && $brojacIteracija == 1){
+                                $sql ="UPDATE povijestBolesti pb SET pb.razlogDolaska = ?, pb.anamneza = ?, 
+                                                            pb.statusPacijent = ?, pb.nalaz = ?, pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?, 
+                                                            pb.tipSlucaj = ?, pb.terapija = ?, pb.preporukaLijecnik = ?, pb.napomena = ?, pb.datum = ?, 
+                                                            pb.narucen = ?, pb.vrijeme = ?, pb.mboPacijent = ?,pb.idObradaLijecnik = ?
+                                    WHERE pb.idPovijestBolesti = ?;";
+                                //Kreiranje prepared statementa
+                                $stmt = mysqli_stmt_init($conn);
+                                //Ako je statement neuspješan
+                                if(!mysqli_stmt_prepare($stmt,$sql)){
+                                    $response["success"] = "false";
+                                    $response["message"] = "Prepared statement ne valja!";
+                                }
+                                //Ako je prepared statement u redu
+                                else{
+                                    if(empty($status)){
+                                        $status = NULL;
+                                    }
+                                    if(empty($nalaz)){
+                                        $nalaz = NULL;
+                                    }
+                                    if(empty($terapija)){
+                                        $terapija = NULL;
+                                    }
+                                    if(empty($preporukaLijecnik)){
+                                        $preporukaLijecnik = NULL;
+                                    }
+                                    if(empty($napomena)){
+                                        $napomena = NULL;
+                                    }
+                                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                    mysqli_stmt_bind_param($stmt,"ssssssssssssssii",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
+                                                                    $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$vrijemePregled, 
+                                                                    $mboPacijent,$idObrada,$idMinPovijestBolesti);
+                                    //Izvršavanje statementa
+                                    mysqli_stmt_execute($stmt);
+                                    //Povećavam broj ažuriranih redaka za 1
+                                    $brojacAzuriranihRedaka++;
+                                }
+                            }
+                            //Ako je broj obrađenih redaka manji od broja dijagnoza u bazi te NIJE prva iteracija
+                            else if($brojacAzuriranihRedaka < $brojSekundarnaBaza && $brojacIteracija > 1){
+                                //Kreiram upit koji dohvaća SLJEDEĆI MINIMALNI ID povijesti bolesti za ovog pacijenta za ovu sesiju obrade
+                                $sqlSljedeciMin = "SELECT pb.idPovijestBolesti FROM povijestbolesti pb 
+                                                WHERE pb.mkbSifraPrimarna = '$prethodnaPrimarna' 
+                                                AND pb.mboPacijent = '$mboPacijent' AND pb.idObradaLijecnik = '$idObrada'
+                                                AND pb.idPovijestBolesti = 
+                                                (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                                                WHERE pb2.mkbSifraPrimarna = '$prethodnaPrimarna' 
+                                                AND pb.mboPacijent = '$mboPacijent' AND pb.idObradaLijecnik = '$idObrada'
+                                                AND pb2.idPovijestBolesti > '$idMinPovijestBolesti' 
+                                                LIMIT 1)";
+                                $resultSljedeciMin = $conn->query($sqlSljedeciMin);
+                                        
+                                //Ako pacijent IMA evidentiranih povijesti bolesti
+                                if ($resultSljedeciMin->num_rows > 0) {
+                                    while($rowSljedeciMin = $resultSljedeciMin->fetch_assoc()) {
+                                        //Dohvaćam povijesti bolesti sa SLJEDEĆIM MINIMALNIM ID-om
+                                        $idMinPovijestBolesti = $rowSljedeciMin['idPovijestBolesti'];
+                                    }
+                                }
+                                $sql ="UPDATE povijestBolesti pb SET pb.razlogDolaska = ?, pb.anamneza = ?, 
+                                                            pb.statusPacijent = ?, pb.nalaz = ?, pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?, 
+                                                            pb.tipSlucaj = ?, pb.terapija = ?, pb.preporukaLijecnik = ?, pb.napomena = ?, pb.datum = ?, 
+                                                            pb.narucen = ?, pb.vrijeme = ?, pb.mboPacijent = ?, pb.idObradaLijecnik = ?
+                                    WHERE pb.idPovijestBolesti = ?;";
+                                //Kreiranje prepared statementa
+                                $stmt = mysqli_stmt_init($conn);
+                                //Ako je statement neuspješan
+                                if(!mysqli_stmt_prepare($stmt,$sql)){
+                                    $response["success"] = "false";
+                                    $response["message"] = "Prepared statement ne valja!";
+                                }
+                                //Ako je prepared statement u redu
+                                else{
+                                    if(empty($status)){
+                                        $status = NULL;
+                                    }
+                                    if(empty($nalaz)){
+                                        $nalaz = NULL;
+                                    }
+                                    if(empty($terapija)){
+                                        $terapija = NULL;
+                                    }
+                                    if(empty($preporukaLijecnik)){
+                                        $preporukaLijecnik = NULL;
+                                    }
+                                    if(empty($napomena)){
+                                        $napomena = NULL;
+                                    }
+                                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                    mysqli_stmt_bind_param($stmt,"ssssssssssssssii",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
+                                                                    $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$vrijemePregled, 
+                                                                    $mboPacijent,$idObrada,$idMinPovijestBolesti);
+                                    //Izvršavanje statementa
+                                    mysqli_stmt_execute($stmt);
+                                    $response["success"] = "true";
+                                    $response["message"] = "Podatci uspješno dodani!";
+                                    //Povećavam broj ažuriranih redaka za 1
+                                    $brojacAzuriranihRedaka++;
+                                }
+                            }
+                            //Ako je broj ažuriranih redak JEDNAK broju sek. dijagnoza u bazi (npr. 2 == 2) I brojač iteracija JE VEĆI od broja sek. dijagnoza u bazi (npr. 3 > 2) 
+                            //te da je broj sek. dijagnoza u BAZI VEĆI OD 0
+                            if($brojacAzuriranihRedaka == $brojSekundarnaBaza && $brojacIteracija > $brojSekundarnaBaza && $brojSekundarnaBaza > 0){
+                                //Kreiram upit za spremanje prvog dijela podataka u bazu
+                                $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
+                                        nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
+                                        preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme) 
+                                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                //Kreiranje prepared statementa
+                                $stmt = mysqli_stmt_init($conn);
+                                //Ako je statement neuspješan
+                                if(!mysqli_stmt_prepare($stmt,$sql)){
+                                    $response["success"] = "false";
+                                    $response["message"] = "Prepared statement ne valja!";
+                                }
+                                //Ako je prepared statement u redu
+                                else{
+                                    if(empty($status)){
+                                        $status = NULL;
+                                    }
+                                    if(empty($nalaz)){
+                                        $nalaz = NULL;
+                                    }
+                                    if(empty($terapija)){
+                                        $terapija = NULL;
+                                    }
+                                    if(empty($preporukaLijecnik)){
+                                        $preporukaLijecnik = NULL;
+                                    }
+                                    if(empty($napomena)){
+                                        $napomena = NULL;
+                                    }
+                                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                    mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
+                                                                                $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
+                                    //Izvršavanje statementa
+                                    mysqli_stmt_execute($stmt);
+
+                                    //Dohvaćam ID povijesti bolesti kojega sam upravo unio
+                                    $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
+                                    //Ulazim u polje rezultata i idem redak po redak
+                                    while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
+                                        //Dohvaćam željeni ID povijesti bolesti
+                                        $idPovijestBolesti = $rowPovijestBolesti['ID'];
+                                    } 
+
+                                    //Ubacivam nove podatke u tablicu "ambulanta"
+                                    $sqlAmbulanta = "INSERT INTO ambulanta (idLijecnik,idPacijent,idPovijestBolesti) VALUES (?,?,?)";
+                                    //Kreiranje prepared statementa
+                                    $stmtAmbulanta = mysqli_stmt_init($conn);
+                                    //Ako je statement neuspješan
+                                    if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
+                                        $response["success"] = "false";
+                                        $response["message"] = "Prepared statement ne valja!";
+                                    }
+                                    //Ako je prepared statement u redu
+                                    else{
+                                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                        mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
+                                        //Izvršavanje statementa
+                                        mysqli_stmt_execute($stmtAmbulanta);
+
+                                        $response["success"] = "true";
+                                        $response["message"] = "Podatci uspješno dodani!";
+                                    }
+                                }
+                            }
+                        }
+                        /**************************************** */
+                        //Ako su retci izbrisani, treba nadodati nove dijagnoze iz forme
+                        else if($brisanje == true){
+                            //Kreiram upit za spremanje prvog dijela podataka u bazu
+                            $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
+                                    nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
+                                    preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme) 
+                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                            //Kreiranje prepared statementa
+                            $stmt = mysqli_stmt_init($conn);
+                            //Ako je statement neuspješan
+                            if(!mysqli_stmt_prepare($stmt,$sql)){
+                                $response["success"] = "false";
+                                $response["message"] = "Prepared statement ne valja!";
+                            }
+                            //Ako je prepared statement u redu
+                            else{
+                                if(empty($status)){
+                                    $status = NULL;
+                                }
+                                if(empty($nalaz)){
+                                    $nalaz = NULL;
+                                }
+                                if(empty($terapija)){
+                                    $terapija = NULL;
+                                }
+                                if(empty($preporukaLijecnik)){
+                                    $preporukaLijecnik = NULL;
+                                }
+                                if(empty($napomena)){
+                                    $napomena = NULL;
+                                }
+                                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
+                                                                            $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
+                                //Izvršavanje statementa
+                                mysqli_stmt_execute($stmt);
+
+                                //Dohvaćam ID povijesti bolesti kojega sam upravo unio
+                                $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
+                                //Ulazim u polje rezultata i idem redak po redak
+                                while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
+                                    //Dohvaćam željeni ID povijesti bolesti
+                                    $idPovijestBolesti = $rowPovijestBolesti['ID'];
+                                } 
+
+                                //Ubacivam nove podatke u tablicu "ambulanta"
+                                $sqlAmbulanta = "INSERT INTO ambulanta (idLijecnik,idPacijent,idPovijestBolesti) VALUES (?,?,?)";
+                                //Kreiranje prepared statementa
+                                $stmtAmbulanta = mysqli_stmt_init($conn);
+                                //Ako je statement neuspješan
+                                if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
+                                    $response["success"] = "false";
+                                    $response["message"] = "Prepared statement ne valja!";
+                                }
+                                //Ako je prepared statement u redu
+                                else{
+                                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                    mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
+                                    //Izvršavanje statementa
+                                    mysqli_stmt_execute($stmtAmbulanta);
+
+                                    $response["success"] = "true";
+                                    $response["message"] = "Podatci uspješno dodani!";
+                                }
+                            } 
+                        }
                     }
                 }
-                //Ako je ID recepta UNESEN
-                else if($brojRecept > 0){
+                return $response;
+            }
+        }
+        //Ako NIJE UNESEN ID obrade
+        else{
+            //Postavljam ID obrade na NULL
+            $idObrada = NULL;
+            //Ako nisu unesene sek. dijagnoze
+            if(empty($mkbSifre)){
+                //Ako je slučaj novi
+                if($tipSlucaj == 'noviSlucaj'){
+                    //Kreiram upit za spremanje prvog dijela podataka u bazu
+                    $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
+                                                        nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
+                                                        preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme) 
+                                                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    //Kreiranje prepared statementa
+                    $stmt = mysqli_stmt_init($conn);
+                    //Ako je statement neuspješan
+                    if(!mysqli_stmt_prepare($stmt,$sql)){
+                        $response["success"] = "false";
+                        $response["message"] = "Prepared statement ne valja!";
+                    }
+                    //Ako je prepared statement u redu
+                    else{
+                        $prazna = NULL;
+                        if(empty($status)){
+                            $status = NULL;
+                        }
+                        if(empty($nalaz)){
+                            $nalaz = NULL;
+                        }
+                        if(empty($terapija)){
+                            $terapija = NULL;
+                        }
+                        if(empty($preporukaLijecnik)){
+                            $preporukaLijecnik = NULL;
+                        }
+                        if(empty($napomena)){
+                            $napomena = NULL;
+                        }
+                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                        mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$prazna,
+                                        $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
+                        //Izvršavanje statementa
+                        mysqli_stmt_execute($stmt);
+
+                        //Dohvaćam ID povijesti bolesti kojega sam upravo unio
+                        $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
+                        //Ulazim u polje rezultata i idem redak po redak
+                        while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
+                            //Dohvaćam željeni ID povijesti bolesti
+                            $idPovijestBolesti = $rowPovijestBolesti['ID'];
+                        }
+
+                        //Ubacivam nove podatke u tablicu "ambulanta"
+                        $sqlAmbulanta = "INSERT INTO ambulanta (idLijecnik,idPacijent,idPovijestBolesti) VALUES (?,?,?)";
+                        //Kreiranje prepared statementa
+                        $stmtAmbulanta = mysqli_stmt_init($conn);
+                        //Ako je statement neuspješan
+                        if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
+                            $response["success"] = "false";
+                            $response["message"] = "Prepared statement ne valja!";
+                        }
+                        //Ako je prepared statement u redu
+                        else{
+                            //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                            mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
+                            //Izvršavanje statementa
+                            mysqli_stmt_execute($stmtAmbulanta);
+
+                            $response["success"] = "true";
+                            $response["message"] = "Podatci uspješno dodani!";
+                        }
+                    }
+                }
+                //Ako je slučaj povezan
+                else if($tipSlucaj == 'povezanSlucaj'){
+
+                }
+            }
+            //Ako su unesene sek. dijagnoze
+            else{
+                //Prolazim kroz polje sekundarnih dijagnoza i za svaku sekundarnu dijagnoze ubacivam novu n-torku u bazu
+                foreach($mkbSifre as $mkb){
                     //Kreiram upit za spremanje prvog dijela podataka u bazu
                     $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                                                         nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
@@ -1032,7 +1137,7 @@ class PovijestBolestiService{
                         }
                         //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
                         mysqli_stmt_bind_param($stmt,"sssssssssssssis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
-                                                                    $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
+                                        $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada,$vrijemePregled);
                         //Izvršavanje statementa
                         mysqli_stmt_execute($stmt);
 
@@ -1042,7 +1147,7 @@ class PovijestBolestiService{
                         while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
                             //Dohvaćam željeni ID povijesti bolesti
                             $idPovijestBolesti = $rowPovijestBolesti['ID'];
-                        } 
+                        }
 
                         //Ubacivam nove podatke u tablicu "ambulanta"
                         $sqlAmbulanta = "INSERT INTO ambulanta (idLijecnik,idPacijent,idPovijestBolesti) VALUES (?,?,?)";
@@ -1063,10 +1168,9 @@ class PovijestBolestiService{
                             $response["success"] = "true";
                             $response["message"] = "Podatci uspješno dodani!";
                         }
-                    } 
+                    }
                 }
             }
-            return $response;
         }
     }
 }
