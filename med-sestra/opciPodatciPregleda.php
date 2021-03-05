@@ -40,12 +40,14 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
             $mkb = mysqli_real_escape_string($conn, trim($mkb));
         }
         $tipSlucaj = mysqli_real_escape_string($conn, trim($request->tipSlucaj));
+        $poslanaMKBSifra = mysqli_real_escape_string($conn, trim($request->poslanaMKBSifra));
+        $poslaniIDObradaMedSestra = mysqli_real_escape_string($conn, trim($request->poslaniIDObradaMedSestra));
+        $poslaniIDObradaMedSestra = (int)$poslaniIDObradaMedSestra;
         $idObrada = mysqli_real_escape_string($conn, trim($request->idObrada));
         $idObrada = (int)$idObrada;
-
         $response = $servis->dodajOpcePodatkePregleda($idMedSestra,$idPacijent,$nacinPlacanja, $podrucniUredHZZO, $podrucniUredOzljeda, $nazivPoduzeca,
                                                     $oznakaOsiguranika, $nazivDrzave, $mbo, $brIskDopunsko, $mkbPrimarnaDijagnoza,
-                                                    $mkbSifre, $tipSlucaj,$idObrada);
+                                                    $mkbSifre, $tipSlucaj,$poslanaMKBSifra,$poslaniIDObradaMedSestra,$idObrada);
 
         echo json_encode($response);
     }

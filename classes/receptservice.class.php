@@ -431,7 +431,8 @@ class ReceptService{
 
         //Ako POSTOJI primarna dijagnoza, kreiram upit koji dohvaća sve njezine sekundarne dijagoze
         $sql = "SELECT DISTINCT(d.imeDijagnoza) AS NazivPrimarna, 
-                IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d2.imeDijagnoza FROM dijagnoze d2 WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna FROM povijestBolesti pb 
+                IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d2.imeDijagnoza FROM dijagnoze d2 WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna 
+                ,pb.idObradaLijecnik FROM povijestBolesti pb 
                 JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
                 WHERE pb.mkbSifraPrimarna = '$mkbPrimarnaDijagnoza'";
         $result = $conn->query($sql);

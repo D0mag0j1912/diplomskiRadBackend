@@ -63,7 +63,7 @@ class OpciPodatciService{
     //Funkcija koja DODAVA PODATKE OPĆEG PREGLEDA PACIJENTA u bazu
     function dodajOpcePodatkePregleda($idMedSestra, $idPacijent, $nacinPlacanja, $podrucniUredHZZO, $podrucniUredOzljeda, $nazivPoduzeca,
                                     $oznakaOsiguranika, $nazivDrzave, $mbo, $brIskDopunsko, $mkbPrimarnaDijagnoza,
-                                    $mkbSifre, $tipSlucaj,$idObrada){
+                                    $mkbSifre, $tipSlucaj,$poslanaMKBSifra,$poslaniIDObradaMedSestra,$idObrada){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -81,9 +81,11 @@ class OpciPodatciService{
         $statusObrada = "Aktivan";
         //Inicijaliziram broj primarnih na 0 
         $brojPrimarna = 0;
-        //Kreiram sql upit koji će prebrojiti koliko ima SEKUNDARNIH DIJAGNOZA TRENUTNO U BAZI za određenog pacijenta, za određenu sesiju obrade
+        //Gledam koliko sek. dijagnoza ima pregled u bazi kojega povezujem
         $sqlCountSekundarna = "SELECT COUNT(p.mkbSifraSekundarna) AS BrojSekundarna FROM pregled p
-                            WHERE p.idObradaMedSestra = '$idObrada' AND p.mboPacijent = '$mbo'";
+                            WHERE p.idObradaMedSestra = '$poslaniIDObradaMedSestra' 
+                            AND p.mboPacijent = '$mbo' 
+                            AND p.mkbSifraPrimarna = '$poslanaMKBSifra'";
         //Rezultat upita spremam u varijablu $resultCountPrimarna
         $resultCountSekundarna = mysqli_query($conn,$sqlCountSekundarna);
         //Ako rezultat upita ima podataka u njemu (znači nije prazan)

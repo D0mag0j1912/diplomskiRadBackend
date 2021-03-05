@@ -42,10 +42,13 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $napomena = mysqli_real_escape_string($conn, trim($request->napomena));
         $idObrada = mysqli_real_escape_string($conn, trim($request->idObrada));
         $idObrada = (int)$idObrada;
-        $prvaPrimarna = mysqli_real_escape_string($conn, trim($request->prvaPrimarna));
+        $poslanaPrimarna = mysqli_real_escape_string($conn, trim($request->poslanaPrimarna));
+        $poslaniIDObrada = mysqli_real_escape_string($conn, trim($request->poslaniIDObrada));
+        $poslaniIDObrada = (int)$poslaniIDObrada;
         $response = $servis->potvrdiPovijestBolesti($idLijecnik,$idPacijent,$razlogDolaska,$anamneza,$status,
                                                     $nalaz,$mkbPrimarnaDijagnoza,$mkbSifre,$tipSlucaj,
-                                                    $terapija,$preporukaLijecnik,$napomena,$idObrada,$prvaPrimarna);
+                                                    $terapija,$preporukaLijecnik,$napomena,$idObrada,$poslanaPrimarna, 
+                                                    $poslaniIDObrada);
         //Vrati odgovor frontendu
         echo json_encode($response);
     }
