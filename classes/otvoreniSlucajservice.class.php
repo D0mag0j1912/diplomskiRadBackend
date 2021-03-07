@@ -51,7 +51,7 @@ class OtvoreniSlucajService{
         }
         return $response;
     }
-
+    //Funkcija koja dohvaća sve primarne dijagnoze evidentirane na pregledima nekog pacijenta
     function svePrimarneDijagnoze($id){
         //Dohvaćam bazu 
         $baza = new Baza();
@@ -59,7 +59,7 @@ class OtvoreniSlucajService{
         //Kreiram prazno polje odgovora
         $response = [];
     
-        $sql = "SELECT p.mkbSifraPrimarna FROM pregled p
+        $sql = "SELECT DISTINCT(p.mkbSifraPrimarna) AS mkbSifraPrimarna FROM pregled p
                 WHERE p.mboPacijent IN 
                 (SELECT pacijent.mboPacijent FROM pacijent 
                 WHERE pacijent.idPacijent = '$id')";
@@ -113,7 +113,8 @@ class OtvoreniSlucajService{
         $response = [];
 
         $sql = "SELECT DISTINCT(d.imeDijagnoza) AS NazivPrimarna, 
-                IF(p.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d WHERE d.mkbSifra = p.mkbSifraSekundarna)) AS NazivSekundarna,p.idObradaMedSestra FROM dijagnoze d 
+                IF(p.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d WHERE d.mkbSifra = p.mkbSifraSekundarna)) AS NazivSekundarna, 
+                p.idObradaMedSestra,p.datumPregled,p.vrijemePregled FROM dijagnoze d 
                 JOIN pregled p ON d.mkbSifra = p.mkbSifraPrimarna
                 JOIN ambulanta a ON p.idPregled = a.idPregled
                 JOIN med_sestra m ON m.idMedSestra = a.idMedSestra

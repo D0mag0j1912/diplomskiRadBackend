@@ -131,7 +131,8 @@ class PovezanaPovijestBolestiService{
                     pb.razlogDolaska, 
                     TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,
                     d.imeDijagnoza AS NazivPrimarna,
-                    GROUP_CONCAT(DISTINCT pb.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna FROM povijestbolesti pb 
+                    GROUP_CONCAT(DISTINCT pb.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna, 
+                    pb.tipSlucaj FROM povijestbolesti pb 
                     JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                     WHERE pb.mboPacijent IN 
                     (SELECT pacijent.mboPacijent FROM pacijent 
