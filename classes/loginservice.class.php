@@ -8,6 +8,28 @@ require_once 'C:\wamp64\www\angularPHP\includes\autoloader.inc.php';
 //Postavljam vremensku zonu
 date_default_timezone_set('Europe/Zagreb');
 class LoginService{
+
+    //Funkcija koja dohvaća sve emailove u svrhu validacije
+    function dohvatiSveEmailove(){
+        //Kreiram prazno polje
+        $response = [];
+        //Kreiram objekt tipa "Baza"
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        $sql = "SELECT k.email FROM korisnik k";
+        $result = $conn->query($sql);
+
+        //Ako ima pronađenih sekundarnih dijagnoza za ovu primarnu dijagnozu
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+        return $response;
+    }
+
+    //Funkcija koja prijavljuje korisnika
     function prijavaKorisnik($email,$lozinka){
         //Kreiram prazno polje
         $response = [];
