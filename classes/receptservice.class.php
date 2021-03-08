@@ -428,18 +428,37 @@ class ReceptService{
             //Vrati null
             return null;
         } 
-
-        //Ako POSTOJI primarna dijagnoza, kreiram upit koji dohvaća sve njezine sekundarne dijagoze
-        $sql = "SELECT DISTINCT(d.imeDijagnoza) AS NazivPrimarna, 
-                IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d2.imeDijagnoza FROM dijagnoze d2 WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna 
-                ,pb.idObradaLijecnik FROM povijestBolesti pb 
-                JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
-                WHERE pb.mkbSifraPrimarna = '$mkbPrimarnaDijagnoza'";
-        $result = $conn->query($sql);
-        //Ako ima rezultata
-        if($result->num_rows > 0){
-            while($row = $result->fetch_assoc()){
-                $response[] = $row;
+        //Dohvaćam zadnje uneseni tip slučaja za ovog pacijenta
+        $sqlTipSlucaj = "SELECT pb.tipSlucaj,pb.vrijeme FROM povijestBolesti pb 
+                        WHERE pb.mboPacijent IN 
+                        (SELECT pacijent.mboPacijent FROM pacijent 
+                        WHERE pacijent.idPacijent = '$idPacijent') 
+                        AND pb.idRecept IS NULL 
+                        AND pb.idPovijestBolesti = 
+                        (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
+                        WHERE pb.mboPacijent = pb2.mboPacijent)";
+        $resultTipSlucaj = $conn->query($sqlTipSlucaj);
+        //Ako postoji primarna dijagnoza zabilježena u povijesti bolesti za OVOG PACIJENTA
+        if($resultTipSlucaj->num_rows > 0){
+            while($rowTipSlucaj = $resultTipSlucaj->fetch_assoc()) {
+                //Dohvaćam tu primarnu dijagnozu
+                $tipSlucaj = $rowTipSlucaj['tipSlucaj'];
+                $vrijeme = $rowTipSlucaj['vrijeme'];
+            }
+            //Ako POSTOJI primarna dijagnoza, kreiram upit koji dohvaća sve njezine sekundarne dijagoze
+            $sql = "SELECT DISTINCT(d.imeDijagnoza) AS NazivPrimarna, 
+                    IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d2.imeDijagnoza FROM dijagnoze d2 WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna 
+                    ,pb.idObradaLijecnik,pb.tipSlucaj,pb.vrijeme,pb.datum FROM povijestBolesti pb 
+                    JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
+                    WHERE pb.mkbSifraPrimarna = '$mkbPrimarnaDijagnoza' 
+                    AND pb.tipSlucaj = '$tipSlucaj' 
+                    AND pb.vrijeme = '$vrijeme'";
+            $result = $conn->query($sql);
+            //Ako ima rezultata
+            if($result->num_rows > 0){
+                while($row = $result->fetch_assoc()){
+                    $response[] = $row;
+                }
             }
         }
         return $response;

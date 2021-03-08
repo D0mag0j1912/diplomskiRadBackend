@@ -18,23 +18,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     //Ako je s frontenda poslan parametar ID pacijenta
     if(isset($_GET['datum']) && isset($_GET['razlogDolaska']) 
-        && isset($_GET['mkbSifraPrimarna']) && isset($_GET['id']) && isset($_GET['vrijeme']) 
-        && isset($_GET['tipSlucaj'])){
-        //Uzmi tu vrijednosti ID-a i pretvori je u INTEGER
-        $id = (int)$_GET['id'];
+        && isset($_GET['mkbSifraPrimarna']) && isset($_GET['tipSlucaj']) && isset($_GET['vrijeme']) 
+        && isset($_GET['idPacijent'])){
         //Uzmi vrijednost datuma i pretvori u format datuma iz baze
         $datum = date("Y-m-d",strtotime($_GET['datum']));
-        //Dekodiram razlog dolaska
         $razlogDolaska = urldecode($_GET['razlogDolaska']);
-        //Uzmi vrijednost razloga dolaska
         $razlogDolaska = mysqli_real_escape_string($conn, trim($razlogDolaska));
-        //Uzmi vrijednost šifre primarne dijagnoze
         $mkbSifraPrimarna = mysqli_real_escape_string($conn, trim($_GET['mkbSifraPrimarna']));
-        $vrijeme = mysqli_real_escape_string($conn, trim($_GET['vrijeme']));
         $tipSlucaj = mysqli_real_escape_string($conn, trim($_GET['tipSlucaj']));
+        $vrijeme = mysqli_real_escape_string($conn, trim($_GET['vrijeme']));
+        $idPacijent = mysqli_real_escape_string($conn, trim($_GET['idPacijent']));
+        $idPacijent = (int)$idPacijent;
+
         //Punim polje sa vrijednostima polja iz funkcije
-        $response = $servis->dohvatiPovijestBolestiPovezanSlucaj($datum,$razlogDolaska, 
-                                                                $mkbSifraPrimarna,$vrijeme,$tipSlucaj,$id);
+        $response = $servis->dohvatiSekundarneDijagnoze($datum,$razlogDolaska,$mkbSifraPrimarna, 
+                                                        $tipSlucaj,$vrijeme,$idPacijent);
         //Vraćam frontendu rezultat
         echo json_encode($response);
     }

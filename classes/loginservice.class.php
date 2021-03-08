@@ -9,6 +9,49 @@ require_once 'C:\wamp64\www\angularPHP\includes\autoloader.inc.php';
 date_default_timezone_set('Europe/Zagreb');
 class LoginService{
 
+    //Funkcija koja dohvaća lozinku za upisani email logina
+    function dohvatiLozinku($email,$lozinka){
+        //Kreiram objekt tipa "Baza"
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+        $response = [];
+        $sql = "SELECT k.pass FROM korisnik k 
+            WHERE k.email = ?";
+        //Kreiranje prepared statementa
+        $stmt = mysqli_stmt_init($conn);
+        if(!mysqli_stmt_prepare($stmt,$sql)){
+            $response["success"] = "false";
+        }
+        //Ako je prepared statement u redu
+        else{
+            //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+            mysqli_stmt_bind_param($stmt,"s",$email);
+            //Izvršavanje statementa
+            mysqli_stmt_execute($stmt);
+            //Vraćam rezultat statementa u varijablu $result
+            $result = mysqli_stmt_get_result($stmt);
+            
+            //Ako smo dobili nešto u $result, tj. ako je baza podataka našla nešto
+            if($row = mysqli_fetch_assoc($result)){
+                //Provjera passworda korisnika (uzima password koji je korisnik upisao i password koji odgovara upisanom username-u u bazi podataka
+                //i provjerava je li se ti passwordi poklapaju) -> vraća true ili false
+                $passwordCheck = password_verify($lozinka,$row['pass']);
+                //Ako password koji je korisnik upisao NE ODGOVARA passwordu iz baze podataka za taj username
+                if($passwordCheck == false){
+                    $response["success"] = "false";   
+                }
+                //Ako password koji je korisnik upisao ODGOVARA passwordu iz baze podataka za taj username
+                else if($passwordCheck == true){
+                    $response["success"] = "true";
+                }
+            }
+            else{
+                $response["success"] = "false";
+            }
+        }
+        return $response;
+    }
+
     //Funkcija koja dohvaća sve emailove u svrhu validacije
     function dohvatiSveEmailove(){
         //Kreiram prazno polje
@@ -23,7 +66,7 @@ class LoginService{
         //Ako ima pronađenih sekundarnih dijagnoza za ovu primarnu dijagnozu
         if ($result->num_rows > 0) {
             while($row = $result->fetch_assoc()) {
-                $response[] = $row;
+                $response[] = $row['email'];
             }
         }
         return $response;

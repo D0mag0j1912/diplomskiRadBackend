@@ -71,11 +71,13 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $poslanaPrimarna = mysqli_real_escape_string($conn, trim($request->poslanaPrimarna));
         $poslaniIDObrada = mysqli_real_escape_string($conn, trim($request->poslaniIDObrada));
         $poslaniIDObrada = (int)$poslaniIDObrada;
+        $poslaniTipSlucaj =  mysqli_real_escape_string($conn, trim($request->poslaniTipSlucaj));
+        $poslanoVrijeme =  mysqli_real_escape_string($conn, trim($request->poslanoVrijeme));
         $response = $servis->dodajRecept($mkbSifraPrimarna,$mkbSifraSekundarna,$osnovnaListaLijekDropdown,
                                         $osnovnaListaLijekText,$dopunskaListaLijekDropdown,$dopunskaListaLijekText,
                                         $osnovnaListaMagPripravakDropdown,$osnovnaListaMagPripravakText,$dopunskaListaMagPripravakDropdown,
                                         $dopunskaListaMagPripravakText,$kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja,
-                                        $sifraSpecijalist,$idPacijent,$idLijecnik,$poslanaPrimarna,$poslaniIDObrada);  
+                                        $sifraSpecijalist,$idPacijent,$idLijecnik,$poslanaPrimarna,$poslaniIDObrada,$poslaniTipSlucaj,$poslanoVrijeme);  
         echo json_encode($response);
     }
 }

@@ -16,13 +16,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     //Kreiram prazno polje
     $response = [];
 
-    //Ako je frontend poslao vrijednost ID-a pacijenta
-    if(isset($_GET['idPacijent'])){
+    //Ako je frontend poslao vrijednost ID-a obrade i ID-a pacijenta
+    if(isset($_GET['idObrada']) && isset($_GET['idPacijent'])){
+        //Dohvaćam vrijednost ID-a obrade
+        $idObrada = mysqli_real_escape_string($conn, trim($_GET['idObrada']));
+        $idObrada = (int)$idObrada;
         //Dohvaćam vrijednost ID-a pacijenta
         $idPacijent = mysqli_real_escape_string($conn, trim($_GET['idPacijent']));
         $idPacijent = (int)$idPacijent;
         //Punim polje sa odgovorom funkcije
-        $response = $servis->provjeraPovijestBolestiBezObrade($idPacijent);
+        $response = $servis->provjeraPovijestBolesti($idObrada,$idPacijent);
         //Vraćam response frontendu
         echo json_encode($response);
     }
