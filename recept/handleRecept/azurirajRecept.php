@@ -66,13 +66,14 @@ if($_SERVER["REQUEST_METHOD"] === "PUT"){
         }
         $idPacijent = mysqli_real_escape_string($conn, trim($request->idPacijent));
         $idPacijent = (int)$idPacijent;
-        $datumRecept = mysqli_real_escape_string($conn, trim($request->datumRecept));
-        $vrijemeRecept = mysqli_real_escape_string($conn, trim($request->vrijemeRecept));
+        $poslaniDatum = mysqli_real_escape_string($conn, trim($request->poslaniDatum));
+        $poslanoVrijeme = mysqli_real_escape_string($conn, trim($request->poslanoVrijeme));
+        $poslanaMKBSifra = mysqli_real_escape_string($conn, trim($request->poslanaMKBSifra));
         $response = $servis->azurirajRecept($mkbSifraPrimarna,$mkbSifraSekundarna,$osnovnaListaLijekDropdown,
                                         $osnovnaListaLijekText,$dopunskaListaLijekDropdown,$dopunskaListaLijekText,
                                         $osnovnaListaMagPripravakDropdown,$osnovnaListaMagPripravakText,$dopunskaListaMagPripravakDropdown,
                                         $dopunskaListaMagPripravakText,$kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja,
-                                        $sifraSpecijalist,$idPacijent,$datumRecept,$vrijemeRecept);  
+                                        $sifraSpecijalist,$idPacijent,$poslaniDatum,$poslanoVrijeme,$poslanaMKBSifra);  
         echo json_encode($response);
     }
 }
