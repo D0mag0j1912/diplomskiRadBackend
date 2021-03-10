@@ -237,7 +237,7 @@ class OpciPodatciService{
                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
                 mysqli_stmt_bind_param($stmt,"sssssssssssssisi",$nacinPlacanja, $sifUredHZZO, $sifUredOzljeda, $nazivPoduzeca,
                                         $oznakaOsiguranika, $nazivDrzave, $mbo, $brIskDopunsko, $mkbPrimarnaDijagnoza,
-                                        $sekDijagnoza, $tipSlucaj, $datum,$narucen,$idObrada,$vrijeme,$prosliPregled);
+                                        $sekDijagnoza, $tipSlucaj, $datum,$narucen,$idObrada,$vrijemePregled,$prosliPregled);
                 //Izvršavanje statementa
                 mysqli_stmt_execute($stmt);
 
@@ -330,7 +330,7 @@ class OpciPodatciService{
                     //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
                     mysqli_stmt_bind_param($stmt,"sssssssssssssisi",$nacinPlacanja, $sifUredHZZO, $sifUredOzljeda, $nazivPoduzeca,
                                 $oznakaOsiguranika, $nazivDrzave, $mbo, $brIskDopunsko, $mkbPrimarnaDijagnoza,
-                                $mkb, $tipSlucaj, $datum,$narucen,$idObrada,$vrijeme,$prosliPregled);
+                                $mkb, $tipSlucaj, $datum,$narucen,$idObrada,$vrijemePregled,$prosliPregled);
                     //Izvršavanje statementa
                     mysqli_stmt_execute($stmt);
 

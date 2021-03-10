@@ -7,7 +7,7 @@ date_default_timezone_set('Europe/Zagreb');
 
 class AzurirajReceptService{
     //Funkcija koja dodava novi recept u bazu podataka
-    function azurirajRecept($mkbSifraPrimarna,$mkbSifraSekundarna,$osnovnaListaLijekDropdown,
+    function azurirajRecept($idLijecnik,$mkbSifraPrimarna,$mkbSifraSekundarna,$osnovnaListaLijekDropdown,
                     $osnovnaListaLijekText,$dopunskaListaLijekDropdown,$dopunskaListaLijekText,
                     $osnovnaListaMagPripravakDropdown,$osnovnaListaMagPripravakText,$dopunskaListaMagPripravakDropdown,
                     $dopunskaListaMagPripravakText,$kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja,

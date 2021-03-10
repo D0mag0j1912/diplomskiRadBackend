@@ -34,7 +34,8 @@ if($_SERVER["REQUEST_METHOD"] === "PUT"){
         else if($request->dopunskaListaLijekText != null){
             $dopunskaListaLijekText = urldecode($request->dopunskaListaLijekText);
         }
-
+        $idLijecnik = mysqli_real_escape_string($conn, trim($request->idLijecnik));
+        $idLijecnik = (int)$idLijecnik;
         $mkbSifraPrimarna = mysqli_real_escape_string($conn, trim($request->mkbSifraPrimarna)); 
         $mkbSifraSekundarna = $request->mkbSifraSekundarna;
         foreach($mkbSifraSekundarna as $mkb){
@@ -69,7 +70,7 @@ if($_SERVER["REQUEST_METHOD"] === "PUT"){
         $poslaniDatum = mysqli_real_escape_string($conn, trim($request->poslaniDatum));
         $poslanoVrijeme = mysqli_real_escape_string($conn, trim($request->poslanoVrijeme));
         $poslanaMKBSifra = mysqli_real_escape_string($conn, trim($request->poslanaMKBSifra));
-        $response = $servis->azurirajRecept($mkbSifraPrimarna,$mkbSifraSekundarna,$osnovnaListaLijekDropdown,
+        $response = $servis->azurirajRecept($idLijecnik,$mkbSifraPrimarna,$mkbSifraSekundarna,$osnovnaListaLijekDropdown,
                                         $osnovnaListaLijekText,$dopunskaListaLijekDropdown,$dopunskaListaLijekText,
                                         $osnovnaListaMagPripravakDropdown,$osnovnaListaMagPripravakText,$dopunskaListaMagPripravakDropdown,
                                         $dopunskaListaMagPripravakText,$kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja,
