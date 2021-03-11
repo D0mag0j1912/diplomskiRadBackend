@@ -145,42 +145,33 @@ class CekaonicaService{
     }
 
     //Funkcija koja briše pacijenta iz čekaonice
-    function izbrisiPacijentaCekaonica($tip,$idObrada,$idCekaonica){
+    function izbrisiPacijentaCekaonica($tip,$idCekaonica){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
 
         //Kreiram prazno polje odgovora
         $response = []; 
-        //Ako je ID obrade prazan
-        if(empty($idObrada)){
-            $sql = "DELETE FROM cekaonica 
-                WHERE idCekaonica = ?";
         
-            //Kreiranje prepared statementa
-            $stmt = mysqli_stmt_init($conn);
-            //Ako je statement neuspješan
-            if(!mysqli_stmt_prepare($stmt,$sql)){
-                $response["success"] = "false";
-                $response["message"] = "Prepared statement brisanja čekaonice ne valja!";
-            }
-            //Ako je prepared statement u redu
-            else{
-                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                mysqli_stmt_bind_param($stmt,"i",$idCekaonica);
-                //Izvršavanje statementa
-                mysqli_stmt_execute($stmt);
-
-                $response["success"] = "true";
-                $response["message"] = "Pacijent uspješno izbrisan!";
-            }  
-        }
-        //Ako ID obrade nije prazan
-        else{
-            //Ako je tip korisnika koji je dodao ovaj redak u čekaonicu "lijecnik":
-            if($tip == "lijecnik"){
+        //Ako je tip korisnika koji je dodao ovaj redak u čekaonicu "lijecnik":
+        if($tip == "lijecnik"){
+            //Kreiram upit koji dohvaćam ID obrade liječnika iz tablice "cekaonica"
+            $sqlIDObrada = "SELECT c.idObradaLijecnik FROM cekaonica c 
+                            WHERE c.idCekaonica = '$idCekaonica'";
+            //Rezultat upita spremam u varijablu $resultIDObrada
+            $resultIDObrada = mysqli_query($conn,$sqlIDObrada);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultIDObrada) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowIDObrada = mysqli_fetch_assoc($resultIDObrada)){
+                    //Vrijednost rezultata spremam u varijablu $idObrada
+                    $idObrada = $rowIDObrada['idObradaLijecnik'];
+                }
+            } 
+            //Ako idObrada !== NULL
+            if(!empty($idObrada)){
                 $sqlObrada = "DELETE FROM obrada_lijecnik 
-                            WHERE idObrada = ?;";
+                        WHERE idObrada = ?;";
 
                 //Kreiranje prepared statementa
                 $stmtObrada = mysqli_stmt_init($conn);
@@ -218,10 +209,48 @@ class CekaonicaService{
                     }
                 }
             }
-            //Ako je tip korisnika koji je dodao ovaj redak u čekaonicu "sestra":
-            else if($tip == "sestra"){
+            else{
+                $sql = "DELETE FROM cekaonica 
+                            WHERE idCekaonica = ?";
+                
+                    //Kreiranje prepared statementa
+                    $stmt = mysqli_stmt_init($conn);
+                    //Ako je statement neuspješan
+                    if(!mysqli_stmt_prepare($stmt,$sql)){
+                        $response["success"] = "false";
+                        $response["message"] = "Prepared statement brisanja čekaonice ne valja!";
+                    }
+                    //Ako je prepared statement u redu
+                    else{
+                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                        mysqli_stmt_bind_param($stmt,"i",$idCekaonica);
+                        //Izvršavanje statementa
+                        mysqli_stmt_execute($stmt);
+
+                        $response["success"] = "true";
+                        $response["message"] = "Pacijent uspješno izbrisan!";
+                    }
+            }
+        }
+        //Ako je tip korisnika koji je dodao ovaj redak u čekaonicu "sestra":
+        else if($tip == "sestra"){
+            //Kreiram upit koji dohvaćam ID obrade liječnika iz tablice "cekaonica"
+            $sqlIDObrada = "SELECT c.idObradaMedSestra FROM cekaonica c 
+                            WHERE c.idCekaonica = '$idCekaonica'";
+            //Rezultat upita spremam u varijablu $resultIDObrada
+            $resultIDObrada = mysqli_query($conn,$sqlIDObrada);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($resultIDObrada) > 0){
+                //Idem redak po redak rezultata upita 
+                while($rowIDObrada = mysqli_fetch_assoc($resultIDObrada)){
+                    //Vrijednost rezultata spremam u varijablu $idObrada
+                    $idObrada = $rowIDObrada['idObradaMedSestra'];
+                }
+            } 
+            //Ako idObrada !== NULL
+            if(!empty($idObrada)){
                 $sqlObrada = "DELETE FROM obrada_med_sestra 
-                            WHERE idObrada = ?;";
+                        WHERE idObrada = ?;";
 
                 //Kreiranje prepared statementa
                 $stmtObrada = mysqli_stmt_init($conn);
@@ -258,6 +287,29 @@ class CekaonicaService{
                         $response["message"] = "Pacijent uspješno izbrisan!";
                     }
                 }
+            }
+            //Ako je idObrada == NULL
+            else{
+                $sql = "DELETE FROM cekaonica 
+                        WHERE idCekaonica = ?";
+                
+                    //Kreiranje prepared statementa
+                    $stmt = mysqli_stmt_init($conn);
+                    //Ako je statement neuspješan
+                    if(!mysqli_stmt_prepare($stmt,$sql)){
+                        $response["success"] = "false";
+                        $response["message"] = "Prepared statement brisanja čekaonice ne valja!";
+                    }
+                    //Ako je prepared statement u redu
+                    else{
+                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                        mysqli_stmt_bind_param($stmt,"i",$idCekaonica);
+                        //Izvršavanje statementa
+                        mysqli_stmt_execute($stmt);
+
+                        $response["success"] = "true";
+                        $response["message"] = "Pacijent uspješno izbrisan!";
+                    }
             }
         }
 

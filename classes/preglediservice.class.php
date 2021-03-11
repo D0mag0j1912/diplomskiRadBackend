@@ -7,6 +7,159 @@ date_default_timezone_set('Europe/Zagreb');
 
 class PreglediService{
 
+    //Funkcija koja dohvaća ID najnovijeg pregleda ovisno o tipu korisnika
+    function dohvatiNajnovijiIDPregled($tipKorisnik,$idPacijent){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram upit za dohvaćanjem MBO-a pacijenta kojemu se upisiva povijest bolesti
+        $sqlMBO = "SELECT p.mboPacijent AS MBO FROM pacijent p 
+                WHERE p.idPacijent = '$idPacijent'";
+        //Rezultat upita spremam u varijablu $resultMBO
+        $resultMBO = mysqli_query($conn,$sqlMBO);
+        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+        if(mysqli_num_rows($resultMBO) > 0){
+            //Idem redak po redak rezultata upita 
+            while($rowMBO = mysqli_fetch_assoc($resultMBO)){
+                //Vrijednost rezultata spremam u varijablu $mboPacijent
+                $mboPacijent = $rowMBO['MBO'];
+            }
+        } 
+        //Ako je prijavljena medicinska sestra:
+        if($tipKorisnik == "sestra"){
+            $sql = "SELECT * FROM pregled p
+                    WHERE p.mboPacijent = '$mboPacijent'
+                    AND p.idPregled = 
+                    (SELECT MAX(p2.idPregled) FROM pregled p2
+                    WHERE p2.mboPacijent = '$mboPacijent')";
+            //Rezultat upita spremam u varijablu $result
+            $result = mysqli_query($conn,$sql);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($result) > 0){
+                //Idem redak po redak rezultata upita 
+                while($row = mysqli_fetch_assoc($result)){
+                    //Spremam podatke koji mi trebaju za dohvat MINIMALNOG ID-a zadnjeg pregleda
+                    $mkbSifraPrimarna = $row['mkbSifraPrimarna'];
+                    $tipSlucaj = $row['tipSlucaj'];
+                    $datumPregled = $row['datumPregled'];
+                    $idObradaMedSestra = $row['idObradaMedSestra'];
+                    $vrijemePregled = $row['vrijemePregled'];
+                    //Ako je upisana MKB šifra primarne dijagnoze
+                    if(!empty($mkbSifraPrimarna)){
+                        //Kreiram upit kojim dohvaćam MINIMALNI ID zadnjeg evidentiranog pregleda
+                        $sqlMinID = "SELECT p.idPregled FROM pregled p 
+                                    WHERE p.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                    AND p.tipSlucaj = '$tipSlucaj' 
+                                    AND p.datumPregled = '$datumPregled' 
+                                    AND p.idObradaMedSestra = '$idObradaMedSestra' 
+                                    AND p.vrijemePregled = '$vrijemePregled' 
+                                    AND p.idPregled = 
+                                    (SELECT MIN(p2.idPregled) FROM pregled p2 
+                                    WHERE p2.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                    AND p2.tipSlucaj = '$tipSlucaj' 
+                                    AND p2.datumPregled = '$datumPregled' 
+                                    AND p2.idObradaMedSestra = '$idObradaMedSestra' 
+                                    AND p2.vrijemePregled = '$vrijemePregled')";
+                        //Rezultat upita spremam u varijablu $result
+                        $resultMinID = mysqli_query($conn,$sqlMinID);
+                        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+                        if(mysqli_num_rows($resultMinID) > 0){
+                            //Idem redak po redak rezultata upita 
+                            while($rowMinID = mysqli_fetch_assoc($resultMinID)){
+                                //Spremam MINIMALNI ID pregleda
+                                $idPregled = $rowMinID['idPregled'];
+                            }
+                        }
+                    }
+                    //Ako nije upisana MKB šifra primarne dijagnoze
+                    else{
+                        //Kreiram upit kojim dohvaćam MINIMALNI ID zadnjeg evidentiranog pregleda
+                        $sqlMinID = "SELECT p.idPregled FROM pregled p 
+                                    WHERE p.mkbSifraPrimarna IS NULL 
+                                    AND p.tipSlucaj = '$tipSlucaj' 
+                                    AND p.datumPregled = '$datumPregled' 
+                                    AND p.idObradaMedSestra = '$idObradaMedSestra' 
+                                    AND p.vrijemePregled = '$vrijemePregled' 
+                                    AND p.idPregled = 
+                                    (SELECT MIN(p2.idPregled) FROM pregled p2 
+                                    WHERE p2.mkbSifraPrimarna IS NULL 
+                                    AND p2.tipSlucaj = '$tipSlucaj' 
+                                    AND p2.datumPregled = '$datumPregled' 
+                                    AND p2.idObradaMedSestra = '$idObradaMedSestra' 
+                                    AND p2.vrijemePregled = '$vrijemePregled')";
+                        //Rezultat upita spremam u varijablu $result
+                        $resultMinID = mysqli_query($conn,$sqlMinID);
+                        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+                        if(mysqli_num_rows($resultMinID) > 0){
+                            //Idem redak po redak rezultata upita 
+                            while($rowMinID = mysqli_fetch_assoc($resultMinID)){
+                                //Spremam MINIMALNI ID pregleda
+                                $idPregled = $rowMinID['idPregled'];
+                            }
+                        }
+                    }
+                }
+            } 
+            //Ako nema evidentiranih pregleda za ovog pacijenta
+            else{
+                return null;
+            }
+        }
+        //Ako je prijavljen liječnik:
+        else if($tipKorisnik == "lijecnik"){
+            $sql = "SELECT * FROM povijestBolesti pb
+                    WHERE pb.mboPacijent = '$mboPacijent'
+                    AND pb.idPovijestBolesti = 
+                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2
+                    WHERE pb2.mboPacijent = '$mboPacijent')";
+            //Rezultat upita spremam u varijablu $result
+            $result = mysqli_query($conn,$sql);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($result) > 0){
+                //Idem redak po redak rezultata upita 
+                while($row = mysqli_fetch_assoc($result)){
+                    //Spremam podatke koji mi trebaju za dohvat MINIMALNOG ID-a zadnjeg pregleda
+                    $mkbSifraPrimarna = $row['mkbSifraPrimarna'];
+                    $tipSlucaj = $row['tipSlucaj'];
+                    $datum = $row['datum'];
+                    $idObradaLijecnik = $row['idObradaLijecnik'];
+                    $vrijeme = $row['vrijeme'];
+
+                    //Kreiram upit kojim dohvaćam MINIMALNI ID zadnjeg evidentiranog pregleda
+                    $sqlMinID = "SELECT pb.idPovijestBolesti FROM povijestBolesti pb 
+                                WHERE pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                AND pb.tipSlucaj = '$tipSlucaj' 
+                                AND pb.datum = '$datum' 
+                                AND pb.idObradaLijecnik = '$idObradaLijecnik' 
+                                AND pb.vrijeme = '$vrijeme' 
+                                AND pb.idPovijestBolesti = 
+                                (SELECT MIN(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
+                                WHERE pb2.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                AND pb2.tipSlucaj = '$tipSlucaj' 
+                                AND pb2.datum = '$datum' 
+                                AND pb2.idObradaLijecnik = '$idObradaLijecnik' 
+                                AND pb2.vrijeme = '$vrijeme')";
+                    //Rezultat upita spremam u varijablu $result
+                    $resultMinID = mysqli_query($conn,$sqlMinID);
+                    //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+                    if(mysqli_num_rows($resultMinID) > 0){
+                        //Idem redak po redak rezultata upita 
+                        while($rowMinID = mysqli_fetch_assoc($resultMinID)){
+                            //Spremam MINIMALNI ID povijesti bolesti
+                            $idPregled = $rowMinID['idPovijestBolesti'];
+                        }
+                    }
+                }
+            } 
+            //Ako nema evidentiranih pregleda za ovog pacijenta
+            else{
+                return null;
+            }
+        }
+        return $idPregled;
+    }
+
     //Funkcija koja dohvaća sve sekundarne dijagnoze na osnovu ID-a pregleda ili ID-a povijesti bolesti
     function dohvatiSekundarneDijagnoze($datum,$vrijeme,$mkbSifraPrimarna,$tipSlucaj,$idPacijent,$tipKorisnik){
         //Dohvaćam bazu 
@@ -122,11 +275,11 @@ class PreglediService{
                     END AS nacinPlacanja,
                     CONCAT(k.opisOsiguranika,' [',p.oznakaOsiguranika,']') AS oznakaOsiguranika,
                     p.nazivDrzave,
-                    CONCAT(d.imeDijagnoza,' [',p.mkbSifraPrimarna,']') AS primarnaDijagnoza, kor.tip,
+                    IF(p.mkbSifraPrimarna IS NULL, NULL, CONCAT((SELECT d.imeDijagnoza FROM dijagnoze d 
+                                                                WHERE d.mkbSifra = p.mkbSifraPrimarna),' [',p.mkbSifraPrimarna,']')) AS primarnaDijagnoza, kor.tip,
                     p.datumPregled, p.vrijemePregled, p.tipSlucaj, p.mkbSifraPrimarna
                     FROM pregled p 
                     JOIN kategorije_osiguranje k ON k.oznakaOsiguranika = p.oznakaOsiguranika 
-                    JOIN dijagnoze d ON d.mkbSifra = p.mkbSifraPrimarna
                     JOIN ambulanta a ON a.idPregled = p.idPregled 
                     JOIN med_sestra m ON m.idMedSestra = a.idMedSestra 
                     JOIN korisnik kor ON kor.idKorisnik = m.idKorisnik 
@@ -145,8 +298,8 @@ class PreglediService{
         return $response;
     }
 
-    //Funkcija koja na osnovu tipa korisnika, ID-a pacijenta te datuma dohvaća sve njegove preglede
-    function dohvatiSvePregledePoDatumu($tipKorisnik,$idPacijent,$datum){
+    //Funkcija koja na osnovu tipa korisnika, ID-a pacijenta dohvaća sve njegove preglede
+    function dohvatiSvePreglede($tipKorisnik,$idPacijent){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -159,8 +312,7 @@ class PreglediService{
                     pb.tipSlucaj, pb.vrijeme FROM povijestBolesti pb 
                     WHERE pb.mboPacijent IN 
                     (SELECT pacijent.mboPacijent FROM pacijent 
-                    WHERE pacijent.idPacijent = '$idPacijent') 
-                    AND pb.datum = '$datum' 
+                    WHERE pacijent.idPacijent = '$idPacijent')
                     GROUP BY pb.mkbSifraPrimarna 
                     ORDER BY pb.datum DESC, pb.vrijeme DESC;";
             //Rezultat upita spremam u varijablu $result
@@ -173,6 +325,10 @@ class PreglediService{
                     $response[] = $row;
                 }
             }
+            //Ako pacijent nema evidentiranih pregleda
+            else{
+                return null;
+            }
         }
         //Ako je tip korisnika "sestra":
         else if($tipKorisnik == "sestra"){
@@ -182,7 +338,6 @@ class PreglediService{
                     WHERE p.mboPacijent IN 
                     (SELECT pacijent.mboPacijent FROM pacijent 
                     WHERE pacijent.idPacijent = '$idPacijent') 
-                    AND p.datumPregled = '$datum' 
                     GROUP BY p.mkbSifraPrimarna 
                     ORDER BY p.datumPregled DESC, p.vrijemePregled DESC;";
             //Rezultat upita spremam u varijablu $result
@@ -194,6 +349,10 @@ class PreglediService{
                     //Vrijednost rezultata spremam u varijablu $mboPacijent
                     $response[] = $row;
                 }
+            }
+            //Ako pacijent nema evidentiranih pregleda
+            else{
+                return null;
             }
         }
         return $response;
