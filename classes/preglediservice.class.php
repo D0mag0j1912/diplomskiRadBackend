@@ -267,9 +267,10 @@ class PreglediService{
                     IF(pb.idRecept IS NULL, NULL, (SELECT r.brojPonavljanja FROM recept r 
                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
                                                 WHERE pb.idPovijestBolesti = '$id')) AS brojPonavljanja,
-                    IF(pb.idRecept IS NULL, NULL, (SELECT r.sifraSpecijalist FROM recept r 
+                    IF(pb.idRecept IS NULL, NULL, (SELECT CONCAT((SELECT zr.tipSpecijalist FROM zdr_radnici zr 
+                                                                JOIN recept r ON r.sifraSpecijalist = zr.sifraSpecijalist),' [',r.sifraSpecijalist,']') FROM recept r 
                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
-                                                WHERE pb.idPovijestBolesti = '$id')) AS sifraSpecijalist FROM povijestBolesti pb 
+                                                WHERE pb.idPovijestBolesti = '$id')) AS specijalist FROM povijestBolesti pb 
                     JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
                     JOIN ambulanta a ON a.idPovijestBolesti = pb.idPovijestBolesti 
                     JOIN lijecnik l ON l.idLijecnik = a.idLijecnik 
