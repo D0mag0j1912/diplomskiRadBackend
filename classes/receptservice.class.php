@@ -405,60 +405,36 @@ class ReceptService{
         $conn = $baza->spojiSBazom();
         //Kreiram prazno polje
         $response = [];
-
-        //Kreiram upit kojim dohvaćam ZADNJE UNESENU primarnu dijagnozu povijesti bolesti za određenog pacijenta
-        $sqlZadnjaPrimarna = "SELECT pb.mkbSifraPrimarna FROM povijestbolesti pb
-                            WHERE pb.idPovijestBolesti = 
-                            (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2
-                            WHERE pb.mboPacijent = pb2.mboPacijent 
-                            AND pb2.idRecept IS NULL)
-                            AND pb.mboPacijent IN 
-                            (SELECT pacijent.mboPacijent FROM pacijent 
-                            WHERE pacijent.idPacijent = '$idPacijent')";
-        $resultZadnjaPrimarna = $conn->query($sqlZadnjaPrimarna);
-        //Ako postoji primarna dijagnoza zabilježena u povijesti bolesti za OVOG PACIJENTA
-        if($resultZadnjaPrimarna->num_rows > 0){
-            while($rowZadnjaPrimarna = $resultZadnjaPrimarna->fetch_assoc()) {
-                //Dohvaćam tu primarnu dijagnozu
-                $mkbPrimarnaDijagnoza = $rowZadnjaPrimarna['mkbSifraPrimarna'];
+        //Kreiram upit za dohvaćanjem MBO-a pacijenta kojemu se upisiva povijest bolesti
+        $sqlMBO = "SELECT p.mboPacijent AS MBO FROM pacijent p 
+                WHERE p.idPacijent = '$idPacijent'";
+        //Rezultat upita spremam u varijablu $resultMBO
+        $resultMBO = mysqli_query($conn,$sqlMBO);
+        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+        if(mysqli_num_rows($resultMBO) > 0){
+            //Idem redak po redak rezultata upita 
+            while($rowMBO = mysqli_fetch_assoc($resultMBO)){
+                //Vrijednost rezultata spremam u varijablu $mboPacijent
+                $mboPacijent = $rowMBO['MBO'];
             }
         }
-        //Ako NE POSTOJI primarna dijagnoza zabilježena u povijesti bolesti za OVOG PACIJENTA
-        else{
-            //Vrati null
-            return null;
-        } 
-        //Dohvaćam zadnje uneseni tip slučaja za ovog pacijenta
-        $sqlTipSlucaj = "SELECT pb.tipSlucaj,pb.vrijeme FROM povijestBolesti pb 
-                        WHERE pb.mboPacijent IN 
-                        (SELECT pacijent.mboPacijent FROM pacijent 
-                        WHERE pacijent.idPacijent = '$idPacijent') 
-                        AND pb.idRecept IS NULL 
-                        AND pb.idPovijestBolesti = 
-                        (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
-                        WHERE pb.mboPacijent = pb2.mboPacijent)";
-        $resultTipSlucaj = $conn->query($sqlTipSlucaj);
-        //Ako postoji primarna dijagnoza zabilježena u povijesti bolesti za OVOG PACIJENTA
-        if($resultTipSlucaj->num_rows > 0){
-            while($rowTipSlucaj = $resultTipSlucaj->fetch_assoc()) {
-                //Dohvaćam tu primarnu dijagnozu
-                $tipSlucaj = $rowTipSlucaj['tipSlucaj'];
-                $vrijeme = $rowTipSlucaj['vrijeme'];
-            }
-            //Ako POSTOJI primarna dijagnoza, kreiram upit koji dohvaća sve njezine sekundarne dijagoze
-            $sql = "SELECT DISTINCT(d.imeDijagnoza) AS NazivPrimarna, 
-                    IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d2.imeDijagnoza FROM dijagnoze d2 WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna 
-                    ,pb.idObradaLijecnik,pb.tipSlucaj,pb.vrijeme,pb.datum FROM povijestBolesti pb 
-                    JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
-                    WHERE pb.mkbSifraPrimarna = '$mkbPrimarnaDijagnoza' 
-                    AND pb.tipSlucaj = '$tipSlucaj' 
-                    AND pb.vrijeme = '$vrijeme'";
-            $result = $conn->query($sql);
-            //Ako ima rezultata
-            if($result->num_rows > 0){
-                while($row = $result->fetch_assoc()){
-                    $response[] = $row;
-                }
+
+        //Dohvaćam primarnu i sve sekundarne dijagnoze 
+        $sql = "SELECT DISTINCT(d.imeDijagnoza) AS NazivPrimarna, 
+                IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d2.imeDijagnoza FROM dijagnoze d2 WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna 
+                ,pb.idObradaLijecnik,pb.tipSlucaj,pb.vrijeme,pb.datum FROM povijestBolesti pb 
+                JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
+                WHERE pb.idRecept IS NULL 
+                AND pb.mboPacijent = '$mboPacijent' 
+                AND pb.idPovijestBolesti = 
+                (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
+                WHERE pb2.idRecept IS NULL 
+                AND pb2.mboPacijent = '$mboPacijent')";
+        $result = $conn->query($sql);
+        //Ako ima rezultata
+        if($result->num_rows > 0){
+            while($row = $result->fetch_assoc()){
+                $response[] = $row;
             }
         }
         return $response;
