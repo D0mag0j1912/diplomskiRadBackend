@@ -242,7 +242,34 @@ class PreglediService{
                     pb.statusPacijent, pb.nalaz, 
                     CONCAT(d.imeDijagnoza,' [',pb.mkbSifraPrimarna,']') AS primarnaDijagnoza,
                     pb.terapija, pb.preporukaLijecnik, pb.napomena, kor.tip,
-                    pb.datum, pb.vrijeme, pb.tipSlucaj, pb.mkbSifraPrimarna FROM povijestBolesti pb 
+                    pb.datum, pb.vrijeme, pb.tipSlucaj, pb.mkbSifraPrimarna,
+                    IF(pb.idRecept IS NULL, NULL, (SELECT r.proizvod FROM recept r 
+                                                JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
+                                                WHERE pb.idPovijestBolesti = '$id')) AS proizvod,
+                    IF(pb.idRecept IS NULL, NULL, (SELECT r.oblikJacinaPakiranjeLijek FROM recept r 
+                                                JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
+                                                WHERE pb.idPovijestBolesti = '$id')) AS oblikJacinaPakiranjeLijek,
+                    IF(pb.idRecept IS NULL, NULL, (SELECT r.kolicina FROM recept r 
+                                                JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
+                                                WHERE pb.idPovijestBolesti = '$id')) AS kolicina,
+                    IF(pb.idRecept IS NULL, NULL, (SELECT r.doziranje FROM recept r 
+                                                JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
+                                                WHERE pb.idPovijestBolesti = '$id')) AS doziranje,
+                    IF(pb.idRecept IS NULL, NULL, (SELECT r.dostatnost FROM recept r 
+                                                JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
+                                                WHERE pb.idPovijestBolesti = '$id')) AS dostatnost,
+                    IF(pb.idRecept IS NULL, NULL, (SELECT r.hitnost FROM recept r 
+                                                JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
+                                                WHERE pb.idPovijestBolesti = '$id')) AS hitnost,
+                    IF(pb.idRecept IS NULL, NULL, (SELECT r.ponovljiv FROM recept r 
+                                                JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
+                                                WHERE pb.idPovijestBolesti = '$id')) AS ponovljiv,
+                    IF(pb.idRecept IS NULL, NULL, (SELECT r.brojPonavljanja FROM recept r 
+                                                JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
+                                                WHERE pb.idPovijestBolesti = '$id')) AS brojPonavljanja,
+                    IF(pb.idRecept IS NULL, NULL, (SELECT r.sifraSpecijalist FROM recept r 
+                                                JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
+                                                WHERE pb.idPovijestBolesti = '$id')) AS sifraSpecijalist FROM povijestBolesti pb 
                     JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
                     JOIN ambulanta a ON a.idPovijestBolesti = pb.idPovijestBolesti 
                     JOIN lijecnik l ON l.idLijecnik = a.idLijecnik 
@@ -313,7 +340,7 @@ class PreglediService{
                     WHERE pb.mboPacijent IN 
                     (SELECT pacijent.mboPacijent FROM pacijent 
                     WHERE pacijent.idPacijent = '$idPacijent')
-                    GROUP BY pb.mkbSifraPrimarna 
+                    GROUP BY pb.tipSlucaj,pb.mkbSifraPrimarna
                     ORDER BY pb.datum DESC, pb.vrijeme DESC;";
             //Rezultat upita spremam u varijablu $result
             $result = mysqli_query($conn,$sql);
@@ -338,7 +365,7 @@ class PreglediService{
                     WHERE p.mboPacijent IN 
                     (SELECT pacijent.mboPacijent FROM pacijent 
                     WHERE pacijent.idPacijent = '$idPacijent') 
-                    GROUP BY p.mkbSifraPrimarna 
+                    GROUP BY p.tipSlucaj, p.mkbSifraPrimarna 
                     ORDER BY p.datumPregled DESC, p.vrijemePregled DESC;";
             //Rezultat upita spremam u varijablu $result
             $result = mysqli_query($conn,$sql);
