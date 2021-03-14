@@ -419,17 +419,36 @@ class ReceptService{
             }
         }
 
+        //Kreiram upit koji dohvaća sporedne podatke povijest bolesti ZADNJEG RETKA (jer ako ovo ne napravim, vraćati će mi samo zadnju sek. dijagnozu)
+        $sqlZadnjiRedak = "SELECT * FROM povijestBolesti pb
+                        WHERE pb.idRecept IS NULL 
+                        AND pb.mboPacijent = '$mboPacijent' 
+                        AND pb.idPovijestBolesti = 
+                        (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
+                        WHERE pb2.idRecept IS NULL 
+                        AND pb2.mboPacijent = '$mboPacijent')";
+        $resultZadnjiRedak = $conn->query($sqlZadnjiRedak);
+        //Ako ima rezultata
+        if($resultZadnjiRedak->num_rows > 0){
+            while($rowZadnjiRedak = $resultZadnjiRedak->fetch_assoc()){
+                $mkbSifraPrimarna = $rowZadnjiRedak['mkbSifraPrimarna'];
+                $tipSlucaj = $rowZadnjiRedak['tipSlucaj'];
+                $datum = $rowZadnjiRedak['datum'];
+                $vrijeme = $rowZadnjiRedak['vrijeme'];
+                $idObradaLijecnik = $rowZadnjiRedak['idObradaLijecnik'];
+            }
+        }
+
         //Dohvaćam primarnu i sve sekundarne dijagnoze 
         $sql = "SELECT DISTINCT(d.imeDijagnoza) AS NazivPrimarna, 
                 IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d2.imeDijagnoza FROM dijagnoze d2 WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna 
                 ,pb.idObradaLijecnik,pb.tipSlucaj,pb.vrijeme,pb.datum FROM povijestBolesti pb 
                 JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
-                WHERE pb.idRecept IS NULL 
-                AND pb.mboPacijent = '$mboPacijent' 
-                AND pb.idPovijestBolesti = 
-                (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
-                WHERE pb2.idRecept IS NULL 
-                AND pb2.mboPacijent = '$mboPacijent')";
+                WHERE pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                AND pb.tipSlucaj = '$tipSlucaj' 
+                AND pb.datum = '$datum' 
+                AND pb.vrijeme = '$vrijeme' 
+                AND pb.idObradaLijecnik = '$idObradaLijecnik'";
         $result = $conn->query($sql);
         //Ako ima rezultata
         if($result->num_rows > 0){

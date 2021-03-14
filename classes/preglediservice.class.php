@@ -7,6 +7,150 @@ date_default_timezone_set('Europe/Zagreb');
 
 class PreglediService{
 
+    //Funkcija koja dohvaća SVE PREGLEDE aktivnog pacijenta ZA ZADANI DATUM
+    function dohvatiPregledePoDatumu($tipKorisnik,$idPacijent,$datum){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+        $response = [];
+
+        //Kreiram upit za dohvaćanjem MBO-a pacijenta kojemu se upisiva povijest bolesti
+        $sqlMBO = "SELECT p.mboPacijent AS MBO FROM pacijent p 
+                WHERE p.idPacijent = '$idPacijent'";
+        //Rezultat upita spremam u varijablu $resultMBO
+        $resultMBO = mysqli_query($conn,$sqlMBO);
+        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+        if(mysqli_num_rows($resultMBO) > 0){
+            //Idem redak po redak rezultata upita 
+            while($rowMBO = mysqli_fetch_assoc($resultMBO)){
+                //Vrijednost rezultata spremam u varijablu $mboPacijent
+                $mboPacijent = $rowMBO['MBO'];
+            }
+        }
+
+        //Ako je tip korisnika liječnik:
+        if($tipKorisnik == "lijecnik"){
+            //Kreiram upit koji će dohvatiti povijesti bolesti za zadani datum
+            $sql = "SELECT pb.idPovijestBolesti, DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum, 
+                    pb.tipSlucaj, pb.vrijeme FROM povijestBolesti pb 
+                    WHERE pb.mboPacijent = '$mboPacijent' 
+                    AND pb.datum = '$datum'
+                    GROUP BY pb.tipSlucaj,pb.mkbSifraPrimarna
+                    ORDER BY pb.vrijeme DESC;";
+            //Rezultat upita spremam u varijablu $result
+            $result = mysqli_query($conn,$sql);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($result) > 0){
+                //Idem redak po redak rezultata upita 
+                while($row = mysqli_fetch_assoc($result)){
+                    //Vrijednost rezultata spremam u varijablu $mboPacijent
+                    $response[] = $row;
+                }
+            }
+            //Ako pacijent nema evidentiranih pregleda
+            else{
+                return null;
+            }
+        }
+        //Ako je tip korisnika "sestra":
+        else if($tipKorisnik == "sestra"){
+            //Kreiram upit koji će dohvatiti opće podatke pregleda za zadani datum 
+            $sql = "SELECT p.idPregled, DATE_FORMAT(p.datumPregled,'%d.%m.%Y') AS Datum, 
+                    p.tipSlucaj, p.vrijemePregled FROM pregled p 
+                    WHERE p.mboPacijent = '$mboPacijent' 
+                    AND p.datumPregled = '$datum' 
+                    GROUP BY p.tipSlucaj, p.mkbSifraPrimarna 
+                    ORDER BY p.vrijemePregled DESC;";
+            //Rezultat upita spremam u varijablu $result
+            $result = mysqli_query($conn,$sql);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($result) > 0){
+                //Idem redak po redak rezultata upita 
+                while($row = mysqli_fetch_assoc($result)){
+                    //Vrijednost rezultata spremam u varijablu $mboPacijent
+                    $response[] = $row;
+                }
+            }
+            //Ako pacijent nema evidentiranih pregleda
+            else{
+                return null;
+            }
+        }
+
+        return $response;
+    }
+
+    //Funkcija koja dohvaća DATUM najnovijeg pregleda da ga mogu uskladiti filter sa najvišim elementom liste pregleda
+    function dohvatiNajnovijiDatum($tipKorisnik,$idPacijent){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram upit za dohvaćanjem MBO-a pacijenta kojemu se upisiva povijest bolesti
+        $sqlMBO = "SELECT p.mboPacijent AS MBO FROM pacijent p 
+                WHERE p.idPacijent = '$idPacijent'";
+        //Rezultat upita spremam u varijablu $resultMBO
+        $resultMBO = mysqli_query($conn,$sqlMBO);
+        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+        if(mysqli_num_rows($resultMBO) > 0){
+            //Idem redak po redak rezultata upita 
+            while($rowMBO = mysqli_fetch_assoc($resultMBO)){
+                //Vrijednost rezultata spremam u varijablu $mboPacijent
+                $mboPacijent = $rowMBO['MBO'];
+            }
+        }
+
+        //Ako je tip korisnika "lijecnik":
+        if($tipKorisnik == "lijecnik"){
+            //Kreiram upit koji dohvaća najnoviji datum povijesti bolesti
+            $sql = "SELECT pb.datum FROM povijestBolesti pb 
+                    WHERE pb.mboPacijent = '$mboPacijent' 
+                    AND pb.idPovijestBolesti = 
+                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
+                    WHERE pb2.mboPacijent = '$mboPacijent')"; 
+            //Rezultat upita spremam u varijablu $result
+            $result = mysqli_query($conn,$sql);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($result) > 0){
+                //Idem redak po redak rezultata upita 
+                while($row = mysqli_fetch_assoc($result)){
+                    //Dohvaćam najnoviji datum
+                    $datum = $row['datum'];
+                }
+            }
+            //Ako ovaj pacijent NEMA evidentiranih povijesti bolesti
+            else{
+                //Vraćam današnji datum
+                $datum = date('Y-m-d');
+            }
+        }  
+        //Ako je tip korisnika "sestra":
+        else if($tipKorisnik == "sestra"){
+            //Kreiram upit koji dohvaća najnoviji datum povijesti bolesti
+            $sql = "SELECT p.datumPregled FROM pregled p 
+                    WHERE p.mboPacijent = '$mboPacijent' 
+                    AND p.idPregled = 
+                    (SELECT MAX(p2.idPregled) FROM pregled p2 
+                    WHERE p2.mboPacijent = '$mboPacijent')"; 
+            //Rezultat upita spremam u varijablu $result
+            $result = mysqli_query($conn,$sql);
+            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+            if(mysqli_num_rows($result) > 0){
+                //Idem redak po redak rezultata upita 
+                while($row = mysqli_fetch_assoc($result)){
+                    //Dohvaćam najnoviji datum
+                    $datum = $row['datumPregled'];
+                }
+            }
+            //Ako ovaj pacijent NEMA evidentiranih povijesti bolesti
+            else{
+                //Vraćam današnji datum
+                $datum = date('Y-m-d');
+            }
+        }
+        return $datum; 
+    }
+
     //Funkcija koja dohvaća ID najnovijeg pregleda ovisno o tipu korisnika
     function dohvatiNajnovijiIDPregled($tipKorisnik,$idPacijent){
         //Dohvaćam bazu 
@@ -267,7 +411,7 @@ class PreglediService{
                     IF(pb.idRecept IS NULL, NULL, (SELECT r.brojPonavljanja FROM recept r 
                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
                                                 WHERE pb.idPovijestBolesti = '$id')) AS brojPonavljanja,
-                    IF(pb.idRecept IS NULL, NULL, (SELECT CONCAT((SELECT zr.tipSpecijalist FROM zdr_radnici zr 
+                    IF(pb.idRecept IS NULL, NULL, (SELECT CONCAT((SELECT DISTINCT(zr.tipSpecijalist) FROM zdr_radnici zr 
                                                                 JOIN recept r ON r.sifraSpecijalist = zr.sifraSpecijalist),' [',r.sifraSpecijalist,']') FROM recept r 
                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
                                                 WHERE pb.idPovijestBolesti = '$id')) AS specijalist FROM povijestBolesti pb 

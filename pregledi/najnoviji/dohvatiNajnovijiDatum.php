@@ -1,6 +1,6 @@
 <?php
 //Importam potrebne klase pomoću autoloadera
-require_once 'C:\wamp64\www\angularPHP\includes\autoloader2.inc.php';
+require_once 'C:\wamp64\www\angularPHP\includes\autoloader3.inc.php';
 
 //Dohvaćam servis otvorenog slučaja
 $servis = new PreglediService();
@@ -16,13 +16,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     //Kreiram prazno polje
     $response = [];
 
-    //Ako su s frontenda poslani parametri
-    if(isset($_GET['tipKorisnik']) && isset($_GET['idPacijent'])){
-        $tipKorisnik = mysqli_real_escape_string($conn, trim($_GET['tipKorisnik']));
+    //Ako je s frontenda poslani parametri
+    if(isset($_GET['idPacijent']) && isset($_GET['tipKorisnik'])){
         $idPacijent = mysqli_real_escape_string($conn, trim($_GET['idPacijent']));
         $idPacijent = (int)$idPacijent;
+        $tipKorisnik = mysqli_real_escape_string($conn, trim($_GET['tipKorisnik']));
         //Punim polje sa vrijednostima polja iz funkcije
-        $response = $servis->dohvatiSvePreglede($tipKorisnik,$idPacijent);
+        $response = $servis->dohvatiNajnovijiDatum($tipKorisnik,$idPacijent);
         //Vraćam frontendu rezultat
         echo json_encode($response);
     }
