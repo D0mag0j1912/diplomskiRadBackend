@@ -97,7 +97,7 @@ class ReceptHandlerService{
                     r.dostatnost, r.hitnost, r.ponovljiv, r.brojPonavljanja, r.sifraSpecijalist, 
                     r.idPacijent, r.datumRecept, r.vrijemeRecept FROM recept r 
                     JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
-                    WHERE r.dostatnost = '$dostatnost' AND DATE_FORMAT(r.datumRecept,'%d.%m.%Y') = '$datumRecept' 
+                    WHERE r.dostatnost = '$dostatnost' AND r.datumRecept = '$datumRecept' 
                     AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                     AND r.proizvod = '$zasticenoImeLijek' AND r.oblikJacinaPakiranjeLijek = '$oblikJacinaPakiranjeLijek' 
                     AND r.vrijemeRecept = '$vrijemeRecept'";
@@ -153,7 +153,7 @@ class ReceptHandlerService{
                         r.dostatnost, r.hitnost, r.ponovljiv, r.brojPonavljanja, r.sifraSpecijalist, 
                         r.idPacijent, r.datumRecept, r.vrijemeRecept FROM recept r 
                         JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
-                        WHERE r.dostatnost = '$dostatnost' AND DATE_FORMAT(r.datumRecept,'%d.%m.%Y') = '$datumRecept' 
+                        WHERE r.dostatnost = '$dostatnost' AND r.datumRecept = '$datumRecept' 
                         AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                         AND r.proizvod = '$zasticenoImeLijek' AND r.oblikJacinaPakiranjeLijek = '$oblikJacinaPakiranjeLijek' 
                         AND r.vrijemeRecept = '$vrijemeRecept'";
@@ -175,7 +175,7 @@ class ReceptHandlerService{
                         r.dostatnost, r.hitnost, r.ponovljiv, r.brojPonavljanja, r.sifraSpecijalist, 
                         r.idPacijent, r.datumRecept, r.vrijemeRecept FROM recept r 
                         JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
-                        WHERE r.dostatnost = '$dostatnost' AND DATE_FORMAT(r.datumRecept,'%d.%m.%Y') = '$datumRecept' 
+                        WHERE r.dostatnost = '$dostatnost' AND r.datumRecept = '$datumRecept' 
                         AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                         AND r.proizvod = '$proizvod' 
                         AND r.vrijemeRecept = '$vrijemeRecept'";

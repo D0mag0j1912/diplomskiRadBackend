@@ -24,7 +24,8 @@ if($_SERVER["REQUEST_METHOD"] === "GET"){
         $dostatnost = mysqli_real_escape_string($conn, trim($_GET['dostatnost']));
         $dostatnost = (int)$dostatnost;
         //Dohvaćam datum recepta
-        $datumRecept = mysqli_real_escape_string($conn, trim($_GET['datumRecept'])); 
+        $datumRecept = mysqli_real_escape_string($conn, trim($_GET['datumRecept']));
+        $datumRecept = date('Y-m-d', strtotime($datumRecept)); 
         //Dohvaćam ID pacijenta 
         $idPacijent = mysqli_real_escape_string($conn, trim($_GET['idPacijent']));
         $idPacijent = (int)$idPacijent;
@@ -38,7 +39,7 @@ if($_SERVER["REQUEST_METHOD"] === "GET"){
         //Punim polje odgovorom funkcije
         $response = $servis->dohvatiRecept($dostatnost,$datumRecept, 
                                         $idPacijent,$mkbSifraPrimarna, 
-                                        $proizvod,$vrijemeRecept);
+                                        $proizvod,$vrijemeRecept); 
         //Vraćam odgovor frontendu
         echo json_encode($response);
     }
