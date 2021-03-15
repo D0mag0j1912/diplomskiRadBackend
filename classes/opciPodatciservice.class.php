@@ -65,8 +65,9 @@ class OpciPodatciService{
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
-          
-        $sql = "SELECT p.idPregled FROM pregled p 
+        $response = [];
+
+        $sql = "SELECT p.idPregled,p.bojaPregled FROM pregled p 
                 WHERE p.mboPacijent = '$mboPacijent' 
                 AND p.idObradaMedSestra = '$idObrada' 
                 AND p.mkbSifraPrimarna = '$mkbSifraPrimarna' 
@@ -81,17 +82,16 @@ class OpciPodatciService{
         if(mysqli_num_rows($result) > 0){
             //Idem redak po redak rezultata upita 
             while($row = mysqli_fetch_assoc($result)){
-                //Vrijednost rezultata spremam u varijablu $idPregled
-                $idPregled = $row['idPregled'];
+                $response[] = $row;
             }
         } 
-        return $idPregled;
+        return $response;
     }
 
     //Funkcija koja DODAVA PODATKE OPĆEG PREGLEDA PACIJENTA u bazu
     function dodajOpcePodatkePregleda($idMedSestra, $idPacijent, $nacinPlacanja, $podrucniUredHZZO, $podrucniUredOzljeda, $nazivPoduzeca,
                                     $oznakaOsiguranika, $nazivDrzave, $mbo, $brIskDopunsko, $mkbPrimarnaDijagnoza,
-                                    $mkbSifre, $tipSlucaj,$idObrada,$prosliPregled){
+                                    $mkbSifre, $tipSlucaj,$idObrada,$prosliPregled,$proslaBoja){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -107,6 +107,8 @@ class OpciPodatciService{
         $vrijemePregled = date("H:i");
         //Status obrade
         $statusObrada = "Aktivan";
+        //Inicijaliziram polje random boja 
+        $poljeBoja = ['#FAEBD7','#7FFFD4','#F0FFFF','#F5F5DC','#FFE4C4','#5F9EA0','#DEB887','#D2691E','#008B8B'];
         //Ako medicinska sestra nije unijela primarnu dijagnozu na pregledu:
         if(empty($mkbPrimarnaDijagnoza)){
             //Postavljam je na NULL
@@ -205,8 +207,8 @@ class OpciPodatciService{
             $sql = "INSERT INTO pregled (nacinPlacanja, podrucniUredHZZO, podrucniUredOzljeda, 
                                         nazivPoduzeca, oznakaOsiguranika, nazivDrzave, mboPacijent, brIskDopunsko,
                                         mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, datumPregled,narucen, 
-                                        idObradaMedSestra,vrijemePregled,prosliPregled) 
-                                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                        idObradaMedSestra,vrijemePregled,prosliPregled,bojaPregled) 
+                                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             //Kreiranje prepared statementa
             $stmt = mysqli_stmt_init($conn);
             //Ako je statement neuspješan
@@ -219,6 +221,15 @@ class OpciPodatciService{
                 //Ako je slučaj novi:
                 if(empty($prosliPregled)){
                     $prosliPregled = NULL;
+                }
+                //Ako je "proslaBoja" prazna, to znači da se generira novi slučaj
+                if(empty($proslaBoja)){
+                    //Generiram neku random boju iz polja boja
+                    $boja = $poljeBoja[array_rand($poljeBoja)];
+                }
+                //Ako "proslaBoja" nije prazna, to znači da je slučaj povezan
+                else{
+                    $boja = $proslaBoja;
                 }
                 //Postavljam sek. dijagnozu na NULL
                 $sekDijagnoza = NULL;
@@ -235,9 +246,9 @@ class OpciPodatciService{
                     $nazivDrzave = NULL;
                 }
                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                mysqli_stmt_bind_param($stmt,"sssssssssssssisi",$nacinPlacanja, $sifUredHZZO, $sifUredOzljeda, $nazivPoduzeca,
+                mysqli_stmt_bind_param($stmt,"sssssssssssssisis",$nacinPlacanja, $sifUredHZZO, $sifUredOzljeda, $nazivPoduzeca,
                                         $oznakaOsiguranika, $nazivDrzave, $mbo, $brIskDopunsko, $mkbPrimarnaDijagnoza,
-                                        $sekDijagnoza, $tipSlucaj, $datum,$narucen,$idObrada,$vrijemePregled,$prosliPregled);
+                                        $sekDijagnoza, $tipSlucaj, $datum,$narucen,$idObrada,$vrijemePregled,$prosliPregled,$boja);
                 //Izvršavanje statementa
                 mysqli_stmt_execute($stmt);
 
@@ -273,8 +284,12 @@ class OpciPodatciService{
         }
         //Ako polje sekundarnih dijagnoza nije prazno
         else{
+            //Inicijaliziram brojač da dopustim samo generiranje jedinstvene boje
+            $brojac = 0;
             //Prolazim kroz polje sekundarnih dijagnoza i za svaku sekundarnu dijagnoze ubacivam novu n-torku u bazu
             foreach($mkbSifre as $mkb){
+                //Povećavam brojač za 1 
+                $brojac++;
                 //Dohvaćam šifru područnog ureda HZZO-a, šifru ureda ozljede na radu, šifru sekundarne dijagnoze te šifru primarne dijagnoze
                 $sqlHZZO = "SELECT sifUred FROM podrucni_ured 
                             WHERE nazivSluzbe = ?";
@@ -300,8 +315,8 @@ class OpciPodatciService{
                 $sql = "INSERT INTO pregled (nacinPlacanja, podrucniUredHZZO, podrucniUredOzljeda, 
                                             nazivPoduzeca, oznakaOsiguranika, nazivDrzave, mboPacijent, brIskDopunsko,
                                             mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, datumPregled,narucen, 
-                                            idObradaMedSestra,vrijemePregled,prosliPregled) 
-                                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                            idObradaMedSestra,vrijemePregled,prosliPregled,bojaPregled) 
+                                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                 //Kreiranje prepared statementa
                 $stmt = mysqli_stmt_init($conn);
                 //Ako je statement neuspješan
@@ -314,6 +329,18 @@ class OpciPodatciService{
                     //Ako je slučaj novi:
                     if(empty($prosliPregled)){
                         $prosliPregled = NULL;
+                    }
+                    //Ako je "proslaBoja" prazna, to znači da se generira novi slučaj
+                    if(empty($proslaBoja)){
+                        //Samo ako je prva iteracija
+                        if($brojac == 1){
+                            //Generiram neku random boju iz polja boja
+                            $boja = $poljeBoja[array_rand($poljeBoja)];
+                        }
+                    }
+                    //Ako "proslaBoja" nije prazna, to znači da je slučaj povezan
+                    else{
+                        $boja = $proslaBoja;
                     }
                     if(empty($nazivPoduzeca)){
                         $nazivPoduzeca = NULL;
@@ -328,9 +355,9 @@ class OpciPodatciService{
                         $nazivDrzave = NULL;
                     }
                     //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                    mysqli_stmt_bind_param($stmt,"sssssssssssssisi",$nacinPlacanja, $sifUredHZZO, $sifUredOzljeda, $nazivPoduzeca,
+                    mysqli_stmt_bind_param($stmt,"sssssssssssssisis",$nacinPlacanja, $sifUredHZZO, $sifUredOzljeda, $nazivPoduzeca,
                                 $oznakaOsiguranika, $nazivDrzave, $mbo, $brIskDopunsko, $mkbPrimarnaDijagnoza,
-                                $mkb, $tipSlucaj, $datum,$narucen,$idObrada,$vrijemePregled,$prosliPregled);
+                                $mkb, $tipSlucaj, $datum,$narucen,$idObrada,$vrijemePregled,$prosliPregled,$boja);
                     //Izvršavanje statementa
                     mysqli_stmt_execute($stmt);
 

@@ -44,9 +44,11 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $idObrada = (int)$idObrada;
         $prosliPregled = mysqli_real_escape_string($conn, trim($request->prosliPregled));
         $prosliPregled = (int)$prosliPregled;
+        $proslaBoja = mysqli_real_escape_string($conn, trim($request->proslaBoja));
         $response = $servis->potvrdiPovijestBolesti($idLijecnik,$idPacijent,$razlogDolaska,$anamneza,$status,
                                                     $nalaz,$mkbPrimarnaDijagnoza,$mkbSifre,$tipSlucaj,
-                                                    $terapija,$preporukaLijecnik,$napomena,$idObrada,$prosliPregled);
+                                                    $terapija,$preporukaLijecnik,$napomena,$idObrada, 
+                                                    $prosliPregled,$proslaBoja);
         //Vrati odgovor frontendu
         echo json_encode($response);
     }

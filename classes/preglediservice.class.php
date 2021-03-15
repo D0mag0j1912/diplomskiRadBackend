@@ -215,7 +215,7 @@ class PreglediService{
         if($tipKorisnik == "lijecnik"){
             //Kreiram upit koji dohvaća sve sekundarne dijagnoze
             $sql = "SELECT IF(pb.mkbSifraSekundarna IS NULL, NULL, 
-                    CONCAT(pb.mkbSifraSekundarna,' | ', (SELECT d.imeDijagnoza FROM dijagnoze d 
+                    CONCAT(pb.mkbSifraSekundarna,' | ', (SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
                                                         WHERE d.mkbSifra = pb.mkbSifraSekundarna))) AS sekundarneDijagnoze FROM povijestbolesti pb 
                     WHERE pb.datum = '$datum' 
                     AND pb.vrijeme = '$vrijeme' 
@@ -237,7 +237,7 @@ class PreglediService{
         else if($tipKorisnik == "sestra"){
             //Kreiram upit koji dohvaća sve sekundarne dijagnoze
             $sql = "SELECT IF(p.mkbSifraSekundarna IS NULL, NULL, 
-                    CONCAT(p.mkbSifraSekundarna,' | ', (SELECT d.imeDijagnoza FROM dijagnoze d 
+                    CONCAT(p.mkbSifraSekundarna,' | ', (SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
                                                         WHERE d.mkbSifra = p.mkbSifraSekundarna))) AS sekundarneDijagnoze FROM pregled p 
                     WHERE p.datumPregled = '$datum' 
                     AND p.vrijemePregled = '$vrijeme' 
@@ -271,7 +271,7 @@ class PreglediService{
             //Kreiram upit koji će dohvatiti sve povijesti bolesti 
             $sql = "SELECT pb.idPovijestBolesti, pb.razlogDolaska, pb.anamneza, 
                     pb.statusPacijent, pb.nalaz, 
-                    CONCAT(d.imeDijagnoza,' [',pb.mkbSifraPrimarna,']') AS primarnaDijagnoza,
+                    CONCAT(TRIM(d.imeDijagnoza),' [',pb.mkbSifraPrimarna,']') AS primarnaDijagnoza,
                     pb.terapija, pb.preporukaLijecnik, pb.napomena, kor.tip,
                     pb.datum, pb.vrijeme, pb.tipSlucaj, pb.mkbSifraPrimarna,
                     IF(pb.idRecept IS NULL, NULL, (SELECT r.proizvod FROM recept r 
@@ -334,7 +334,7 @@ class PreglediService{
                     END AS nacinPlacanja,
                     CONCAT(k.opisOsiguranika,' [',p.oznakaOsiguranika,']') AS oznakaOsiguranika,
                     p.nazivDrzave,
-                    IF(p.mkbSifraPrimarna IS NULL, NULL, CONCAT((SELECT d.imeDijagnoza FROM dijagnoze d 
+                    IF(p.mkbSifraPrimarna IS NULL, NULL, CONCAT((SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
                                                                 WHERE d.mkbSifra = p.mkbSifraPrimarna),' [',p.mkbSifraPrimarna,']')) AS primarnaDijagnoza, kor.tip,
                     p.datumPregled, p.vrijemePregled, p.tipSlucaj, p.mkbSifraPrimarna
                     FROM pregled p 

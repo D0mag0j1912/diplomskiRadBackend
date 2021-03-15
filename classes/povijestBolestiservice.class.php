@@ -8,26 +8,13 @@ date_default_timezone_set('Europe/Zagreb');
 class PovijestBolestiService{
 
     //Funkcija koja dohvaća zadnje uneseni ID povijesti bolesti
-    function getIDPovijestBolesti($idPacijent,$idObrada,$mkbSifraPrimarna){
+    function getIDPovijestBolesti($mboPacijent,$idObrada,$mkbSifraPrimarna){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
-
-        //Kreiram upit za dohvaćanjem MBO-a pacijenta kojemu se upisiva povijest bolesti
-        $sqlMBO = "SELECT p.mboPacijent AS MBO FROM pacijent p 
-                WHERE p.idPacijent = '$idPacijent'";
-        //Rezultat upita spremam u varijablu $resultMBO
-        $resultMBO = mysqli_query($conn,$sqlMBO);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultMBO) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowMBO = mysqli_fetch_assoc($resultMBO)){
-                //Vrijednost rezultata spremam u varijablu $mboPacijent
-                $mboPacijent = $rowMBO['MBO'];
-            }
-        }
+        $response = [];
           
-        $sql = "SELECT pb.idPovijestBolesti FROM povijestBolesti pb 
+        $sql = "SELECT pb.idPovijestBolesti,pb.bojaPregled FROM povijestBolesti pb 
             WHERE pb.mboPacijent = '$mboPacijent' 
             AND pb.idObradaLijecnik = '$idObrada' 
             AND pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
@@ -42,17 +29,17 @@ class PovijestBolestiService{
         if(mysqli_num_rows($result) > 0){
             //Idem redak po redak rezultata upita 
             while($row = mysqli_fetch_assoc($result)){
-                //Vrijednost rezultata spremam u varijablu $idPovijestBolesti
-                $idPovijestBolesti = $row['idPovijestBolesti'];
+                $response[] = $row;
             }
         } 
-        return $idPovijestBolesti;
+        return $response;
     }
 
     //Kreiram funkciju koja će potvrditi povijest bolesti
     function potvrdiPovijestBolesti($idLijecnik,$idPacijent,$razlogDolaska,$anamneza,$status,
                                     $nalaz,$mkbPrimarnaDijagnoza,$mkbSifre,$tipSlucaj,
-                                    $terapija,$preporukaLijecnik,$napomena,$idObrada,$prosliPregled){
+                                    $terapija,$preporukaLijecnik,$napomena,$idObrada, 
+                                    $prosliPregled,$proslaBoja){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -66,6 +53,8 @@ class PovijestBolestiService{
         $vrijemePregled = date("H:i");
         //Status pacijenta
         $statusObrada = "Aktivan";
+        //Inicijaliziram polje random boja 
+        $poljeBoja = ['#FAEBD7','#7FFFD4','#F0FFFF','#F5F5DC','#FFE4C4','#5F9EA0','#DEB887','#D2691E','#008B8B'];
         //Varijabla koja određuje je li pacijent naručen ili nije
         $narucen = NULL;
         //Kreiram upit za dohvaćanjem MBO-a pacijenta kojemu se upisiva povijest bolesti
@@ -170,8 +159,9 @@ class PovijestBolestiService{
             //Kreiram upit za spremanje podataka u bazu
             $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                     nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                    preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme,prosliPregled) 
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik, 
+                    vrijeme,prosliPregled,bojaPregled) 
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             //Kreiranje prepared statementa
             $stmt = mysqli_stmt_init($conn);
             //Ako je statement neuspješan
@@ -184,6 +174,15 @@ class PovijestBolestiService{
                 //Ako je slučaj novi:
                 if(empty($prosliPregled)){
                     $prosliPregled = NULL;
+                }
+                //Ako je "proslaBoja" prazna, to znači da se generira novi slučaj
+                if(empty($proslaBoja)){
+                    //Generiram neku random boju iz polja boja
+                    $boja = $poljeBoja[array_rand($poljeBoja)];
+                }
+                //Ako "proslaBoja" nije prazna, to znači da je slučaj povezan
+                else{
+                    $boja = $proslaBoja;
                 }
                 //Postavljam sek. dijagnozu na NULL
                 $sekDijagnoza = NULL;
@@ -203,9 +202,9 @@ class PovijestBolestiService{
                     $napomena = NULL;
                 } 
                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                mysqli_stmt_bind_param($stmt,"sssssssssssssisi",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$sekDijagnoza,
+                mysqli_stmt_bind_param($stmt,"sssssssssssssisis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$sekDijagnoza,
                                                 $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada, 
-                                                $vrijemePregled,$prosliPregled);
+                                                $vrijemePregled,$prosliPregled,$boja);
                 //Izvršavanje statementa
                 mysqli_stmt_execute($stmt);
 
@@ -241,14 +240,18 @@ class PovijestBolestiService{
         }
         //Ako polje sekundarnih dijagnoza nije prazno
         else{
+            //Inicijaliziram brojač iteracija da onemogućim unos različitih boja
+            $brojac = 0;
             //Prolazim kroz polje sekundarnih dijagnoza i za svaku sekundarnu dijagnoze ubacivam novu n-torku u bazu
             foreach($mkbSifre as $mkb){  
+                //Poveaćam brojač za 1
+                $brojac++;
                 //Kreiram upit za spremanje prvog dijela podataka u bazu
                 $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                                                     nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
                                                     preporukaLijecnik, napomena, datum, narucen, mboPacijent, 
-                                                    idObradaLijecnik,vrijeme,prosliPregled) 
-                                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                                    idObradaLijecnik,vrijeme,prosliPregled,bojaPregled) 
+                                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                 //Kreiranje prepared statementa
                 $stmt = mysqli_stmt_init($conn);
                 //Ako je statement neuspješan
@@ -261,6 +264,18 @@ class PovijestBolestiService{
                     //Ako je slučaj novi:
                     if(empty($prosliPregled)){
                         $prosliPregled = NULL;
+                    }
+                    //Ako je "proslaBoja" prazna, to znači da se generira novi slučaj
+                    if(empty($proslaBoja)){
+                        //Samo ako je prva iteracija
+                        if($brojac == 1){
+                            //Generiram neku random boju iz polja boja
+                            $boja = $poljeBoja[array_rand($poljeBoja)];
+                        }
+                    }
+                    //Ako "proslaBoja" nije prazna, to znači da je slučaj povezan
+                    else{
+                        $boja = $proslaBoja;
                     }
                     if(empty($status)){
                         $status = NULL;
@@ -278,9 +293,9 @@ class PovijestBolestiService{
                         $napomena = NULL;
                     }
                     //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                    mysqli_stmt_bind_param($stmt,"sssssssssssssisi",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
+                    mysqli_stmt_bind_param($stmt,"sssssssssssssisis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
                                                                 $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen, 
-                                                                $mboPacijent,$idObrada,$vrijemePregled,$prosliPregled);
+                                                                $mboPacijent,$idObrada,$vrijemePregled,$prosliPregled,$boja);
                     //Izvršavanje statementa
                     mysqli_stmt_execute($stmt);
 

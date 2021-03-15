@@ -44,9 +44,10 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $idObrada = (int)$idObrada;
         $prosliPregled = mysqli_real_escape_string($conn, trim($request->prosliPregled));
         $prosliPregled = (int)$prosliPregled;
+        $proslaBoja = mysqli_real_escape_string($conn, trim($request->proslaBoja));
         $response = $servis->dodajOpcePodatkePregleda($idMedSestra,$idPacijent,$nacinPlacanja, $podrucniUredHZZO, $podrucniUredOzljeda, $nazivPoduzeca,
                                                     $oznakaOsiguranika, $nazivDrzave, $mbo, $brIskDopunsko, $mkbPrimarnaDijagnoza,
-                                                    $mkbSifre, $tipSlucaj,$idObrada,$prosliPregled);
+                                                    $mkbSifre, $tipSlucaj,$idObrada,$prosliPregled,$proslaBoja);
 
         echo json_encode($response);
     }

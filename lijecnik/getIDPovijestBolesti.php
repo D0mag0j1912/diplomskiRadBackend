@@ -4,7 +4,8 @@ require_once 'C:\wamp64\www\angularPHP\includes\autoloader2.inc.php';
 
 //Dohvaćam liječnički servis
 $servis = new PovijestBolestiService();
-
+//Dohvaćam servis prethodnih pregleda radi funkcije za ID => MBO
+$servisPrethodniPregled = new PreglediService();
 //Kreiram objekt tipa "Baza"
 $baza = new Baza();
 
@@ -22,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $idObrada = (int)$idObrada;
         $mkbSifraPrimarna = mysqli_real_escape_string($conn, trim($_GET['mkbSifraPrimarna']));
         
-        $response = $servis->getIDPovijestBolesti($idPacijent,$idObrada,$mkbSifraPrimarna);
+        $response = $servis->getIDPovijestBolesti($servisPrethodniPregled->getMBO($idPacijent),$idObrada,$mkbSifraPrimarna);
 
         echo json_encode($response);
     }
