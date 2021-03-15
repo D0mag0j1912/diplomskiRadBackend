@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $idPacijent = (int)$idPacijent;
         $tipKorisnik = mysqli_real_escape_string($conn, trim($_GET['tipKorisnik']));
         //Punim polje sa vrijednostima polja iz funkcije
-        $response = $servis->dohvatiSekundarneDijagnoze($datum,$vrijeme,$mkbSifraPrimarna,$tipSlucaj,$idPacijent,$tipKorisnik);
+        $response = $servis->dohvatiSekundarneDijagnoze($datum,$vrijeme,$mkbSifraPrimarna,$tipSlucaj,$servis->getMBO($idPacijent),$tipKorisnik);
         //Vraćam frontendu rezultat
         echo json_encode($response);
     }

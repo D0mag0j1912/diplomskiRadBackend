@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $idPacijent = mysqli_real_escape_string($conn, trim($_GET['idPacijent']));
         $idPacijent = (int)$idPacijent;
         //Punim polje sa vrijednostima polja iz funkcije
-        $response = $servis->dohvatiNajnovijiIDPregled($tipKorisnik,$idPacijent);
+        $response = $servis->dohvatiNajnovijiIDPregled($tipKorisnik,$servis->getMBO($idPacijent));
         //Vraćam frontendu rezultat
         echo json_encode($response);
     }

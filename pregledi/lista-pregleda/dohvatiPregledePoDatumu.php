@@ -2,8 +2,10 @@
 //Importam potrebne klase pomoću autoloadera
 require_once 'C:\wamp64\www\angularPHP\includes\autoloader3.inc.php';
 
-//Dohvaćam servis otvorenog slučaja
-$servis = new PreglediService();
+//Dohvaćam servis liste prethodnih pregleda
+$servis = new PreglediListService();
+//Dohvaćam servis prethodnih pregleda
+$servisPrethodni = new PreglediService();
 
 //Kreiram objekt tipa "Baza"
 $baza = new Baza();
@@ -23,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $idPacijent = (int)$idPacijent;
         $datum = mysqli_real_escape_string($conn, trim($_GET['datum']));
         //Punim polje sa vrijednostima polja iz funkcije
-        $response = $servis->dohvatiPregledePoDatumu($tipKorisnik,$idPacijent,$datum);
+        $response = $servis->dohvatiPregledePoDatumu($tipKorisnik,$servisPrethodni->getMBO($idPacijent),$datum);
         //Vraćam frontendu rezultat
         echo json_encode($response);
     }
