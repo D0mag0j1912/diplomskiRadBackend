@@ -334,6 +334,7 @@ class DodajReceptService{
                             $mboPacijent = $rowPovijestBolesti['mboPacijent'];
                             $vrijemePovijestiBolesti = $rowPovijestBolesti['vrijeme'];
                             $prosliPregled = $rowPovijestBolesti['prosliPregled'];
+                            $bojaPregled = $rowPovijestBolesti['bojaPregled'];
                         }
                     } 
                     //Brišem sve retke iz tablice povijesti bolesti
@@ -358,8 +359,9 @@ class DodajReceptService{
                         //Kreiram upit za dodavanje novog recepta u bazu
                         $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                                 nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                                preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme,idRecept,prosliPregled) 
-                                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik, 
+                                vrijeme,idRecept,prosliPregled, bojaPregled) 
+                                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                         //Kreiranje prepared statementa
                         $stmt = mysqli_stmt_init($conn);
                         //Ako je statement neuspješan
@@ -388,9 +390,10 @@ class DodajReceptService{
                                 $napomena = NULL;
                             }
                             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                            mysqli_stmt_bind_param($stmt,"sssssssssssssisii",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$prazna,
+                            mysqli_stmt_bind_param($stmt,"sssssssssssssisiis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$prazna,
                                                             $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datumPovijestiBolesti, 
-                                                            $narucen,$mboPacijent,$poslaniIDObrada,$vrijemePovijestiBolesti,$idRecept,$prosliPregled);
+                                                            $narucen,$mboPacijent,$poslaniIDObrada,$vrijemePovijestiBolesti,$idRecept, 
+                                                            $prosliPregled,$bojaPregled);
                             //Izvršavanje statementa
                             mysqli_stmt_execute($stmt);
 
@@ -508,6 +511,7 @@ class DodajReceptService{
                         $mboPacijent = $rowPovijestBolesti['mboPacijent'];
                         $vrijemePovijestiBolesti = $rowPovijestBolesti['vrijeme'];
                         $prosliPregled = $rowPovijestBolesti['prosliPregled'];
+                        $bojaPregled = $rowPovijestBolesti['bojaPregled'];
                     }
                 } 
                 //Brišem sve retke iz tablice povijesti bolesti
@@ -828,13 +832,15 @@ class DodajReceptService{
                                 $mboPacijent = $rowPovijestBolesti['mboPacijent'];
                                 $vrijemePovijestiBolesti = $rowPovijestBolesti['vrijeme'];
                                 $prosliPregled = $rowPovijestBolesti['prosliPregled'];
+                                $bojaPregled = $rowPovijestBolesti['bojaPregled'];
                             }
                         } 
                         //Kreiram upit za spremanje prvog dijela podataka u bazu
                         $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                                 nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                                preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme,idRecept,prosliPregled) 
-                                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik, 
+                                vrijeme,idRecept,prosliPregled,bojaPregled) 
+                                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                         //Kreiranje prepared statementa
                         $stmt = mysqli_stmt_init($conn);
                         //Ako je statement neuspješan
@@ -863,9 +869,10 @@ class DodajReceptService{
                                 $napomena = NULL;
                             }
                             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                            mysqli_stmt_bind_param($stmt,"sssssssssssssisii",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkb,
+                            mysqli_stmt_bind_param($stmt,"sssssssssssssisiis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkb,
                                                                         $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datumPovijestiBolesti, 
-                                                                        $narucen,$mboPacijent,$poslaniIDObrada,$vrijemePovijestiBolesti,$idRecept,$prosliPregled);
+                                                                        $narucen,$mboPacijent,$poslaniIDObrada,$vrijemePovijestiBolesti,$idRecept, 
+                                                                        $prosliPregled,$bojaPregled);
                             //Izvršavanje statementa
                             mysqli_stmt_execute($stmt);
 
@@ -999,13 +1006,15 @@ class DodajReceptService{
                                 $mboPacijent = $rowPovijestBolesti['mboPacijent'];
                                 $vrijemePovijestiBolesti = $rowPovijestBolesti['vrijeme'];
                                 $prosliPregled = $rowPovijestBolesti['prosliPregled'];
+                                $bojaPregled = $rowPovijestBolesti['bojaPregled'];
                             }
                         } 
                         //Kreiram upit za spremanje prvog dijela podataka u bazu
                         $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                                 nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                                preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme,idRecept,prosliPregled) 
-                                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik, 
+                                vrijeme,idRecept,prosliPregled,bojaPregled) 
+                                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                         //Kreiranje prepared statementa
                         $stmt = mysqli_stmt_init($conn);
                         //Ako je statement neuspješan
@@ -1034,10 +1043,10 @@ class DodajReceptService{
                                 $napomena = NULL;
                             }
                             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                            mysqli_stmt_bind_param($stmt,"sssssssssssssisii",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkb,
+                            mysqli_stmt_bind_param($stmt,"sssssssssssssisiis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkb,
                                                                         $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,
                                                                         $datumPovijestiBolesti,$narucen,$mboPacijent,$poslaniIDObrada,
-                                                                        $vrijemePovijestiBolesti,$idRecept,$prosliPregled);
+                                                                        $vrijemePovijestiBolesti,$idRecept,$prosliPregled,$bojaPregled);
                             //Izvršavanje statementa
                             mysqli_stmt_execute($stmt);
 
@@ -1077,8 +1086,9 @@ class DodajReceptService{
                     //Kreiram upit za spremanje prvog dijela podataka u bazu
                     $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                             nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                            preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme,idRecept,prosliPregled) 
-                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                            preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik, 
+                            vrijeme,idRecept,prosliPregled,bojaPregled) 
+                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                     //Kreiranje prepared statementa
                     $stmt = mysqli_stmt_init($conn);
                     //Ako je statement neuspješan
@@ -1107,10 +1117,10 @@ class DodajReceptService{
                             $napomena = NULL;
                         }
                         //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                        mysqli_stmt_bind_param($stmt,"sssssssssssssisii",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkb,
+                        mysqli_stmt_bind_param($stmt,"sssssssssssssisiis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkb,
                                                                     $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,
                                                                     $datumPovijestiBolesti,$narucen,$mboPacijent,$poslaniIDObrada,
-                                                                    $vrijemePovijestiBolesti,$idRecept,$prosliPregled);
+                                                                    $vrijemePovijestiBolesti,$idRecept,$prosliPregled,$bojaPregled);
                         //Izvršavanje statementa
                         mysqli_stmt_execute($stmt);
 

@@ -108,7 +108,7 @@ class OpciPodatciService{
         //Status obrade
         $statusObrada = "Aktivan";
         //Inicijaliziram polje random boja 
-        $poljeBoja = ['#FAEBD7','#7FFFD4','#F0FFFF','#F5F5DC','#FFE4C4','#5F9EA0','#DEB887','#D2691E','#008B8B'];
+        $poljeBoja = ['#FAEBD7','#C71585','#F0FFFF','#F5F5DC','#FFE4C4','#5F9EA0','#DEB887','#D2691E','#008B8B'];
         //Ako medicinska sestra nije unijela primarnu dijagnozu na pregledu:
         if(empty($mkbPrimarnaDijagnoza)){
             //Postavljam je na NULL
@@ -224,8 +224,35 @@ class OpciPodatciService{
                 }
                 //Ako je "proslaBoja" prazna, to znači da se generira novi slučaj
                 if(empty($proslaBoja)){
-                    //Generiram neku random boju iz polja boja
+                    //Na početku inicijaliziram broj pronađenih boja na 0 (u slučaju da ne postoji još ova obrada i boja)
+                    $brojBoja = 0;
+                    //Generiram random boju
                     $boja = $poljeBoja[array_rand($poljeBoja)];
+                    //Tražim je li se novo generirana boja nalazi u bazi
+                    $sql = "SELECT COUNT(*) AS brojBoja FROM pregled p 
+                            WHERE p.idObradaMedSestra = '$idObrada' AND p.bojaPregled = '$boja'";
+                    $result = $conn->query($sql);
+                    //Ako ima pronađenih rezultata za navedenu pretragu
+                    if ($result->num_rows > 0) {
+                        while($row = $result->fetch_assoc()) {
+                            $brojBoja = $row['brojBoja'];
+                        }
+                    }
+                    //Dok ne pronađem boju koja još ne postoji u bazi za ovu sesiju obrade
+                    while($brojBoja != 0){
+                        //Generiraj ponovno boju
+                        $boja = $poljeBoja[array_rand($poljeBoja)];
+                        //Ponovno traži
+                        $sql = "SELECT COUNT(*) AS brojBoja FROM pregled p
+                                WHERE p.idObradaMedSestra = '$idObrada' AND p.bojaPregled = '$boja'";
+                        $result = $conn->query($sql);
+                        //Ako ima pronađenih rezultata za navedenu pretragu
+                        if ($result->num_rows > 0) {
+                            while($row = $result->fetch_assoc()) {
+                                $brojBoja = $row['brojBoja'];
+                            }
+                        }
+                    }
                 }
                 //Ako "proslaBoja" nije prazna, to znači da je slučaj povezan
                 else{
@@ -334,8 +361,35 @@ class OpciPodatciService{
                     if(empty($proslaBoja)){
                         //Samo ako je prva iteracija
                         if($brojac == 1){
-                            //Generiram neku random boju iz polja boja
+                            //Na početku inicijaliziram broj pronađenih boja na 0 (u slučaju da ne postoji još ova obrada i boja)
+                            $brojBoja = 0;
+                            //Generiram random boju
                             $boja = $poljeBoja[array_rand($poljeBoja)];
+                            //Tražim je li se novo generirana boja nalazi u bazi
+                            $sql = "SELECT COUNT(*) AS brojBoja FROM pregled p 
+                                    WHERE p.idObradaMedSestra = '$idObrada' AND p.bojaPregled = '$boja'";
+                            $result = $conn->query($sql);
+                            //Ako ima pronađenih rezultata za navedenu pretragu
+                            if ($result->num_rows > 0) {
+                                while($row = $result->fetch_assoc()) {
+                                    $brojBoja = $row['brojBoja'];
+                                }
+                            }
+                            //Dok ne pronađem boju koja još ne postoji u bazi za ovu sesiju obrade
+                            while($brojBoja != 0){
+                                //Generiraj ponovno boju
+                                $boja = $poljeBoja[array_rand($poljeBoja)];
+                                //Ponovno traži
+                                $sql = "SELECT COUNT(*) AS brojBoja FROM pregled p
+                                        WHERE p.idObradaMedSestra = '$idObrada' AND p.bojaPregled = '$boja'";
+                                $result = $conn->query($sql);
+                                //Ako ima pronađenih rezultata za navedenu pretragu
+                                if ($result->num_rows > 0) {
+                                    while($row = $result->fetch_assoc()) {
+                                        $brojBoja = $row['brojBoja'];
+                                    }
+                                }
+                            }
                         }
                     }
                     //Ako "proslaBoja" nije prazna, to znači da je slučaj povezan

@@ -114,7 +114,7 @@ class OtvoreniSlucajService{
 
         $sql = "SELECT DISTINCT(d.imeDijagnoza) AS NazivPrimarna, 
                 IF(p.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d WHERE d.mkbSifra = p.mkbSifraSekundarna)) AS NazivSekundarna, 
-                p.idObradaMedSestra,p.mkbSifraPrimarna FROM dijagnoze d 
+                p.idObradaMedSestra,p.mkbSifraPrimarna, p.idPregled, p.bojaPregled FROM dijagnoze d 
                 JOIN pregled p ON d.mkbSifra = p.mkbSifraPrimarna
                 JOIN ambulanta a ON p.idPregled = a.idPregled
                 JOIN med_sestra m ON m.idMedSestra = a.idMedSestra

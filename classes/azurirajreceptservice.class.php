@@ -294,7 +294,7 @@ class AzurirajReceptService{
                     $idRecept = $rowRecept['idRecept'];
                     //Prije nego što izbrišem redak povijesti bolesti, dohvaćam ga
                     $sqlSelectPov = "SELECT * FROM povijestbolesti 
-                                        WHERE idRecept = '$idRecept'";
+                                    WHERE idRecept = '$idRecept'";
                     $resultSelectPov  = $conn->query($sqlSelectPov);
 
                     if ($resultSelectPov ->num_rows > 0) {
@@ -314,6 +314,7 @@ class AzurirajReceptService{
                             $mboPacijent = $rowSelectPov['mboPacijent'];
                             $vrijemePovijestiBolesti = $rowSelectPov['vrijeme'];
                             $prosliPregled = $rowSelectPov['prosliPregled'];
+                            $bojaPregled = $rowSelectPov['bojaPregled'];
                         }
                     } 
                     //Kreiram upit koji briše sve retke iz povijesti bolesti
@@ -382,8 +383,9 @@ class AzurirajReceptService{
                     //Kreiram upit za dodavanje novog recepta u bazu
                     $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                                                         nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                                                        preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme,idRecept,prosliPregled) 
-                                                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                                        preporukaLijecnik, napomena, datum, narucen, mboPacijent, 
+                                                        idObradaLijecnik,vrijeme,idRecept,prosliPregled,bojaPregled) 
+                                                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                     //Kreiranje prepared statementa
                     $stmt = mysqli_stmt_init($conn);
                     //Ako je statement neuspješan
@@ -412,9 +414,10 @@ class AzurirajReceptService{
                             $napomena = NULL;
                         }
                         //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                        mysqli_stmt_bind_param($stmt,"sssssssssssssisii",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$prazna,
+                        mysqli_stmt_bind_param($stmt,"sssssssssssssisiis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$prazna,
                                                         $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datumPovijestiBolesti, 
-                                                        $narucen,$mboPacijent,$idObradaLijecnik,$vrijemePovijestiBolesti,$maxIDrecept,$prosliPregled);
+                                                        $narucen,$mboPacijent,$idObradaLijecnik,$vrijemePovijestiBolesti,$maxIDrecept, 
+                                                        $prosliPregled,$bojaPregled);
                         //Izvršavanje statementa
                         mysqli_stmt_execute($stmt);
 
@@ -494,7 +497,7 @@ class AzurirajReceptService{
                     $idRecept = $rowRecept['idRecept'];
                     //Prije nego što izbrišem redak povijesti bolesti, dohvaćam ga
                     $sqlSelectPov = "SELECT * FROM povijestbolesti 
-                                        WHERE idRecept = '$idRecept'";
+                                    WHERE idRecept = '$idRecept'";
                     $resultSelectPov = $conn->query($sqlSelectPov);
 
                     if ($resultSelectPov->num_rows > 0) {
@@ -514,6 +517,7 @@ class AzurirajReceptService{
                             $mboPacijent = $rowSelectPov['mboPacijent'];
                             $vrijemePovijestiBolesti = $rowSelectPov['vrijeme'];
                             $prosliPregled = $rowSelectPov['prosliPregled'];
+                            $bojaPregled = $rowSelectPov['bojaPregled'];
                         }
                     } 
                     //Kreiram upit koji briše sve retke iz povijesti bolesti
@@ -862,6 +866,7 @@ class AzurirajReceptService{
                                 $mboPacijent = $rowSelectPov['mboPacijent'];
                                 $vrijemePovijestiBolesti = $rowSelectPov['vrijeme'];
                                 $prosliPregled = $rowSelectPov['prosliPregled'];
+                                $bojaPregled = $rowSelectPov['bojaPregled'];
                             }
                         } 
                         //Kreiram upit za ažuriranje povijesti bolesti
@@ -916,8 +921,9 @@ class AzurirajReceptService{
                         //Kreiram upit za dodavanje novog recepta u bazu
                         $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                                                     nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                                                    preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme,idRecept,prosliPregled) 
-                                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                                    preporukaLijecnik, napomena, datum, narucen, mboPacijent, 
+                                                    idObradaLijecnik,vrijeme,idRecept,prosliPregled,bojaPregled) 
+                                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                         //Kreiranje prepared statementa
                         $stmt = mysqli_stmt_init($conn);
                         //Ako je statement neuspješan
@@ -945,9 +951,10 @@ class AzurirajReceptService{
                                 $napomena = NULL;
                             }
                             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                            mysqli_stmt_bind_param($stmt,"sssssssssssssisii",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkb,
+                            mysqli_stmt_bind_param($stmt,"sssssssssssssisiis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkb,
                                                         $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datumPovijestiBolesti, 
-                                                        $narucen,$mboPacijent,$idObradaLijecnik,$vrijemePovijestiBolesti,$maxIDrecept,$prosliPregled);
+                                                        $narucen,$mboPacijent,$idObradaLijecnik,$vrijemePovijestiBolesti,$maxIDrecept, 
+                                                        $prosliPregled,$bojaPregled);
                             //Izvršavanje statementa
                             mysqli_stmt_execute($stmt);
 
@@ -1044,6 +1051,7 @@ class AzurirajReceptService{
                                     $mboPacijent = $rowSelectPov['mboPacijent'];
                                     $vrijemePovijestiBolesti = $rowSelectPov['vrijeme'];
                                     $prosliPregled = $rowSelectPov['prosliPregled'];
+                                    $bojaPregled = $rowSelectPov['bojaPregled'];
                                 }
                             } 
                             //Povećavam broj obrađenih redaka za 1
@@ -1135,6 +1143,7 @@ class AzurirajReceptService{
                                     $mboPacijent = $rowSelectPov['mboPacijent'];
                                     $vrijemePovijestiBolesti = $rowSelectPov['vrijeme'];
                                     $prosliPregled = $rowSelectPov['prosliPregled'];
+                                    $bojaPregled = $rowSelectPov['bojaPregled'];
                                 }
                             } 
                             //Povećavam broj obrađenih redaka za 1
@@ -1175,8 +1184,8 @@ class AzurirajReceptService{
                         $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                                                     nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
                                                     preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik, 
-                                                    vrijeme,idRecept,prosliPregled) 
-                                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                                    vrijeme,idRecept,prosliPregled,bojaPregled) 
+                                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                         //Kreiranje prepared statementa
                         $stmt = mysqli_stmt_init($conn);
                         //Ako je statement neuspješan
@@ -1204,9 +1213,10 @@ class AzurirajReceptService{
                                 $napomena = NULL;
                             }
                             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                            mysqli_stmt_bind_param($stmt,"sssssssssssssisii",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkb,
+                            mysqli_stmt_bind_param($stmt,"sssssssssssssisiis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkb,
                                                         $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datumPovijestiBolesti, 
-                                                        $narucen,$mboPacijent,$idObradaLijecnik,$vrijemePovijestiBolesti,$maxIDrecept,$prosliPregled);
+                                                        $narucen,$mboPacijent,$idObradaLijecnik,$vrijemePovijestiBolesti,$maxIDrecept, 
+                                                        $prosliPregled,$bojaPregled);
                             //Izvršavanje statementa
                             mysqli_stmt_execute($stmt);
 
@@ -1272,8 +1282,9 @@ class AzurirajReceptService{
                     //Kreiram upit za dodavanje novog recepta u bazu
                     $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                                                 nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
-                                                preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik,vrijeme,idRecept,prosliPregled) 
-                                                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                                preporukaLijecnik, napomena, datum, narucen, mboPacijent, 
+                                                idObradaLijecnik,vrijeme,idRecept,prosliPregled,bojaPregled) 
+                                                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                     //Kreiranje prepared statementa
                     $stmt = mysqli_stmt_init($conn);
                     //Ako je statement neuspješan
@@ -1301,9 +1312,10 @@ class AzurirajReceptService{
                             $napomena = NULL;
                         }
                         //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                        mysqli_stmt_bind_param($stmt,"sssssssssssssisii",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkb,
+                        mysqli_stmt_bind_param($stmt,"sssssssssssssisiis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbSifraPrimarna,$mkb,
                                                     $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datumPovijestiBolesti, 
-                                                    $narucen,$mboPacijent,$idObradaLijecnik,$vrijemePovijestiBolesti,$maxIDrecept,$prosliPregled);
+                                                    $narucen,$mboPacijent,$idObradaLijecnik,$vrijemePovijestiBolesti,$maxIDrecept, 
+                                                    $prosliPregled,$bojaPregled);
                         //Izvršavanje statementa
                         mysqli_stmt_execute($stmt);
 

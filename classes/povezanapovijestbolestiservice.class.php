@@ -145,9 +145,8 @@ class PovezanaPovijestBolestiService{
                     JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                     WHERE pb.mboPacijent IN 
                     (SELECT pacijent.mboPacijent FROM pacijent 
-                    WHERE pacijent.idPacijent = '$id') 
-                    GROUP BY pb.prosliPregled
-                    ORDER BY pb.datum DESC;";
+                    WHERE pacijent.idPacijent = '$id')
+                    ORDER BY pb.datum DESC, pb.vrijeme DESC;";
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {
