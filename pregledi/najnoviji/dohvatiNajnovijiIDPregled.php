@@ -3,8 +3,9 @@
 require_once 'C:\wamp64\www\angularPHP\includes\autoloader3.inc.php';
 
 //Dohvaćam servis otvorenog slučaja
-$servis = new PreglediService();
-
+$servis = new PreglediDetailService();
+//Dohvaćam servis prethodnih pregleda zbog getMBO()
+$servisPrethodni = new PreglediService();
 //Kreiram objekt tipa "Baza"
 $baza = new Baza();
 
@@ -22,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $idPacijent = mysqli_real_escape_string($conn, trim($_GET['idPacijent']));
         $idPacijent = (int)$idPacijent;
         //Punim polje sa vrijednostima polja iz funkcije
-        $response = $servis->dohvatiNajnovijiIDPregled($tipKorisnik,$servis->getMBO($idPacijent));
+        $response = $servis->dohvatiNajnovijiIDPregled($tipKorisnik,$servisPrethodni->getMBO($idPacijent));
         //Vraćam frontendu rezultat
         echo json_encode($response);
     }

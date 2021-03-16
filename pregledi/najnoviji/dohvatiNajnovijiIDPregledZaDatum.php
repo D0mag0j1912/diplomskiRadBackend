@@ -3,7 +3,7 @@
 require_once 'C:\wamp64\www\angularPHP\includes\autoloader3.inc.php';
 
 //Dohvaćam servis liste prethodnih pregleda
-$servis = new PreglediListService();
+$servis = new PreglediDetailService();
 //Dohvaćam servis prethodnih pregleda
 $servisPrethodni = new PreglediService();
 
