@@ -6,6 +6,205 @@ require_once 'C:\wamp64\www\angularPHP\includes\autoloader.inc.php';
 date_default_timezone_set('Europe/Zagreb');
 class PreglediDetailService{
 
+    //Funkcija koja dohvaća minimalni ID pregleda za zadnji pregled za zadanu pretragu
+    function dohvatiNajnovijiIDPregledPoPretrazi($tipKorisnik,$mboPacijent,$pretraga){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+        $response = [];
+
+        //Ako je tip korisnika "lijecnik":
+        if($tipKorisnik == "lijecnik"){
+            $sql = "SELECT * FROM povijestBolesti pb 
+                    LEFT JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
+                    LEFT JOIN dijagnoze d2 ON d2.mkbSifra = pb.mkbSifraSekundarna
+                    WHERE pb.mboPacijent = '$mboPacijent' 
+                    AND (UPPER(pb.razlogDolaska) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(pb.anamneza) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(pb.statusPacijent) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(pb.nalaz) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(pb.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(d.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(d2.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(pb.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(pb.terapija) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(pb.preporukaLijecnik) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(pb.napomena) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(DATE_FORMAT(pb.datum,'%d.%m.%Y')) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(pb.mboPacijent) LIKE UPPER('%{$pretraga}%')) 
+                    AND pb.idPovijestBolesti = 
+                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
+                    LEFT JOIN dijagnoze d3 ON d3.mkbSifra = pb2.mkbSifraPrimarna 
+                    LEFT JOIN dijagnoze d4 ON d4.mkbSifra = pb2.mkbSifraSekundarna
+                    WHERE pb2.mboPacijent = '$mboPacijent' 
+                    AND (UPPER(pb2.razlogDolaska) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(pb2.anamneza) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(pb2.statusPacijent) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(pb2.nalaz) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(pb2.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(d3.imeDijagnoza) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(d4.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(pb2.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(pb2.terapija) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(pb2.preporukaLijecnik) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(pb2.napomena) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(DATE_FORMAT(pb2.datum,'%d.%m.%Y')) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(pb2.mboPacijent) LIKE UPPER('%{$pretraga}%')))";
+            $result = $conn->query($sql);
+
+            //Ako ima pronađenih rezultata za navedenu pretragu
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    //Spremam podatke koji mi trebaju za dohvat MINIMALNOG ID-a zadnjeg pregleda
+                    $mkbSifraPrimarna = $row['mkbSifraPrimarna'];
+                    $tipSlucaj = $row['tipSlucaj'];
+                    $idObradaLijecnik = $row['idObradaLijecnik'];
+                    $vrijeme = $row['vrijeme'];
+                    $datum = $row['datum'];
+                    //Kreiram upit kojim dohvaćam MINIMALNI ID zadnjeg evidentiranog pregleda
+                    $sqlMinID = "SELECT pb.idPovijestBolesti FROM povijestBolesti pb 
+                                WHERE pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                AND pb.tipSlucaj = '$tipSlucaj' 
+                                AND pb.datum = '$datum' 
+                                AND pb.idObradaLijecnik = '$idObradaLijecnik' 
+                                AND pb.vrijeme = '$vrijeme' 
+                                AND pb.idPovijestBolesti = 
+                                (SELECT MIN(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
+                                WHERE pb2.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                AND pb2.tipSlucaj = '$tipSlucaj' 
+                                AND pb2.datum = '$datum' 
+                                AND pb2.idObradaLijecnik = '$idObradaLijecnik' 
+                                AND pb2.vrijeme = '$vrijeme')";
+                    //Rezultat upita spremam u varijablu $result
+                    $resultMinID = mysqli_query($conn,$sqlMinID);
+                    //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+                    if(mysqli_num_rows($resultMinID) > 0){
+                        //Idem redak po redak rezultata upita 
+                        while($rowMinID = mysqli_fetch_assoc($resultMinID)){
+                            //Spremam MINIMALNI ID povijesti bolesti
+                            $idPregled = $rowMinID['idPovijestBolesti'];
+                        }
+                    }
+                }
+            }
+            else{
+                return null;
+            }
+        }
+        //Ako je tip korisnika "sestra":
+        else if($tipKorisnik == "sestra"){
+            $sql = "SELECT * FROM pregled p 
+                    LEFT JOIN dijagnoze d ON d.mkbSifra = p.mkbSifraPrimarna 
+                    LEFT JOIN dijagnoze d2 ON d2.mkbSifra = p.mkbSifraSekundarna 
+                    LEFT JOIN podrucni_ured pu ON pu.sifUred = p.podrucniUredHZZO 
+                    LEFT JOIN podrucni_ured pu2 ON pu2.sifUred = p.podrucniUredOzljeda 
+                    LEFT JOIN kategorije_osiguranje ko ON ko.oznakaOsiguranika = p.oznakaOsiguranika
+                    WHERE p.mboPacijent = '$mboPacijent' 
+                    AND (UPPER(pu.nazivSluzbe) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(pu2.nazivSluzbe) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(p.nazivPoduzeca) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(ko.opisOsiguranika) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(p.nazivDrzave) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(p.mboPacijent) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(p.brIskDopunsko) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(p.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(d.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(p.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(d2.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(DATE_FORMAT(p.datumPregled,'%d.%m.%Y')) LIKE UPPER('%{$pretraga}%')) 
+                    AND p.idPregled = 
+                    (SELECT MAX(p2.idPregled) FROM pregled p2 
+                    LEFT JOIN dijagnoze d3 ON d3.mkbSifra = p2.mkbSifraPrimarna 
+                    LEFT JOIN dijagnoze d4 ON d4.mkbSifra = p2.mkbSifraSekundarna 
+                    LEFT JOIN podrucni_ured pu3 ON pu3.sifUred = p2.podrucniUredHZZO 
+                    LEFT JOIN podrucni_ured pu4 ON pu4.sifUred = p2.podrucniUredOzljeda 
+                    LEFT JOIN kategorije_osiguranje ko2 ON ko2.oznakaOsiguranika = p2.oznakaOsiguranika
+                    WHERE p2.mboPacijent = '$mboPacijent' 
+                    AND (UPPER(pu2.nazivSluzbe) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(p2.nazivPoduzeca) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(p2.nazivDrzave) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(ko2.opisOsiguranika) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(p2.mboPacijent) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(p2.brIskDopunsko) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(p2.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(d3.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(p2.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(d4.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(DATE_FORMAT(p2.datumPregled,'%d.%m.%Y')) LIKE UPPER('%{$pretraga}%')))"; 
+            $result = $conn->query($sql);
+
+            //Ako ima pronađenih rezultata za navedenu pretragu
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    //Spremam podatke koji mi trebaju za dohvat MINIMALNOG ID-a zadnjeg pregleda
+                    $mkbSifraPrimarna = $row['mkbSifraPrimarna'];
+                    $tipSlucaj = $row['tipSlucaj'];
+                    $idObradaMedSestra = $row['idObradaMedSestra'];
+                    $vrijeme = $row['vrijemePregled'];
+                    $datum = $row['datumPregled'];
+                    //Ako MKB šifra primarne dijagnoze postoji
+                    if(!empty($mkbSifraPrimarna)){
+                        //Kreiram upit kojim dohvaćam MINIMALNI ID zadnjeg evidentiranog pregleda
+                        $sqlMinID = "SELECT p.idPregled FROM pregled p 
+                                    WHERE p.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                    AND p.tipSlucaj = '$tipSlucaj' 
+                                    AND p.datumPregled = '$datum' 
+                                    AND p.idObradaMedSestra = '$idObradaMedSestra' 
+                                    AND p.vrijemePregled = '$vrijeme' 
+                                    AND p.idPregled = 
+                                    (SELECT MIN(p2.idPregled) FROM pregled p2 
+                                    WHERE p2.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                    AND p2.tipSlucaj = '$tipSlucaj' 
+                                    AND p2.datumPregled = '$datum' 
+                                    AND p2.idObradaMedSestra = '$idObradaMedSestra' 
+                                    AND p2.vrijemePregled = '$vrijeme')";
+                        //Rezultat upita spremam u varijablu $result
+                        $resultMinID = mysqli_query($conn,$sqlMinID);
+                        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+                        if(mysqli_num_rows($resultMinID) > 0){
+                            //Idem redak po redak rezultata upita 
+                            while($rowMinID = mysqli_fetch_assoc($resultMinID)){
+                                //Spremam MINIMALNI ID općih podataka pregleda
+                                $idPregled = $rowMinID['idPregled'];
+                            }
+                        }
+                    }
+                    //Ako je MKB primarne dijagnoze NULL
+                    else{
+                        //Kreiram upit kojim dohvaćam MINIMALNI ID zadnjeg evidentiranog pregleda
+                        $sqlMinID = "SELECT p.idPregled FROM pregled p 
+                                    WHERE p.mkbSifraPrimarna IS NULL 
+                                    AND p.tipSlucaj = '$tipSlucaj' 
+                                    AND p.datumPregled = '$datum' 
+                                    AND p.idObradaMedSestra = '$idObradaMedSestra' 
+                                    AND p.vrijemePregled = '$vrijeme' 
+                                    AND p.idPregled = 
+                                    (SELECT MIN(p2.idPregled) FROM pregled p2 
+                                    WHERE p2.mkbSifraPrimarna IS NULL
+                                    AND p2.tipSlucaj = '$tipSlucaj' 
+                                    AND p2.datumPregled = '$datum' 
+                                    AND p2.idObradaMedSestra = '$idObradaMedSestra' 
+                                    AND p2.vrijemePregled = '$vrijeme')";
+                        //Rezultat upita spremam u varijablu $result
+                        $resultMinID = mysqli_query($conn,$sqlMinID);
+                        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+                        if(mysqli_num_rows($resultMinID) > 0){
+                            //Idem redak po redak rezultata upita 
+                            while($rowMinID = mysqli_fetch_assoc($resultMinID)){
+                                //Spremam MINIMALNI ID općih podataka pregleda
+                                $idPregled = $rowMinID['idPregled'];
+                            }
+                        }
+                    }
+                }
+            }
+            else{
+                return null;
+            }
+        }
+        return $idPregled;
+    } 
+
     //Funkcija koja dohvaća najnoviji ID pregleda ZA ZADANI DATUM (kada se filtrira po datumu)
     function dohvatiNajnovijiIDPregledPoDatumu($tipKorisnik,$mboPacijent,$datum){
         //Dohvaćam bazu 
