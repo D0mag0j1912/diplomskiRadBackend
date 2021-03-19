@@ -4,7 +4,8 @@ require_once 'C:\wamp64\www\angularPHP\includes\autoloader2.inc.php';
 
 //Dohvaćam servis povezane povijesti bolesti
 $servis = new PovezanaPovijestBolestiService();
-
+//Dohvaćam servis prethodnih pregleda zbog getMBO()
+$servisPrethodni = new PreglediService();
 //Kreiram objekt tipa "Baza"
 $baza = new Baza();
 
@@ -21,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         //Uzmi tu vrijednosti ID-a i pretvori je u INTEGER
         $id = (int)$_GET['id'];
         //Punim polje sa vrijednostima polja iz funkcije
-        $response = $servis->dohvatiPovijestBolesti($id);
+        $response = $servis->dohvatiPovijestBolesti($servisPrethodni->getMBO($id));
         //Vraćam frontendu rezultat
         echo json_encode($response);
     }

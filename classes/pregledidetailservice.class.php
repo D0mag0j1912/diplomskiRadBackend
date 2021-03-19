@@ -105,8 +105,6 @@ class PreglediDetailService{
                     OR UPPER(p.nazivPoduzeca) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(ko.opisOsiguranika) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(p.nazivDrzave) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(p.mboPacijent) LIKE UPPER('%{$pretraga}%')
-                    OR UPPER(p.brIskDopunsko) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(p.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(d.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
                     OR UPPER(p.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') 
@@ -125,8 +123,6 @@ class PreglediDetailService{
                     OR UPPER(p2.nazivPoduzeca) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(p2.nazivDrzave) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(ko2.opisOsiguranika) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(p2.mboPacijent) LIKE UPPER('%{$pretraga}%')
-                    OR UPPER(p2.brIskDopunsko) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(p2.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(d3.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
                     OR UPPER(p2.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') 
@@ -501,8 +497,8 @@ class PreglediDetailService{
         if($tipKorisnik == "lijecnik"){
             //Kreiram upit koji dohvaća sve sekundarne dijagnoze
             $sql = "SELECT IF(pb.mkbSifraSekundarna IS NULL, NULL, 
-                    CONCAT(pb.mkbSifraSekundarna,' | ', (SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
-                                                        WHERE d.mkbSifra = pb.mkbSifraSekundarna))) AS sekundarneDijagnoze FROM povijestbolesti pb 
+                    CONCAT((SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
+                            WHERE d.mkbSifra = pb.mkbSifraSekundarna),' [',p.mkbSifraSekundarna,']')) AS sekundarneDijagnoze FROM povijestbolesti pb 
                     WHERE pb.datum = '$datum' 
                     AND pb.vrijeme = '$vrijeme' 
                     AND pb.tipSlucaj = '$tipSlucaj' 
@@ -523,8 +519,8 @@ class PreglediDetailService{
         else if($tipKorisnik == "sestra"){
             //Kreiram upit koji dohvaća sve sekundarne dijagnoze
             $sql = "SELECT IF(p.mkbSifraSekundarna IS NULL, NULL, 
-                    CONCAT(p.mkbSifraSekundarna,' | ', (SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
-                                                        WHERE d.mkbSifra = p.mkbSifraSekundarna))) AS sekundarneDijagnoze FROM pregled p 
+                    CONCAT((SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
+                            WHERE d.mkbSifra = p.mkbSifraSekundarna),' [',p.mkbSifraSekundarna,']')) AS sekundarneDijagnoze FROM pregled p 
                     WHERE p.datumPregled = '$datum' 
                     AND p.vrijemePregled = '$vrijeme' 
                     AND p.tipSlucaj = '$tipSlucaj' 

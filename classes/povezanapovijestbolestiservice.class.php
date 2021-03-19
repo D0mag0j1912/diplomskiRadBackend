@@ -41,26 +41,52 @@ class PovezanaPovijestBolestiService{
     }
 
     //Funkcija koja dohvaća sve podatke povijesti bolesti za određenu PRETRAGU KORISNIKA
-    function dohvatiPovijestBolestiPretraga($id,$pretraga){
+    function dohvatiPovijestBolestiPretraga($mboPacijent,$pretraga){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
         //Kreiram prazno polje odgovora
         $response = [];
 
-        $sql = "SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
+        $sql = "(SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
                 pb.razlogDolaska, 
                 TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,
                 d.imeDijagnoza AS NazivPrimarna,
                 pb.tipSlucaj,pb.vrijeme FROM povijestbolesti pb 
-                JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
-                WHERE (UPPER(pb.datum) LIKE UPPER('%{$pretraga}%') OR UPPER(pb.razlogDolaska) LIKE UPPER('%{$pretraga}%') 
-                OR UPPER(pb.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') OR UPPER(d.imeDijagnoza) LIKE UPPER('%{$pretraga}%') 
-                OR UPPER(pb.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%')) AND pb.mboPacijent IN 
-                (SELECT pacijent.mboPacijent FROM pacijent 
-                WHERE pacijent.idPacijent = '$id') 
+                LEFT JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
+                LEFT JOIN dijagnoze d2 ON d2.mkbSifra = pb.mkbSifraSekundarna
+                WHERE (UPPER(pb.datum) LIKE UPPER('%{$pretraga}%') 
+                OR UPPER(pb.razlogDolaska) LIKE UPPER('%{$pretraga}%') 
+                OR UPPER(pb.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
+                OR UPPER(pb.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%')
+                OR UPPER(d.imeDijagnoza) LIKE UPPER('%{$pretraga}%') 
+                OR UPPER(d2.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
+                OR UPPER(pb.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%')) 
+                AND pb.mboPacijent = '$mboPacijent' 
+                AND pb.prosliPregled IS NOT NULL
                 GROUP BY pb.prosliPregled 
-                ORDER BY pb.datum DESC;";
+                ORDER BY pb.datum DESC,pb.vrijeme DESC
+                LIMIT 7)
+                UNION
+                (SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
+                pb.razlogDolaska, 
+                TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,
+                d.imeDijagnoza AS NazivPrimarna,
+                pb.tipSlucaj,pb.vrijeme FROM povijestbolesti pb 
+                LEFT JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
+                LEFT JOIN dijagnoze d2 ON d2.mkbSifra = pb.mkbSifraSekundarna
+                WHERE (UPPER(pb.datum) LIKE UPPER('%{$pretraga}%') 
+                OR UPPER(pb.razlogDolaska) LIKE UPPER('%{$pretraga}%') 
+                OR UPPER(pb.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
+                OR UPPER(pb.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%')
+                OR UPPER(d.imeDijagnoza) LIKE UPPER('%{$pretraga}%') 
+                OR UPPER(d2.imeDijagnoza) LIKE UPPER('%{$pretraga}%') 
+                OR UPPER(pb.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%')) 
+                AND pb.mboPacijent = '$mboPacijent' 
+                AND pb.prosliPregled IS NULL
+                GROUP BY pb.vrijeme 
+                ORDER BY pb.datum DESC,pb.vrijeme DESC
+                LIMIT 7)";
         $result = $conn->query($sql);
 
         //Ako ima pronađenih rezultata za navedenu pretragu
@@ -107,7 +133,7 @@ class PovezanaPovijestBolestiService{
     }
 
     //Funkcija koja dohvaća sve podatke povijesti bolesti (BEZ SEKUNDARNIH DIJAGNOZA)
-    function dohvatiPovijestBolesti($id){
+    function dohvatiPovijestBolesti($mboPacijent){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -115,9 +141,7 @@ class PovezanaPovijestBolestiService{
         $response = [];
 
         $sqlCount = "SELECT COUNT(*) AS BrojPovijestBolesti FROM povijestbolesti pb 
-                    WHERE pb.mboPacijent IN 
-                    (SELECT pacijent.mboPacijent FROM pacijent 
-                    WHERE pacijent.idPacijent = '$id');";
+                    WHERE pb.mboPacijent = '$mboPacijent';";
         //Rezultat upita spremam u varijablu $resultCount
         $resultCount= mysqli_query($conn,$sqlCount);
         //Ako rezultat upita ima podataka u njemu (znači nije prazan)
@@ -137,16 +161,29 @@ class PovezanaPovijestBolestiService{
         }
         //Ako ovaj pacijent ima zabilježene povijesti bolesti
         else{
-            $sql = "SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
+            $sql = "(SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
                     pb.razlogDolaska, 
                     TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,
                     d.imeDijagnoza AS NazivPrimarna, 
                     pb.tipSlucaj,pb.vrijeme FROM povijestbolesti pb 
                     JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
-                    WHERE pb.mboPacijent IN 
-                    (SELECT pacijent.mboPacijent FROM pacijent 
-                    WHERE pacijent.idPacijent = '$id')
-                    ORDER BY pb.datum DESC, pb.vrijeme DESC;";
+                    WHERE pb.mboPacijent = '$mboPacijent' 
+                    AND pb.prosliPregled IS NOT NULL 
+                    GROUP BY pb.prosliPregled
+                    ORDER BY pb.datum DESC, pb.vrijeme DESC 
+                    LIMIT 7) 
+                    UNION 
+                    (SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
+                    pb.razlogDolaska, 
+                    TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,
+                    d.imeDijagnoza AS NazivPrimarna, 
+                    pb.tipSlucaj,pb.vrijeme FROM povijestbolesti pb 
+                    JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
+                    WHERE pb.mboPacijent = '$mboPacijent' 
+                    AND pb.prosliPregled IS NULL 
+                    GROUP BY pb.vrijeme
+                    ORDER BY pb.datum DESC, pb.vrijeme DESC 
+                    LIMIT 7)";
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {
