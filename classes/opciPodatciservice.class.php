@@ -108,7 +108,7 @@ class OpciPodatciService{
         //Status obrade
         $statusObrada = "Aktivan";
         //Inicijaliziram polje random boja 
-        $poljeBoja = ['#FAEBD7','#C71585','#F0FFFF','#F5F5DC','#FFE4C4','#5F9EA0','#DEB887','#D2691E','#008B8B'];
+        $poljeBoja = ['#006400','#C71585','#BDB76B','#40E0D0','#000000','#4B0082','#48D1CC','#D2691E','#FF0000'];
         //Ako medicinska sestra nije unijela primarnu dijagnozu na pregledu:
         if(empty($mkbPrimarnaDijagnoza)){
             //Postavljam je na NULL

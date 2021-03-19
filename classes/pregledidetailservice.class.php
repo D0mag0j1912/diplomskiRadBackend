@@ -6,7 +6,7 @@ require_once 'C:\wamp64\www\angularPHP\includes\autoloader.inc.php';
 date_default_timezone_set('Europe/Zagreb');
 class PreglediDetailService{
 
-    //Funkcija koja dohvaća minimalni ID pregleda za zadnji pregled za zadanu pretragu
+    //Funkcija koja dohvaća maksimalni ID pregleda za zadnji pregled za zadanu pretragu
     function dohvatiNajnovijiIDPregledPoPretrazi($tipKorisnik,$mboPacijent,$pretraga){
         //Dohvaćam bazu 
         $baza = new Baza();
@@ -55,13 +55,13 @@ class PreglediDetailService{
             //Ako ima pronađenih rezultata za navedenu pretragu
             if ($result->num_rows > 0) {
                 while($row = $result->fetch_assoc()) {
-                    //Spremam podatke koji mi trebaju za dohvat MINIMALNOG ID-a zadnjeg pregleda
+                    //Spremam podatke koji mi trebaju za dohvat MAKSIMALNOG ID-a zadnjeg pregleda
                     $mkbSifraPrimarna = $row['mkbSifraPrimarna'];
                     $tipSlucaj = $row['tipSlucaj'];
                     $idObradaLijecnik = $row['idObradaLijecnik'];
                     $vrijeme = $row['vrijeme'];
                     $datum = $row['datum'];
-                    //Kreiram upit kojim dohvaćam MINIMALNI ID zadnjeg evidentiranog pregleda
+                    //Kreiram upit kojim dohvaćam MAKSIMALNI ID zadnjeg evidentiranog pregleda
                     $sqlMinID = "SELECT pb.idPovijestBolesti FROM povijestBolesti pb 
                                 WHERE pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                                 AND pb.tipSlucaj = '$tipSlucaj' 
@@ -69,7 +69,7 @@ class PreglediDetailService{
                                 AND pb.idObradaLijecnik = '$idObradaLijecnik' 
                                 AND pb.vrijeme = '$vrijeme' 
                                 AND pb.idPovijestBolesti = 
-                                (SELECT MIN(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
+                                (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
                                 WHERE pb2.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                                 AND pb2.tipSlucaj = '$tipSlucaj' 
                                 AND pb2.datum = '$datum' 
@@ -81,7 +81,7 @@ class PreglediDetailService{
                     if(mysqli_num_rows($resultMinID) > 0){
                         //Idem redak po redak rezultata upita 
                         while($rowMinID = mysqli_fetch_assoc($resultMinID)){
-                            //Spremam MINIMALNI ID povijesti bolesti
+                            //Spremam MAKSIMALNI ID povijesti bolesti
                             $idPregled = $rowMinID['idPovijestBolesti'];
                         }
                     }
@@ -120,7 +120,8 @@ class PreglediDetailService{
                     LEFT JOIN podrucni_ured pu4 ON pu4.sifUred = p2.podrucniUredOzljeda 
                     LEFT JOIN kategorije_osiguranje ko2 ON ko2.oznakaOsiguranika = p2.oznakaOsiguranika
                     WHERE p2.mboPacijent = '$mboPacijent' 
-                    AND (UPPER(pu2.nazivSluzbe) LIKE UPPER('%{$pretraga}%')
+                    AND (UPPER(pu3.nazivSluzbe) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(pu4.nazivSluzbe) LIKE UPPER('%{$pretraga}%')
                     OR UPPER(p2.nazivPoduzeca) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(p2.nazivDrzave) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(ko2.opisOsiguranika) LIKE UPPER('%{$pretraga}%') 
@@ -136,7 +137,7 @@ class PreglediDetailService{
             //Ako ima pronađenih rezultata za navedenu pretragu
             if ($result->num_rows > 0) {
                 while($row = $result->fetch_assoc()) {
-                    //Spremam podatke koji mi trebaju za dohvat MINIMALNOG ID-a zadnjeg pregleda
+                    //Spremam podatke koji mi trebaju za dohvat MAKSIMALNOG ID-a zadnjeg pregleda
                     $mkbSifraPrimarna = $row['mkbSifraPrimarna'];
                     $tipSlucaj = $row['tipSlucaj'];
                     $idObradaMedSestra = $row['idObradaMedSestra'];
@@ -144,7 +145,7 @@ class PreglediDetailService{
                     $datum = $row['datumPregled'];
                     //Ako MKB šifra primarne dijagnoze postoji
                     if(!empty($mkbSifraPrimarna)){
-                        //Kreiram upit kojim dohvaćam MINIMALNI ID zadnjeg evidentiranog pregleda
+                        //Kreiram upit kojim dohvaćam MAKSIMALNI ID zadnjeg evidentiranog pregleda
                         $sqlMinID = "SELECT p.idPregled FROM pregled p 
                                     WHERE p.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                                     AND p.tipSlucaj = '$tipSlucaj' 
@@ -152,7 +153,7 @@ class PreglediDetailService{
                                     AND p.idObradaMedSestra = '$idObradaMedSestra' 
                                     AND p.vrijemePregled = '$vrijeme' 
                                     AND p.idPregled = 
-                                    (SELECT MIN(p2.idPregled) FROM pregled p2 
+                                    (SELECT MAX(p2.idPregled) FROM pregled p2 
                                     WHERE p2.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                                     AND p2.tipSlucaj = '$tipSlucaj' 
                                     AND p2.datumPregled = '$datum' 
@@ -164,14 +165,14 @@ class PreglediDetailService{
                         if(mysqli_num_rows($resultMinID) > 0){
                             //Idem redak po redak rezultata upita 
                             while($rowMinID = mysqli_fetch_assoc($resultMinID)){
-                                //Spremam MINIMALNI ID općih podataka pregleda
+                                //Spremam MAKSIMALNI ID općih podataka pregleda
                                 $idPregled = $rowMinID['idPregled'];
                             }
                         }
                     }
                     //Ako je MKB primarne dijagnoze NULL
                     else{
-                        //Kreiram upit kojim dohvaćam MINIMALNI ID zadnjeg evidentiranog pregleda
+                        //Kreiram upit kojim dohvaćam MAKSIMALNI ID zadnjeg evidentiranog pregleda
                         $sqlMinID = "SELECT p.idPregled FROM pregled p 
                                     WHERE p.mkbSifraPrimarna IS NULL 
                                     AND p.tipSlucaj = '$tipSlucaj' 
@@ -179,7 +180,7 @@ class PreglediDetailService{
                                     AND p.idObradaMedSestra = '$idObradaMedSestra' 
                                     AND p.vrijemePregled = '$vrijeme' 
                                     AND p.idPregled = 
-                                    (SELECT MIN(p2.idPregled) FROM pregled p2 
+                                    (SELECT MAX(p2.idPregled) FROM pregled p2 
                                     WHERE p2.mkbSifraPrimarna IS NULL
                                     AND p2.tipSlucaj = '$tipSlucaj' 
                                     AND p2.datumPregled = '$datum' 
@@ -191,7 +192,7 @@ class PreglediDetailService{
                         if(mysqli_num_rows($resultMinID) > 0){
                             //Idem redak po redak rezultata upita 
                             while($rowMinID = mysqli_fetch_assoc($resultMinID)){
-                                //Spremam MINIMALNI ID općih podataka pregleda
+                                //Spremam MAKSIMALNI ID općih podataka pregleda
                                 $idPregled = $rowMinID['idPregled'];
                             }
                         }
@@ -228,13 +229,13 @@ class PreglediDetailService{
             if(mysqli_num_rows($result) > 0){
                 //Idem redak po redak rezultata upita 
                 while($row = mysqli_fetch_assoc($result)){
-                    //Spremam podatke koji mi trebaju za dohvat MINIMALNOG ID-a zadnjeg pregleda
+                    //Spremam podatke koji mi trebaju za dohvat MAKSIMALNOG ID-a zadnjeg pregleda
                     $mkbSifraPrimarna = $row['mkbSifraPrimarna'];
                     $tipSlucaj = $row['tipSlucaj'];
                     $idObradaLijecnik = $row['idObradaLijecnik'];
                     $vrijeme = $row['vrijeme'];
 
-                    //Kreiram upit kojim dohvaćam MINIMALNI ID zadnjeg evidentiranog pregleda
+                    //Kreiram upit kojim dohvaćam MAKSIMALNI ID zadnjeg evidentiranog pregleda
                     $sqlMinID = "SELECT pb.idPovijestBolesti FROM povijestBolesti pb 
                                 WHERE pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                                 AND pb.tipSlucaj = '$tipSlucaj' 
@@ -242,7 +243,7 @@ class PreglediDetailService{
                                 AND pb.idObradaLijecnik = '$idObradaLijecnik' 
                                 AND pb.vrijeme = '$vrijeme' 
                                 AND pb.idPovijestBolesti = 
-                                (SELECT MIN(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
+                                (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
                                 WHERE pb2.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                                 AND pb2.tipSlucaj = '$tipSlucaj' 
                                 AND pb2.datum = '$datum' 
@@ -254,7 +255,7 @@ class PreglediDetailService{
                     if(mysqli_num_rows($resultMinID) > 0){
                         //Idem redak po redak rezultata upita 
                         while($rowMinID = mysqli_fetch_assoc($resultMinID)){
-                            //Spremam MINIMALNI ID povijesti bolesti
+                            //Spremam MAKSIMALNI ID povijesti bolesti
                             $idPregled = $rowMinID['idPovijestBolesti'];
                         }
                     }
@@ -280,14 +281,14 @@ class PreglediDetailService{
             if(mysqli_num_rows($result) > 0){
                 //Idem redak po redak rezultata upita 
                 while($row = mysqli_fetch_assoc($result)){
-                    //Spremam podatke koji mi trebaju za dohvat MINIMALNOG ID-a zadnjeg pregleda
+                    //Spremam podatke koji mi trebaju za dohvat MAKSIMALNOG ID-a zadnjeg pregleda
                     $mkbSifraPrimarna = $row['mkbSifraPrimarna'];
                     $tipSlucaj = $row['tipSlucaj'];
                     $idObradaMedSestra = $row['idObradaMedSestra'];
                     $vrijemePregled = $row['vrijemePregled'];
                     //Ako je upisana MKB šifra primarne dijagnoze
                     if(!empty($mkbSifraPrimarna)){
-                        //Kreiram upit kojim dohvaćam MINIMALNI ID zadnjeg evidentiranog pregleda
+                        //Kreiram upit kojim dohvaćam MAKSIMALNI ID zadnjeg evidentiranog pregleda
                         $sqlMinID = "SELECT p.idPregled FROM pregled p 
                                     WHERE p.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                                     AND p.tipSlucaj = '$tipSlucaj' 
@@ -295,7 +296,7 @@ class PreglediDetailService{
                                     AND p.idObradaMedSestra = '$idObradaMedSestra' 
                                     AND p.vrijemePregled = '$vrijemePregled' 
                                     AND p.idPregled = 
-                                    (SELECT MIN(p2.idPregled) FROM pregled p2 
+                                    (SELECT MAX(p2.idPregled) FROM pregled p2 
                                     WHERE p2.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                                     AND p2.tipSlucaj = '$tipSlucaj' 
                                     AND p2.datumPregled = '$datum' 
@@ -307,14 +308,14 @@ class PreglediDetailService{
                         if(mysqli_num_rows($resultMinID) > 0){
                             //Idem redak po redak rezultata upita 
                             while($rowMinID = mysqli_fetch_assoc($resultMinID)){
-                                //Spremam MINIMALNI ID pregleda
+                                //Spremam MAKSIMALNI ID pregleda
                                 $idPregled = $rowMinID['idPregled'];
                             }
                         }
                     }
                     //Ako nije upisana MKB šifra primarne dijagnoze
                     else{
-                        //Kreiram upit kojim dohvaćam MINIMALNI ID zadnjeg evidentiranog pregleda
+                        //Kreiram upit kojim dohvaćam MAKSIMALNI ID zadnjeg evidentiranog pregleda
                         $sqlMinID = "SELECT p.idPregled FROM pregled p 
                                     WHERE p.mkbSifraPrimarna IS NULL 
                                     AND p.tipSlucaj = '$tipSlucaj' 
@@ -322,7 +323,7 @@ class PreglediDetailService{
                                     AND p.idObradaMedSestra = '$idObradaMedSestra' 
                                     AND p.vrijemePregled = '$vrijemePregled' 
                                     AND p.idPregled = 
-                                    (SELECT MIN(p2.idPregled) FROM pregled p2 
+                                    (SELECT MAX(p2.idPregled) FROM pregled p2 
                                     WHERE p2.mkbSifraPrimarna IS NULL 
                                     AND p2.tipSlucaj = '$tipSlucaj' 
                                     AND p2.datumPregled = '$datum' 
@@ -334,7 +335,7 @@ class PreglediDetailService{
                         if(mysqli_num_rows($resultMinID) > 0){
                             //Idem redak po redak rezultata upita 
                             while($rowMinID = mysqli_fetch_assoc($resultMinID)){
-                                //Spremam MINIMALNI ID pregleda
+                                //Spremam MAKSIMALNI ID pregleda
                                 $idPregled = $rowMinID['idPregled'];
                             }
                         }
@@ -368,7 +369,7 @@ class PreglediDetailService{
             if(mysqli_num_rows($result) > 0){
                 //Idem redak po redak rezultata upita 
                 while($row = mysqli_fetch_assoc($result)){
-                    //Spremam podatke koji mi trebaju za dohvat MINIMALNOG ID-a zadnjeg pregleda
+                    //Spremam podatke koji mi trebaju za dohvat MAKSIMALNOG ID-a zadnjeg pregleda
                     $mkbSifraPrimarna = $row['mkbSifraPrimarna'];
                     $tipSlucaj = $row['tipSlucaj'];
                     $datumPregled = $row['datumPregled'];
@@ -376,7 +377,7 @@ class PreglediDetailService{
                     $vrijemePregled = $row['vrijemePregled'];
                     //Ako je upisana MKB šifra primarne dijagnoze
                     if(!empty($mkbSifraPrimarna)){
-                        //Kreiram upit kojim dohvaćam MINIMALNI ID zadnjeg evidentiranog pregleda
+                        //Kreiram upit kojim dohvaćam MAKSIMALNI ID zadnjeg evidentiranog pregleda
                         $sqlMinID = "SELECT p.idPregled FROM pregled p 
                                     WHERE p.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                                     AND p.tipSlucaj = '$tipSlucaj' 
@@ -384,7 +385,7 @@ class PreglediDetailService{
                                     AND p.idObradaMedSestra = '$idObradaMedSestra' 
                                     AND p.vrijemePregled = '$vrijemePregled' 
                                     AND p.idPregled = 
-                                    (SELECT MIN(p2.idPregled) FROM pregled p2 
+                                    (SELECT MAX(p2.idPregled) FROM pregled p2 
                                     WHERE p2.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                                     AND p2.tipSlucaj = '$tipSlucaj' 
                                     AND p2.datumPregled = '$datumPregled' 
@@ -396,14 +397,14 @@ class PreglediDetailService{
                         if(mysqli_num_rows($resultMinID) > 0){
                             //Idem redak po redak rezultata upita 
                             while($rowMinID = mysqli_fetch_assoc($resultMinID)){
-                                //Spremam MINIMALNI ID pregleda
+                                //Spremam MAKSIMALNI ID pregleda
                                 $idPregled = $rowMinID['idPregled'];
                             }
                         }
                     }
                     //Ako nije upisana MKB šifra primarne dijagnoze
                     else{
-                        //Kreiram upit kojim dohvaćam MINIMALNI ID zadnjeg evidentiranog pregleda
+                        //Kreiram upit kojim dohvaćam MAKSIMALNI ID zadnjeg evidentiranog pregleda
                         $sqlMinID = "SELECT p.idPregled FROM pregled p 
                                     WHERE p.mkbSifraPrimarna IS NULL 
                                     AND p.tipSlucaj = '$tipSlucaj' 
@@ -411,7 +412,7 @@ class PreglediDetailService{
                                     AND p.idObradaMedSestra = '$idObradaMedSestra' 
                                     AND p.vrijemePregled = '$vrijemePregled' 
                                     AND p.idPregled = 
-                                    (SELECT MIN(p2.idPregled) FROM pregled p2 
+                                    (SELECT MAX(p2.idPregled) FROM pregled p2 
                                     WHERE p2.mkbSifraPrimarna IS NULL 
                                     AND p2.tipSlucaj = '$tipSlucaj' 
                                     AND p2.datumPregled = '$datumPregled' 
@@ -423,7 +424,7 @@ class PreglediDetailService{
                         if(mysqli_num_rows($resultMinID) > 0){
                             //Idem redak po redak rezultata upita 
                             while($rowMinID = mysqli_fetch_assoc($resultMinID)){
-                                //Spremam MINIMALNI ID pregleda
+                                //Spremam MAKSIMALNI ID pregleda
                                 $idPregled = $rowMinID['idPregled'];
                             }
                         }
@@ -448,14 +449,14 @@ class PreglediDetailService{
             if(mysqli_num_rows($result) > 0){
                 //Idem redak po redak rezultata upita 
                 while($row = mysqli_fetch_assoc($result)){
-                    //Spremam podatke koji mi trebaju za dohvat MINIMALNOG ID-a zadnjeg pregleda
+                    //Spremam podatke koji mi trebaju za dohvat MAKSIMALNOG ID-a zadnjeg pregleda
                     $mkbSifraPrimarna = $row['mkbSifraPrimarna'];
                     $tipSlucaj = $row['tipSlucaj'];
                     $datum = $row['datum'];
                     $idObradaLijecnik = $row['idObradaLijecnik'];
                     $vrijeme = $row['vrijeme'];
 
-                    //Kreiram upit kojim dohvaćam MINIMALNI ID zadnjeg evidentiranog pregleda
+                    //Kreiram upit kojim dohvaćam MAKSIMALNI ID zadnjeg evidentiranog pregleda
                     $sqlMinID = "SELECT pb.idPovijestBolesti FROM povijestBolesti pb 
                                 WHERE pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                                 AND pb.tipSlucaj = '$tipSlucaj' 
@@ -463,7 +464,7 @@ class PreglediDetailService{
                                 AND pb.idObradaLijecnik = '$idObradaLijecnik' 
                                 AND pb.vrijeme = '$vrijeme' 
                                 AND pb.idPovijestBolesti = 
-                                (SELECT MIN(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
+                                (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
                                 WHERE pb2.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                                 AND pb2.tipSlucaj = '$tipSlucaj' 
                                 AND pb2.datum = '$datum' 
@@ -475,7 +476,7 @@ class PreglediDetailService{
                     if(mysqli_num_rows($resultMinID) > 0){
                         //Idem redak po redak rezultata upita 
                         while($rowMinID = mysqli_fetch_assoc($resultMinID)){
-                            //Spremam MINIMALNI ID povijesti bolesti
+                            //Spremam MAKSIMALNI ID povijesti bolesti
                             $idPregled = $rowMinID['idPovijestBolesti'];
                         }
                     }
