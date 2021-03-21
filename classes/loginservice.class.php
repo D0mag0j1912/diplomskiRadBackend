@@ -3,7 +3,7 @@
 OVDJE SE NALAZE SVE BACKEND METODE ZA PRIJAVU
 */
 //Importam autoloader koji će automatski importat klasu čiji tip objekta kreiram
-require_once 'C:\wamp64\www\angularPHP\includes\autoloader.inc.php';
+require_once 'C:\wamp64\www\diplomskiBackend\includes\autoloader.inc.php';
 
 //Postavljam vremensku zonu
 date_default_timezone_set('Europe/Zagreb');

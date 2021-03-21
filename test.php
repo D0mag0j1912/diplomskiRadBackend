@@ -1,5 +1,5 @@
 <?php
-require_once 'C:\wamp64\www\angularPHP\includes\autoloader.inc.php';
+require_once 'C:\wamp64\www\diplomskiBackend\includes\autoloader.inc.php';
 
 $servis = new OpciPodatciService();
 //Kreiram prazno polje

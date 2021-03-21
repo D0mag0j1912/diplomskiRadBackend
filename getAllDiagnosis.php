@@ -1,6 +1,6 @@
 <?php
 //Importam potrebne klase pomoću autoloadera
-require_once 'C:\wamp64\www\angularPHP\includes\autoloader.inc.php';
+require_once 'C:\wamp64\www\diplomskiBackend\includes\autoloader.inc.php';
 
 //Dohvaćam liječnički servis
 $servis = new ImportService();

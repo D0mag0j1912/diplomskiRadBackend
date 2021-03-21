@@ -1,7 +1,7 @@
 <?php
 
 //Importam potrebne klase pomoću autoloadera
-require_once 'C:\wamp64\www\angularPHP\includes\autoloader2.inc.php';
+require_once 'C:\wamp64\www\diplomskiBackend\includes\autoloader2.inc.php'; 
 
 //Importam login servis da mogu pristupiti metodama servisa
 $servis = new LoginService();

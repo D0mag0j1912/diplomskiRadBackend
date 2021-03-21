@@ -1,6 +1,6 @@
 <?php
 //Importam potrebne klase pomoću autoloadera
-require_once 'C:\wamp64\www\angularPHP\includes\autoloader3.inc.php';
+require_once 'C:\wamp64\www\diplomskiBackend\includes\autoloader3.inc.php';
 
 //Dohvaćam servis liste prethodnih pregleda
 $servis = new PreglediListService();
