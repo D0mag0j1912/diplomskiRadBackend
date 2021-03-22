@@ -4,7 +4,7 @@ require_once 'C:\wamp64\www\diplomskiBackend\includes\autoloader2.inc.php';
 
 //Dohvaćam servis otvorenog slučaja
 $servis = new OtvoreniSlucajService();
-
+$servisPrethodniPregled = new PreglediService();
 //Kreiram objekt tipa "Baza"
 $baza = new Baza();
 
@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         //Uzmi tu vrijednosti ID-a i pretvori je u INTEGER
         $id = (int)$_GET['id'];
         //Punim polje sa vrijednostima polja iz funkcije
-        $response = $servis->dohvatiSveSekundarneDijagnoze($servis->svePrimarneDijagnoze($id),$id);
+        $response = $servis->dohvatiSveSekundarneDijagnoze($servis->svePrimarneDijagnoze($servisPrethodniPregled->getMBO($id)),$servisPrethodniPregled->getMBO($id));
         //Vraćam frontendu rezultat
         echo json_encode($response);
     }

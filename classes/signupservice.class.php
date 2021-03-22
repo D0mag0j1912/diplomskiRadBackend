@@ -99,7 +99,7 @@ class SignupService{
         //Ako vrijednost i tip lozinke != vrijednosti i tipu ponovne lozinke
         if($lozinka !== $ponovnoLozinka){
             $response["success"] = "false";
-            $response["message"] = "Vrijednosti lozinka moraju biti jednake!";
+            $response["message"] = "Vrijednosti lozinki moraju biti jednake!";
             //Vraćam puno polje
             return $response;
         }

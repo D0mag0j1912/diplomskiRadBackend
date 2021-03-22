@@ -15,7 +15,7 @@ class Baza{
         $this->servername = "localhost";
         $this->username = "root";
         $this->password = "root";
-        $this->dbname = "ambulantatest";
+        $this->dbname = "diplomski";
 
         $conn = new mysqli($this->servername,$this->username,$this->password,$this->dbname);
         $conn -> set_charset("utf8");

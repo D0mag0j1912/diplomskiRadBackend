@@ -47,8 +47,41 @@ class PovezanaPovijestBolestiService{
         $conn = $baza->spojiSBazom();
         //Kreiram prazno polje odgovora
         $response = [];
+        //Ako je pretraga ""
+        if(empty($pretraga)){
+            $sql = "SELECT * FROM 
+                    (SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
+                    pb.razlogDolaska, 
+                    TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,
+                    TRIM(d.imeDijagnoza) AS NazivPrimarna, 
+                    pb.tipSlucaj,pb.vrijeme FROM povijestbolesti pb 
+                    JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
+                    WHERE pb.mboPacijent = '$mboPacijent' 
+                    AND pb.prosliPregled IS NOT NULL 
+                    GROUP BY pb.prosliPregled 
+                    UNION ALL 
+                    SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
+                    pb.razlogDolaska, 
+                    TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,
+                    TRIM(d.imeDijagnoza) AS NazivPrimarna, 
+                    pb.tipSlucaj,pb.vrijeme FROM povijestbolesti pb 
+                    JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
+                    WHERE pb.mboPacijent = '$mboPacijent' 
+                    AND pb.prosliPregled IS NULL 
+                    GROUP BY pb.vrijeme) AS povezanaPovijestBolesti 
+                    ORDER BY Datum DESC, vrijeme DESC 
+                    LIMIT 7";
+            $result = $conn->query($sql);
 
-        $sql = "(SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $response[] = $row;
+                }
+            }
+        }
+        //Ako pretraga NIJE ""
+        else{
+            $sql = "SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
                 pb.razlogDolaska, 
                 TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,
                 d.imeDijagnoza AS NazivPrimarna,
@@ -63,42 +96,21 @@ class PovezanaPovijestBolestiService{
                 OR UPPER(d2.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
                 OR UPPER(pb.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%')) 
                 AND pb.mboPacijent = '$mboPacijent' 
-                AND pb.prosliPregled IS NOT NULL
-                GROUP BY pb.prosliPregled 
-                ORDER BY pb.datum DESC,pb.vrijeme DESC
-                LIMIT 7)
-                UNION
-                (SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
-                pb.razlogDolaska, 
-                TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,
-                d.imeDijagnoza AS NazivPrimarna,
-                pb.tipSlucaj,pb.vrijeme FROM povijestbolesti pb 
-                LEFT JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
-                LEFT JOIN dijagnoze d2 ON d2.mkbSifra = pb.mkbSifraSekundarna
-                WHERE (UPPER(pb.datum) LIKE UPPER('%{$pretraga}%') 
-                OR UPPER(pb.razlogDolaska) LIKE UPPER('%{$pretraga}%') 
-                OR UPPER(pb.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
-                OR UPPER(pb.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%')
-                OR UPPER(d.imeDijagnoza) LIKE UPPER('%{$pretraga}%') 
-                OR UPPER(d2.imeDijagnoza) LIKE UPPER('%{$pretraga}%') 
-                OR UPPER(pb.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%')) 
-                AND pb.mboPacijent = '$mboPacijent' 
-                AND pb.prosliPregled IS NULL
-                GROUP BY pb.vrijeme 
-                ORDER BY pb.datum DESC,pb.vrijeme DESC
-                LIMIT 7)";
-        $result = $conn->query($sql);
+                ORDER BY Datum DESC, vrijeme DESC
+                LIMIT 7";
+            $result = $conn->query($sql);
 
-        //Ako ima pronađenih rezultata za navedenu pretragu
-        if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                $response[] = $row;
+            //Ako ima pronađenih rezultata za navedenu pretragu
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $response[] = $row;
+                }
             }
-        }
-        //Ako nema pronađenih rezultata za ovu pretragu
-        else{
-            $response["success"] = "false";
-            $response["message"] = "Nema pronađenih rezultata za ključnu riječ: ".$pretraga;
+            //Ako nema pronađenih rezultata za ovu pretragu
+            else{
+                $response["success"] = "false";
+                $response["message"] = "Nema pronađenih rezultata za ključnu riječ: ".$pretraga;
+            }
         }
         return $response;
     }
@@ -115,7 +127,8 @@ class PovezanaPovijestBolestiService{
         $sql = "SELECT DISTINCT(TRIM(pb.mkbSifraPrimarna)) AS mkbSifraPrimarna,d.mkbSifra,d.imeDijagnoza, 
                 DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,pb.vrijeme,pb.razlogDolaska,pb.tipSlucaj FROM dijagnoze d 
                 JOIN povijestbolesti pb ON pb.mkbSifraSekundarna = d.mkbSifra 
-                WHERE pb.datum = '$datum' AND pb.razlogDolaska = '$razlogDolaska' 
+                WHERE pb.datum = '$datum' 
+                AND pb.razlogDolaska = '$razlogDolaska' 
                 AND pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
                 AND pb.tipSlucaj = '$tipSlucaj' 
                 AND pb.vrijeme = '$vrijeme' 
@@ -161,29 +174,28 @@ class PovezanaPovijestBolestiService{
         }
         //Ako ovaj pacijent ima zabilježene povijesti bolesti
         else{
-            $sql = "(SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
+            $sql = "SELECT * FROM 
+                    (SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
                     pb.razlogDolaska, 
                     TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,
-                    d.imeDijagnoza AS NazivPrimarna, 
+                    TRIM(d.imeDijagnoza) AS NazivPrimarna, 
                     pb.tipSlucaj,pb.vrijeme FROM povijestbolesti pb 
                     JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                     WHERE pb.mboPacijent = '$mboPacijent' 
                     AND pb.prosliPregled IS NOT NULL 
-                    GROUP BY pb.prosliPregled
-                    ORDER BY pb.datum DESC, pb.vrijeme DESC 
-                    LIMIT 7) 
-                    UNION 
-                    (SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
+                    GROUP BY pb.prosliPregled 
+                    UNION ALL 
+                    SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
                     pb.razlogDolaska, 
                     TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,
-                    d.imeDijagnoza AS NazivPrimarna, 
+                    TRIM(d.imeDijagnoza) AS NazivPrimarna, 
                     pb.tipSlucaj,pb.vrijeme FROM povijestbolesti pb 
                     JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                     WHERE pb.mboPacijent = '$mboPacijent' 
                     AND pb.prosliPregled IS NULL 
-                    GROUP BY pb.vrijeme
-                    ORDER BY pb.datum DESC, pb.vrijeme DESC 
-                    LIMIT 7)";
+                    GROUP BY pb.vrijeme) AS povezanaPovijestBolesti 
+                    ORDER BY Datum DESC, vrijeme DESC 
+                    LIMIT 7";
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {
