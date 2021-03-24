@@ -112,50 +112,31 @@ class MedSestraService{
             //Izvršavam statement
             mysqli_stmt_execute($stmtMedSestra);
 
-            //Kreiram upit za spremanje pacijentovih podataka u tablicu "pacijent_dodatno" :
-            $sqlMedSestraDodatno = "INSERT INTO med_sestra_dodatno (idMedSestra,datAzurMedSestra,tipAzurMedSestra) VALUES (?,?,?)";
-            //Kreiram prepared statment
-            $stmtMedSestraDodatno = mysqli_stmt_init($conn);
-            //Ako je prepared statment neuspješno izvršen
-            if(!mysqli_stmt_prepare($stmtMedSestraDodatno,$sqlMedSestraDodatno)){
-                $response["success"] = "false";
-                $response["message"] = "Prepared statement medicinske sestre dod ne valja!";    
+            //Izvršavam upit koji dohvaća ID korisnika koji odgovara unesenom email-u
+            $resultKorisnik = mysqli_query($conn,"SELECT m.idKorisnik FROM med_sestra m WHERE m.idMedSestra = '" . mysqli_real_escape_string($conn, $id) . "'"); 
+            while($rowKorisnik = mysqli_fetch_array($resultKorisnik))
+            {
+                $idKorisnik = $rowKorisnik['idKorisnik'];
             }
-            //Ako je prepared statment uspješno izvršen
+
+            //Kreiram upit za bazu podataka koji će ažurirati vrijednosti medicinske sestre iz baze na nove vrijednosti koje je medicinska sestra ažurirala za svoj profil za tablicu "MED_SESTRA"
+            $sqlKorisnik = "UPDATE korisnik k SET k.email = ? WHERE k.idKorisnik = ?";
+            //Kreiram prepared statement
+            $stmtKorisnik = mysqli_stmt_init($conn);
+            //Ako je prepared statment neuspješno izvršen
+            if(!mysqli_stmt_prepare($stmtKorisnik,$sqlKorisnik)){
+                $response["success"] = "false";
+                $response["message"] = "Prepared statement korisnika ne valja!";
+            }
+            //Ako je prepared statement uspješno izvršen
             else{
-                $trenutniDatum = date("Y-m-d h:i:sa");
-                $tip = "osobniPodatci";
-                //Uzima sve parametre što je medicinska sestra unijela i stavlja ih umjesto upitnika
-                mysqli_stmt_bind_param($stmtMedSestraDodatno,"iss",$id,$trenutniDatum,$tip);
+                //Uzima sve parametre što je medicinska sestra ažurirala i stavlja ih umjesto upitnika u upitu
+                mysqli_stmt_bind_param($stmtKorisnik,"si",$email,$idKorisnik);
                 //Izvršavam statement
-                mysqli_stmt_execute($stmtMedSestraDodatno);
+                mysqli_stmt_execute($stmtKorisnik);
 
-                //Izvršavam upit koji dohvaća ID korisnika koji odgovara unesenom email-u
-                $resultKorisnik = mysqli_query($conn,"SELECT m.idKorisnik FROM med_sestra m WHERE m.idMedSestra = '" . mysqli_real_escape_string($conn, $id) . "'"); 
-                while($rowKorisnik = mysqli_fetch_array($resultKorisnik))
-                {
-                    $idKorisnik = $rowKorisnik['idKorisnik'];
-                }
-
-                //Kreiram upit za bazu podataka koji će ažurirati vrijednosti medicinske sestre iz baze na nove vrijednosti koje je medicinska sestra ažurirala za svoj profil za tablicu "MED_SESTRA"
-                $sqlKorisnik = "UPDATE korisnik k SET k.email = ? WHERE k.idKorisnik = ?";
-                //Kreiram prepared statement
-                $stmtKorisnik = mysqli_stmt_init($conn);
-                //Ako je prepared statment neuspješno izvršen
-                if(!mysqli_stmt_prepare($stmtKorisnik,$sqlKorisnik)){
-                    $response["success"] = "false";
-                    $response["message"] = "Prepared statement korisnika ne valja!";
-                }
-                //Ako je prepared statement uspješno izvršen
-                else{
-                    //Uzima sve parametre što je medicinska sestra ažurirala i stavlja ih umjesto upitnika u upitu
-                    mysqli_stmt_bind_param($stmtKorisnik,"si",$email,$idKorisnik);
-                    //Izvršavam statement
-                    mysqli_stmt_execute($stmtKorisnik);
-
-                    $response["success"] = "true";
-                    $response["message"] = "Ažuriranje osobnih podataka uspješno!";
-                }
+                $response["success"] = "true";
+                $response["message"] = "Ažuriranje osobnih podataka uspješno!";
             }
         }
         return $response;
