@@ -71,9 +71,15 @@ class CekaonicaService{
                 CASE 
                     WHEN r.oblikJacinaPakiranjeLijek IS NULL THEN r.proizvod 
                     WHEN r.oblikJacinaPakiranjeLijek IS NOT NULL THEN CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)
-                END AS proizvod, r.kolicina, r.doziranje
+                END AS proizvod, r.kolicina, r.doziranje, r.dostatnost, r.hitnost, r.ponovljiv, 
+                r.brojPonavljanja, 
+                CASE 
+                    WHEN r.sifraSpecijalist IS NOT NULL THEN (SELECT CONCAT(zr.tipSpecijalist,' [',zr.sifraSpecijalist,']'))
+                    WHEN r.sifraSpecijalist IS NULL THEN NULL
+                END AS specijalist
                 FROM povijestbolesti pb 
-                LEFT JOIN recept r ON r.idRecept = pb.idRecept
+                LEFT JOIN recept r ON r.idRecept = pb.idRecept 
+                LEFT JOIN zdr_radnici zr ON zr.sifraSpecijalist = r.sifraSpecijalist
                 LEFT JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                 WHERE pb.idObradaLijecnik = '$idObrada'
                 GROUP BY pb.mkbSifraPrimarna";
