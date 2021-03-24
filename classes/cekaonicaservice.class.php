@@ -66,9 +66,15 @@ class CekaonicaService{
         //Kreiram prazno polje odgovora
         $response = []; 
         
-        $sql = "SELECT pb.anamneza,pb.razlogDolaska,TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
-                GROUP_CONCAT(DISTINCT pb.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna FROM povijestbolesti pb 
-                JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
+        $sql = "SELECT pb.idPovijestBolesti,pb.anamneza,pb.razlogDolaska,TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
+                GROUP_CONCAT(DISTINCT pb.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna,
+                CASE 
+                    WHEN r.oblikJacinaPakiranjeLijek IS NULL THEN r.proizvod 
+                    WHEN r.oblikJacinaPakiranjeLijek IS NOT NULL THEN CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)
+                END AS proizvod, r.kolicina, r.doziranje
+                FROM povijestbolesti pb 
+                LEFT JOIN recept r ON r.idRecept = pb.idRecept
+                LEFT JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                 WHERE pb.idObradaLijecnik = '$idObrada'
                 GROUP BY pb.mkbSifraPrimarna";
         $result = $conn->query($sql);
@@ -482,7 +488,7 @@ class CekaonicaService{
                                                             JOIN cekaonica c ON c.idLijecnik = l.idLijecnik)
                         END AS tip FROM pacijent p 
                         JOIN cekaonica c ON p.idPacijent = c.idPacijent 
-                        ORDER BY tip ASC,c.statusCekaonica ASC,c.datumDodavanja DESC";
+                        ORDER BY tip ASC,c.statusCekaonica ASC,c.datumDodavanja DESC, c.vrijemeDodavanja DESC";
 
                 $result = $conn->query($sql);
 

@@ -17,7 +17,7 @@ class SignupService{
 
         if($tip == "lijecnik"){
             //Kreiram sql koji će provjeriti koliko je liječnika zasad registrirano. Ako je već jedan registriran, ne može više
-            $sqlProvjeraCount = "SELECT COUNT(DISTINCT(a.idLijecnik)) AS BrojLijecnik FROM ambulanta a";
+            $sqlProvjeraCount = "SELECT COUNT(*) AS BrojLijecnik FROM lijecnik";
             //Dohvaćam rezultat ovog upita u polje
             $resultProvjeraCount = mysqli_query($baza->spojiSBazom(),$sqlProvjeraCount);
             //Ako polje ima redaka u sebi
@@ -43,7 +43,7 @@ class SignupService{
         }
         else{
             //Kreiram sql koji će provjeriti koliko je medicinskih sestara zasad registrirano. Ako je već jedna registrirana, ne može više
-            $sqlProvjeraCount = "SELECT COUNT(DISTINCT(a.idMedSestra)) AS BrojMedSestra FROM ambulanta a";
+            $sqlProvjeraCount = "SELECT COUNT(*) AS BrojMedSestra FROM med_sestra";
             //Dohvaćam rezultat ovog upita u polje
             $resultProvjeraCount = mysqli_query($baza->spojiSBazom(),$sqlProvjeraCount);
             //Ako polje ima redaka u sebi
@@ -137,7 +137,7 @@ class SignupService{
 			if($korisnik->tip == "sestra"){
 				
 				//Kreiram upit za spremanje podataka u bazu podataka u tablicu "med_sestra"
-				$sqlMedSestra = "INSERT INTO med_sestra (imeMedSestra,prezMedSestra,adrMedSestra,datKreirMedSestra,nazSpecMedSestra,idKorisnik) VALUES (?,?,?,?,?,?)";
+				$sqlMedSestra = "INSERT INTO med_sestra (imeMedSestra,prezMedSestra,adrMedSestra,datKreirMedSestra,nazSpecMedSestra,idKorisnik,idZdrUst) VALUES (?,?,?,?,?,?,?)";
 				//Kreiram prepared statment
 				$stmtMedSestra = mysqli_stmt_init($conn);
 				//Ako je prepared statment neuspješno izvršen
@@ -153,89 +153,20 @@ class SignupService{
 					{
 						$idKorisnik = $rowKorisnik['idKorisnik'];
 					}
-					$trenutniDatum = date("Y-m-d h:i:sa");
+					$trenutniDatum = date("Y-m-d");
+					$idZdrUst = 258825880;
 					//Sve unesene vrijednosti medicinske sestre što je korisnik unio se stavljaju umjesto upitnika
-					mysqli_stmt_bind_param($stmtMedSestra,"sssssi",$korisnik->ime,$korisnik->prezime,$korisnik->adresa,$trenutniDatum,$korisnik->specijalizacija,$idKorisnik);
+					mysqli_stmt_bind_param($stmtMedSestra,"sssssii",$korisnik->ime,$korisnik->prezime,$korisnik->adresa,$trenutniDatum,$korisnik->specijalizacija,$idKorisnik,$idZdrUst);
 					//Izvršavam statement
 					mysqli_stmt_execute($stmtMedSestra);
-
-					//Moram dohvatiti ID medicinske sestre iz tablice "med_sestra" da ga unesem u tablicu "ambulanta"
-					
-					$resultMedSestra = mysqli_query($conn,"SELECT m.idMedSestra FROM med_sestra m WHERE m.imeMedSestra = '" . mysqli_real_escape_string($conn, $korisnik->ime) . "' 
-														AND m.prezMedSestra = '" . mysqli_real_escape_string($conn, $korisnik->prezime) . "' 
-														AND m.adrMedSestra = '" . mysqli_real_escape_string($conn, $korisnik->adresa) . "'
-														AND m.nazSpecMedSestra = '" . mysqli_real_escape_string($conn, $korisnik->specijalizacija) . "'"); 
-					while($rowMedSestra = mysqli_fetch_array($resultMedSestra))
-					{
-						$idMedSestra = $rowMedSestra['idMedSestra'];
-					}
-
-					//Brojim n-torke u tablici "ambulanta"
-					$sqlCount = "SELECT COUNT(*) AS BrojRedova FROM ambulanta a";
-					//Dohvaćam rezultat ovog upita u polje
-					$resultCount = mysqli_query($conn,$sqlCount);
-					//Ako polje ima redaka u sebi
-					if(mysqli_num_rows($resultCount) > 0){
-					//Idem redak po redak rezultata upita 
-						while($rowCount = mysqli_fetch_assoc($resultCount)){
-							//Vrijednost rezultata spremam u varijablu $brojRecept
-							$brojRedova = $rowCount['BrojRedova'];
-						}
-					}
-
-					//Ako je broj n-torki 0, znači prazna je tablica:
-					if($brojRedova == 0){
-						//Kreiram upit za spremanje podataka u bazu podataka u tablicu "ambulanta"
-						$sqlAmbulanta = "INSERT INTO ambulanta (idMedSestra) VALUES (?)";
-						//Kreiram prepared statment
-						$stmtAmbulanta = mysqli_stmt_init($conn);
-						//Ako je prepared statment neuspješno izvršen
-						if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
-							$response["success"] = "false";
-							$response["message"] = "Prepared statement ambulante ne valja!";
-							
-						}
-						else{
-							//Sve unesene vrijednosti medicinske sestre se stavljaju umjesto upitnika
-							mysqli_stmt_bind_param($stmtAmbulanta,"i",$idMedSestra);
-							//Izvršavam statement
-							mysqli_stmt_execute($stmtAmbulanta);
-
-							//Vraćanje uspješnog responsa
-							$response["success"] = "true";
-							$response["message"] = "Uspješno registrirana medicinska sestra!";
-						}
-					} else if($brojRedova == 1){
-						//Kreiram upit za ažuriranje tablice "ambulanta"
-						$sqlAmbulantaUpdate = "UPDATE ambulanta a SET a.idMedSestra = ?";
-						//Kreiram prepared statement
-						$stmtAmbulantaUpdate = mysqli_stmt_init($conn);
-						//Ako je prepared statment neuspješno izvršen
-						if(!mysqli_stmt_prepare($stmtAmbulantaUpdate,$sqlAmbulantaUpdate)){
-							$response["success"] = "false";
-							$response["message"] = "Prepared statement update ne valja!";
-						}
-						else{
-							//Sve unesene vrijednosti medicinske sestre se stavljaju umjesto upitnika
-							mysqli_stmt_bind_param($stmtAmbulantaUpdate,"i",$idMedSestra);
-							//Izvršavam statement
-							mysqli_stmt_execute($stmtAmbulantaUpdate);	
-
-							//Vraćanje uspješnog responsa
-							$response["success"] = "true";
-							$response["message"] = "Uspješno registrirana medicinska sestra!";
-						}
-					}
-					else{
-						$response["success"] = "false";
-						$response["message"] = "Previše korisnika je registrirano!";
-					}
+					$response["success"] = "true";
+					$response["message"] = "Medicinska sestra je uspješno registrirana!";
 				}
 			}
 			if($korisnik->tip == "lijecnik"){
 				
 				//Kreiram upit za spremanje podataka u bazu podataka u tablicu "lijecnik"
-				$sqlLijecnik = "INSERT INTO lijecnik (imeLijecnik,prezLijecnik,adrLijecnik,datKreirLijecnik,nazSpecLijecnik,idKorisnik) VALUES (?,?,?,?,?,?)";
+				$sqlLijecnik = "INSERT INTO lijecnik (imeLijecnik,prezLijecnik,adrLijecnik,datKreirLijecnik,nazSpecLijecnik,idKorisnik,idZdrUst) VALUES (?,?,?,?,?,?,?)";
 				//Kreiram prepared statment
 				$stmtLijecnik = mysqli_stmt_init($conn);
 				//Ako je prepared statment neuspješno izvršen
@@ -251,83 +182,15 @@ class SignupService{
 					{
 						$idKorisnik = $rowKorisnik['idKorisnik'];
 					}
-					$trenutniDatum = date("Y-m-d h:i:sa");
+					$trenutniDatum = date("Y-m-d");
+					$idZdrUst = 258825880;
 					//Sve unesene vrijednosti liječnika što je korisnik unio se stavljaju umjesto upitnika
-					mysqli_stmt_bind_param($stmtLijecnik,"sssssi",$korisnik->ime,$korisnik->prezime,$korisnik->adresa,$trenutniDatum,$korisnik->specijalizacija,$idKorisnik);
+					mysqli_stmt_bind_param($stmtLijecnik,"sssssii",$korisnik->ime,$korisnik->prezime,$korisnik->adresa,$trenutniDatum,$korisnik->specijalizacija,$idKorisnik,$idZdrUst);
 					//Izvršavam statement
 					mysqli_stmt_execute($stmtLijecnik);
 
-					//Moram dohvatiti ID liječnika iz tablice "lijecnik" da ga unesem u tablicu "ambulanta"
-					
-					$resultLijecnik = mysqli_query($conn,"SELECT l.idLijecnik FROM lijecnik l WHERE l.imeLijecnik = '" . mysqli_real_escape_string($conn, $korisnik->ime) . "' 
-														AND l.prezLijecnik = '" . mysqli_real_escape_string($conn, $korisnik->prezime) . "' 
-														AND l.adrLijecnik = '" . mysqli_real_escape_string($conn, $korisnik->adresa) . "'
-														AND l.nazSpecLijecnik = '" . mysqli_real_escape_string($conn, $korisnik->specijalizacija) . "'"); 
-					while($rowLijecnik = mysqli_fetch_array($resultLijecnik))
-					{
-						$idLijecnik = $rowLijecnik['idLijecnik'];
-					}
-
-					//Brojim n-torke u tablici "ambulanta"
-					$sqlCount = "SELECT COUNT(*) AS BrojRedova FROM ambulanta a";
-					//Dohvaćam rezultat ovog upita u polje
-					$resultCount = mysqli_query($conn,$sqlCount);
-					//Ako polje ima redaka u sebi
-					if(mysqli_num_rows($resultCount) > 0){
-					//Idem redak po redak rezultata upita 
-						while($rowCount = mysqli_fetch_assoc($resultCount)){
-							//Vrijednost rezultata spremam u varijablu $brojRecept
-							$brojRedova = $rowCount['BrojRedova'];
-						}
-					}
-
-					//Ako je broj n-torki 0, znači prazna je tablica:
-					if($brojRedova == 0){
-						//Kreiram upit za spremanje podataka u bazu podataka u tablicu "ambulanta"
-						$sqlAmbulanta = "INSERT INTO ambulanta (idLijecnik) VALUES (?)";
-						//Kreiram prepared statment
-						$stmtAmbulanta = mysqli_stmt_init($conn);
-						//Ako je prepared statment neuspješno izvršen
-						if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
-							$response["success"] = "false";
-							$response["message"] = "Prepared statement ambulante lijecnika ne valja!";
-							
-						}
-						else{
-							//Sve unesene vrijednosti liječnika se stavljaju umjesto upitnika
-							mysqli_stmt_bind_param($stmtAmbulanta,"i",$idLijecnik);
-							//Izvršavam statement
-							mysqli_stmt_execute($stmtAmbulanta);
-
-							//Vraćanje uspješnog responsa
-							$response["success"] = "true";
-							$response["message"] = "Uspješno registriran liječnik!";
-						}
-					} else if($brojRedova == 1){
-						//Kreiram upit za ažuriranje tablice "ambulanta"
-						$sqlAmbulantaUpdate = "UPDATE ambulanta a SET a.idLijecnik = ?";
-						//Kreiram prepared statement
-						$stmtAmbulantaUpdate = mysqli_stmt_init($conn);
-						//Ako je prepared statment neuspješno izvršen
-						if(!mysqli_stmt_prepare($stmtAmbulantaUpdate,$sqlAmbulantaUpdate)){
-							$response["success"] = "false";
-							$response["message"] = "Prepared statement update ne valja!";
-						}
-						else{
-							//Sve unesene vrijednosti liječnika se stavljaju umjesto upitnika
-							mysqli_stmt_bind_param($stmtAmbulantaUpdate,"i",$idLijecnik);
-							//Izvršavam statement
-							mysqli_stmt_execute($stmtAmbulantaUpdate);	
-
-							//Vraćanje uspješnog responsa
-							$response["success"] = "true";
-							$response["message"] = "Uspješno registriran liječnik!";
-						}
-					}
-					else{
-						$response["success"] = "false";
-						$response["message"] = "Previše korisnika je registrirano!";
-					}
+					$response["success"] = "true";
+					$response["message"] = "Liječnik je uspješno registriran!";
 				}
 			}
         }

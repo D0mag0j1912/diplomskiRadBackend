@@ -58,8 +58,11 @@ class MedSestraService{
         $response = [];
 
         //Kreiram upit koji dohvaća osobne podatke medicinske sestre
-        $sql = "SELECT * FROM med_sestra m 
-                JOIN korisnik k ON m.idKorisnik = k.idKorisnik";
+        $sql = "SELECT m.idMedSestra, m.imeMedSestra, m.prezMedSestra, 
+                m.adrMedSestra, DATE_FORMAT(m.datKreirMedSestra,'%d.%m.%Y') AS datKreirMedSestra, 
+                zr.tipSpecijalist, k.tip, k.email FROM med_sestra m 
+                JOIN korisnik k ON m.idKorisnik = k.idKorisnik 
+                JOIN zdr_radnici zr ON zr.sifraSpecijalist = m.sifraSpecijalist";
         
         $result = $conn->query($sql);
 
@@ -80,96 +83,78 @@ class MedSestraService{
         //Kreiram prazno polje odgovora
         $response = [];
 
-        //Provjeravam postoji li neka medicinska sestra u bazi koji ima iste podatke kao ovaj koji ažurira profil (ima različiti ID)
-        $sql = "SELECT * FROM med_sestra m
-                WHERE m.nazSpecMedSestra = ? AND m.imeMedSestra = ? AND m.prezMedSestra = ? 
-                AND m.adrMedSestra = ? AND m.idMedSestra != ?";
+        //Dohvaćam šifru specijalista 
+        $sqlSpecijalist = "SELECT zr.sifraSpecijalist FROM zdr_radnici zr 
+                        WHERE zr.tipSpecijalist = '$specijalizacija'";
+        $resultSpecijalist = $conn->query($sqlSpecijalist);
+
+        if ($resultSpecijalist->num_rows > 0) {
+            while($rowSpecijalist = $resultSpecijalist->fetch_assoc()) {
+                $sifraSpecijalist = $rowSpecijalist['sifraSpecijalist'];
+            }
+        }
+
+        //Kreiram upit za bazu podataka koji će ažurirati vrijednosti medicinske sestre iz baze na nove vrijednosti koje je medicinska sestra ažurirala za svoj profil za tablicu "MED_SESTRA"
+        $sqlMedSestra = "UPDATE med_sestra m SET m.imeMedSestra = ?,m.prezMedSestra = ?, 
+                        m.adrMedSestra = ?, m.sifraSpecijalist = ?  
+                        WHERE m.idMedSestra = ?";
         //Kreiram prepared statement
-        $stmt = mysqli_stmt_init($conn);
+        $stmtMedSestra = mysqli_stmt_init($conn);
         //Ako je prepared statment neuspješno izvršen
-        if(!mysqli_stmt_prepare($stmt,$sql)){
+        if(!mysqli_stmt_prepare($stmtMedSestra,$sqlMedSestra)){
             $response["success"] = "false";
             $response["message"] = "Prepared statement medicinske sestre ne valja!";
         }
-        //Ako je prepared statment uspješno izvršen
+        //Ako je prepared statement uspješno izvršen
         else{
-            //Uzima sve parametre i stavlja ih umjesto upitnika u upitu
-            mysqli_stmt_bind_param($stmt,"ssssi",$specijalizacija,$ime,$prezime,$adresa,$id);
+            //Uzima sve parametre što je medicinska sestra ažurirala i stavlja ih umjesto upitnika u upitu
+            mysqli_stmt_bind_param($stmtMedSestra,"sssii",$ime,$prezime,$adresa,$sifraSpecijalist,$id);
             //Izvršavam statement
-            mysqli_stmt_execute($stmt);
-            //Rezultat koji smo dobili iz baze podataka pohranjuje u varijablu $stmt
-            mysqli_stmt_store_result($stmt);
-            //Vraća broj redaka što je baza podataka vratila
-            $resultCheck = mysqli_stmt_num_rows($stmt);
-            //Ako medicinska sestra već postoji u bazi podataka
-            if($resultCheck > 0){
+            mysqli_stmt_execute($stmtMedSestra);
+
+            //Kreiram upit za spremanje pacijentovih podataka u tablicu "pacijent_dodatno" :
+            $sqlMedSestraDodatno = "INSERT INTO med_sestra_dodatno (idMedSestra,datAzurMedSestra,tipAzurMedSestra) VALUES (?,?,?)";
+            //Kreiram prepared statment
+            $stmtMedSestraDodatno = mysqli_stmt_init($conn);
+            //Ako je prepared statment neuspješno izvršen
+            if(!mysqli_stmt_prepare($stmtMedSestraDodatno,$sqlMedSestraDodatno)){
                 $response["success"] = "false";
-                $response["message"] = "Medicinska sestra već postoji u bazi podataka!";
+                $response["message"] = "Prepared statement medicinske sestre dod ne valja!";    
             }
-            //Ako je sve u redu do sada
+            //Ako je prepared statment uspješno izvršen
             else{
+                $trenutniDatum = date("Y-m-d h:i:sa");
+                $tip = "osobniPodatci";
+                //Uzima sve parametre što je medicinska sestra unijela i stavlja ih umjesto upitnika
+                mysqli_stmt_bind_param($stmtMedSestraDodatno,"iss",$id,$trenutniDatum,$tip);
+                //Izvršavam statement
+                mysqli_stmt_execute($stmtMedSestraDodatno);
+
+                //Izvršavam upit koji dohvaća ID korisnika koji odgovara unesenom email-u
+                $resultKorisnik = mysqli_query($conn,"SELECT m.idKorisnik FROM med_sestra m WHERE m.idMedSestra = '" . mysqli_real_escape_string($conn, $id) . "'"); 
+                while($rowKorisnik = mysqli_fetch_array($resultKorisnik))
+                {
+                    $idKorisnik = $rowKorisnik['idKorisnik'];
+                }
+
                 //Kreiram upit za bazu podataka koji će ažurirati vrijednosti medicinske sestre iz baze na nove vrijednosti koje je medicinska sestra ažurirala za svoj profil za tablicu "MED_SESTRA"
-                $sqlMedSestra = "UPDATE med_sestra m SET m.imeMedSestra = ?,m.prezMedSestra = ?, m.adrMedSestra = ?, m.nazSpecMedSestra = ? 
-                                WHERE m.idMedSestra = ?";
+                $sqlKorisnik = "UPDATE korisnik k SET k.email = ? WHERE k.idKorisnik = ?";
                 //Kreiram prepared statement
-                $stmtMedSestra = mysqli_stmt_init($conn);
+                $stmtKorisnik = mysqli_stmt_init($conn);
                 //Ako je prepared statment neuspješno izvršen
-                if(!mysqli_stmt_prepare($stmtMedSestra,$sqlMedSestra)){
+                if(!mysqli_stmt_prepare($stmtKorisnik,$sqlKorisnik)){
                     $response["success"] = "false";
-                    $response["message"] = "Prepared statement medicinske sestre ne valja!";
+                    $response["message"] = "Prepared statement korisnika ne valja!";
                 }
                 //Ako je prepared statement uspješno izvršen
                 else{
                     //Uzima sve parametre što je medicinska sestra ažurirala i stavlja ih umjesto upitnika u upitu
-                    mysqli_stmt_bind_param($stmtMedSestra,"ssssi",$ime,$prezime,$adresa,$specijalizacija,$id);
+                    mysqli_stmt_bind_param($stmtKorisnik,"si",$email,$idKorisnik);
                     //Izvršavam statement
-                    mysqli_stmt_execute($stmtMedSestra);
+                    mysqli_stmt_execute($stmtKorisnik);
 
-                    //Kreiram upit za spremanje pacijentovih podataka u tablicu "pacijent_dodatno" :
-                    $sqlMedSestraDodatno = "INSERT INTO med_sestra_dodatno (idMedSestra,datAzurMedSestra,tipAzurMedSestra) VALUES (?,?,?)";
-                    //Kreiram prepared statment
-                    $stmtMedSestraDodatno = mysqli_stmt_init($conn);
-                    //Ako je prepared statment neuspješno izvršen
-                    if(!mysqli_stmt_prepare($stmtMedSestraDodatno,$sqlMedSestraDodatno)){
-                        $response["success"] = "false";
-                        $response["message"] = "Prepared statement medicinske sestre dod ne valja!";    
-                    }
-                    //Ako je prepared statment uspješno izvršen
-                    else{
-                        $trenutniDatum = date("Y-m-d h:i:sa");
-                        $tip = "osobniPodatci";
-                        //Uzima sve parametre što je medicinska sestra unijela i stavlja ih umjesto upitnika
-                        mysqli_stmt_bind_param($stmtMedSestraDodatno,"iss",$id,$trenutniDatum,$tip);
-                        //Izvršavam statement
-                        mysqli_stmt_execute($stmtMedSestraDodatno);
-
-                        //Izvršavam upit koji dohvaća ID korisnika koji odgovara unesenom email-u
-                        $resultKorisnik = mysqli_query($conn,"SELECT m.idKorisnik FROM med_sestra m WHERE m.idMedSestra = '" . mysqli_real_escape_string($conn, $id) . "'"); 
-                        while($rowKorisnik = mysqli_fetch_array($resultKorisnik))
-                        {
-                            $idKorisnik = $rowKorisnik['idKorisnik'];
-                        }
-                        
-                        //Kreiram upit za bazu podataka koji će ažurirati vrijednosti medicinske sestre iz baze na nove vrijednosti koje je medicinska sestra ažurirala za svoj profil za tablicu "MED_SESTRA"
-                        $sqlKorisnik = "UPDATE korisnik k SET k.email = ? WHERE k.idKorisnik = ?";
-                        //Kreiram prepared statement
-                        $stmtKorisnik = mysqli_stmt_init($conn);
-                        //Ako je prepared statment neuspješno izvršen
-                        if(!mysqli_stmt_prepare($stmtKorisnik,$sqlKorisnik)){
-                            $response["success"] = "false";
-                            $response["message"] = "Prepared statement korisnika ne valja!";
-                        }
-                        //Ako je prepared statement uspješno izvršen
-                        else{
-                            //Uzima sve parametre što je medicinska sestra ažurirala i stavlja ih umjesto upitnika u upitu
-                            mysqli_stmt_bind_param($stmtKorisnik,"si",$email,$idKorisnik);
-                            //Izvršavam statement
-                            mysqli_stmt_execute($stmtKorisnik);
-
-                            $response["success"] = "true";
-                            $response["message"] = "Ažuriranje osobnih podataka uspješno!";
-                        }
-                    }
+                    $response["success"] = "true";
+                    $response["message"] = "Ažuriranje osobnih podataka uspješno!";
                 }
             }
         }

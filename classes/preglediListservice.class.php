@@ -454,6 +454,10 @@ class PreglediListService{
                         $response[] = $row;
                     }
                 }
+                //Ako pacijent nema evidentiranih pregleda
+                else{
+                    return null;
+                }
             }
             //Ako pretraga nije prazna
             else{
