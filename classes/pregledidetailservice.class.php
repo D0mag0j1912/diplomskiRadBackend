@@ -1,6 +1,6 @@
 <?php
 //Importam autoloader koji će automatski importat klasu čiji tip objekta kreiram
-require_once 'C:\wamp64\www\diplomskiBackend\includes\autoloader.inc.php';
+require_once BASE_PATH.'\includes\autoloader.inc.php';
 
 //Postavljam vremensku zonu
 date_default_timezone_set('Europe/Zagreb');
@@ -491,7 +491,9 @@ class PreglediDetailService{
                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
                                                 WHERE pb.idPovijestBolesti = '$id')) AS brojPonavljanja,
                     IF(pb.idRecept IS NULL, NULL, (SELECT CONCAT((SELECT DISTINCT(zr.tipSpecijalist) FROM zdr_radnici zr 
-                                                                JOIN recept r ON r.sifraSpecijalist = zr.sifraSpecijalist),' [',r.sifraSpecijalist,']') FROM recept r 
+                                                                JOIN recept r ON r.sifraSpecijalist = zr.sifraSpecijalist 
+                                                                JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
+                                                                WHERE pb.idPovijestBolesti = '$id'),' [',r.sifraSpecijalist,']') FROM recept r 
                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
                                                 WHERE pb.idPovijestBolesti = '$id')) AS specijalist FROM povijestBolesti pb 
                     JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna

@@ -1,6 +1,6 @@
 <?php
 //Importam autoloader koji će automatski importat klasu čiji tip objekta kreiram
-require_once 'C:\wamp64\www\diplomskiBackend\includes\autoloader.inc.php';
+require_once BASE_PATH.'\includes\autoloader.inc.php';
 
 //Postavljam vremensku zonu
 date_default_timezone_set('Europe/Zagreb');
@@ -768,6 +768,10 @@ class ReceptHandlerService{
                     while($row = $result->fetch_assoc()) {
                         $response[] = $row;
                     }
+                }
+                else{
+                    $response["success"] = "false";
+                    $response["message"] = "Liječnikova obrada je prazna!";
                 }
             }
         }

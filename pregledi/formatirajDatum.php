@@ -1,6 +1,7 @@
 <?php
+include('../backend-path.php');
 //Importam potrebne klase pomoću autoloadera
-require_once 'C:\wamp64\www\diplomskiBackend\includes\autoloader2.inc.php';
+require_once BASE_PATH.'\includes\autoloader2.inc.php';
 
 //Kreiram objekt tipa "Baza"
 $baza = new Baza();

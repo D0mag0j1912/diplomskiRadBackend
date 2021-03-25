@@ -1,6 +1,6 @@
 <?php
 //Importam autoloader koji će automatski importat klasu čiji tip objekta kreiram
-require_once 'C:\wamp64\www\diplomskiBackend\includes\autoloader.inc.php';
+require_once BASE_PATH.'\includes\autoloader.inc.php';
 
 //Postavljam vremensku zonu
 date_default_timezone_set('Europe/Zagreb');
@@ -286,7 +286,7 @@ class PreglediListService{
                                                                 LIMIT 1)
                     END AS prethodniPovezanSlucaj FROM pregled p 
                     WHERE p.idPregled = $idPregled) 
-                    UNION 
+                    UNION
                     (SELECT p2.idPregled, DATE_FORMAT(p2.datumPregled,'%d.%m.%Y') AS Datum, 
                     p2.tipSlucaj, p2.vrijemePregled, p2.bojaPregled, 
                     CASE 
@@ -398,7 +398,7 @@ class PreglediListService{
                         GROUP BY pb2.prosliPregled)
                         ORDER BY pb.datum DESC, pb.vrijeme DESC
                         LIMIT 7) 
-                        UNION 
+                        UNION
                         (SELECT pb2.idPovijestBolesti, DATE_FORMAT(pb2.datum,'%d.%m.%Y') AS Datum, 
                         pb2.tipSlucaj, pb2.vrijeme, pb2.bojaPregled, 
                         CASE 
@@ -513,6 +513,7 @@ class PreglediListService{
                         OR UPPER(pb.napomena) LIKE UPPER('%{$pretraga}%') 
                         OR UPPER(DATE_FORMAT(pb.datum,'%d.%m.%Y')) LIKE UPPER('%{$pretraga}%') 
                         OR UPPER(pb.mboPacijent) LIKE UPPER('%{$pretraga}%')) 
+                        GROUP BY pb.vrijeme
                         ORDER BY pb.datum DESC, pb.vrijeme DESC 
                         LIMIT 7";
                 $result = $conn->query($sql);
@@ -694,7 +695,8 @@ class PreglediListService{
                         OR UPPER(d2.imeDijagnoza) LIKE UPPER('%{$pretraga}%') 
                         OR UPPER(p.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
                         OR UPPER(p.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%')
-                        OR UPPER(DATE_FORMAT(p.datumPregled,'%d.%m.%Y')) LIKE UPPER('%{$pretraga}%'))
+                        OR UPPER(DATE_FORMAT(p.datumPregled,'%d.%m.%Y')) LIKE UPPER('%{$pretraga}%')) 
+                        GROUP BY p.vrijemePregled
                         ORDER BY p.datumPregled DESC, p.vrijemePregled DESC 
                         LIMIT 7";
                 $result = $conn->query($sql);
@@ -1014,7 +1016,7 @@ class PreglediListService{
                     GROUP BY pb2.prosliPregled)
                     ORDER BY pb.datum DESC, pb.vrijeme DESC
                     LIMIT 7) 
-                    UNION 
+                    UNION
                     (SELECT pb2.idPovijestBolesti, DATE_FORMAT(pb2.datum,'%d.%m.%Y') AS Datum, 
                     pb2.tipSlucaj, pb2.vrijeme, pb2.bojaPregled, 
                     CASE 
@@ -1123,7 +1125,7 @@ class PreglediListService{
                     GROUP BY p2.prosliPregled)
                     ORDER BY p.datumPregled DESC, p.vrijemePregled DESC
                     LIMIT 7) 
-                    UNION 
+                    UNION
                     (SELECT p2.idPregled, DATE_FORMAT(p2.datumPregled,'%d.%m.%Y') AS Datum, 
                     p2.tipSlucaj, p2.vrijemePregled, p2.bojaPregled, 
                     CASE 

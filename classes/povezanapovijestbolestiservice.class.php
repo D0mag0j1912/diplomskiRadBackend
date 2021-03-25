@@ -1,6 +1,6 @@
 <?php
 //Importam autoloader koji će automatski importat klasu čiji tip objekta kreiram
-require_once 'C:\wamp64\www\diplomskiBackend\includes\autoloader.inc.php';
+require_once BASE_PATH.'\includes\autoloader.inc.php';
 
 //Postavljam vremensku zonu
 date_default_timezone_set('Europe/Zagreb');
@@ -96,6 +96,7 @@ class PovezanaPovijestBolestiService{
                 OR UPPER(d2.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
                 OR UPPER(pb.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%')) 
                 AND pb.mboPacijent = '$mboPacijent' 
+                GROUP BY pb.mkbSifraPrimarna
                 ORDER BY Datum DESC, vrijeme DESC
                 LIMIT 7";
             $result = $conn->query($sql);
