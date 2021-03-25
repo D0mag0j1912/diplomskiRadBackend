@@ -435,12 +435,18 @@ class ReceptHandlerService{
                     IF(r.oblikJacinaPakiranjeLijek IS NULL, 
                     r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod, 
                     r.dostatnost,r.idPacijent,r.vrijemeRecept  FROM recept r 
-                    JOIN pacijent p ON p.idPacijent = r.idPacijent
-                    WHERE UPPER(r.mkbSifraPrimarna) LIKE '%{$pretraga}%' OR UPPER(CONCAT(p.imePacijent,' ',p.prezPacijent)) LIKE '%{$pretraga}%' 
-                    OR UPPER(DATE_FORMAT(r.datumRecept,'%d.%m.%Y')) LIKE '%a%' 
-                    OR UPPER(IF(r.oblikJacinaPakiranjeLijek IS NULL,r.proizvod,CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek))) LIKE '%{$pretraga}%' 
-                    OR UPPER(r.dostatnost) LIKE '%{$pretraga}%' 
-                    ORDER BY r.datumRecept DESC, r.vrijemeRecept DESC;";
+                    LEFT JOIN pacijent p ON p.idPacijent = r.idPacijent 
+                    LEFT JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna 
+                    LEFT JOIN dijagnoze d2 ON d2.mkbSifra = r.mkbSifraSekundarna
+                    WHERE UPPER(r.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(d.imeDijagnoza) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(r.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(d2.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(CONCAT(p.imePacijent,' ',p.prezPacijent)) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(DATE_FORMAT(r.datumRecept,'%d.%m.%Y')) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(IF(r.oblikJacinaPakiranjeLijek IS NULL,r.proizvod,CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek))) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(r.dostatnost) LIKE UPPER('%{$pretraga}%') 
+                    ORDER BY r.datumRecept DESC, r.vrijemeRecept DESC";
             $result = $conn->query($sql);
 
             //Ako ima pronađenih rezultata za navedenu pretragu

@@ -67,7 +67,7 @@ class CekaonicaService{
         $response = []; 
         
         $sql = "SELECT pb.idPovijestBolesti,pb.anamneza,pb.razlogDolaska,TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
-                GROUP_CONCAT(DISTINCT pb.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna,
+                GROUP_CONCAT(DISTINCT pb.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna, pb.vrijeme,
                 CASE 
                     WHEN r.oblikJacinaPakiranjeLijek IS NULL THEN r.proizvod 
                     WHEN r.oblikJacinaPakiranjeLijek IS NOT NULL THEN CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)
@@ -82,7 +82,8 @@ class CekaonicaService{
                 LEFT JOIN zdr_radnici zr ON zr.sifraSpecijalist = r.sifraSpecijalist
                 LEFT JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                 WHERE pb.idObradaLijecnik = '$idObrada'
-                GROUP BY pb.mkbSifraPrimarna";
+                GROUP BY pb.mkbSifraPrimarna 
+                ORDER BY pb.vrijeme DESC";
         $result = $conn->query($sql);
 
         if ($result->num_rows > 0) {
@@ -104,7 +105,7 @@ class CekaonicaService{
         $response = []; 
         
         $sql = "SELECT TRIM(pr.mkbSifraPrimarna) AS mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
-                GROUP_CONCAT(DISTINCT pr.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna FROM pregled pr 
+                GROUP_CONCAT(DISTINCT pr.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna, pr.vrijemePregled FROM pregled pr 
                 JOIN dijagnoze d ON d.mkbSifra = pr.mkbSifraPrimarna 
                 WHERE pr.idObradaMedSestra = '$idObrada' 
                 GROUP BY pr.mkbSifraPrimarna";
