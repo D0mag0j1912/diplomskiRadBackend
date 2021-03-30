@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $idNalaz = mysqli_real_escape_string($conn, trim($_GET['idNalaz']));
         $idNalaz = (int)$idNalaz;
         //Punim polje sa vrijednostima polja iz funkcije
-        $response = $servis->dohvatiNalaz($idNalaz);
+        $response = $servis->dohvatiSekundarneDijagnoze($idNalaz);
         //Vraćam frontendu rezultat
         echo json_encode($response);
     }
