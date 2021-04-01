@@ -7,6 +7,91 @@ date_default_timezone_set('Europe/Zagreb');
 
 class ImportService{
 
+    //Funkcija koja dohvaća sve zdravstvene djelatnosti
+    function dohvatiZdravstveneDjelatnosti(){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = []; 
+        $sql = "SELECT TRIM(sifDjel) AS sifDjel, TRIM(nazivDjel) AS nazivDjel FROM zdr_djel";
+
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+        //Vraćam odgovor baze
+        return $response;
+    }
+
+    //Funkcija koja dohvaća pacijente (IME+PREZIME)
+    function dohvatiPacijente(){
+        $response = [];
+
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram sql upit koji će provjeriti postoji li pacijenata
+        $sqlCountPacijent = "SELECT COUNT(*) AS BrojPacijent FROM pacijent p;";
+        //Rezultat upita spremam u varijablu $resultCountPacijent
+        $resultCountPacijent = mysqli_query($conn,$sqlCountPacijent);
+        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+        if(mysqli_num_rows($resultCountPacijent) > 0){
+            //Idem redak po redak rezultata upita 
+            while($rowCountPacijent = mysqli_fetch_assoc($resultCountPacijent)){
+                //Vrijednost rezultata spremam u varijablu $brojPacijenata
+                $brojPacijenata = $rowCountPacijent['BrojPacijent'];
+            }
+        }
+        //Ako nema pronađenih pacijenata u obradi
+        if($brojPacijenata == 0){
+            $response["success"] = "false";
+            $response["message"] = "Nema pacijenata!";
+        }
+        //Ako ima pacijenata
+        else{
+            $sql = "SELECT CONCAT(p.imePacijent,' ',p.prezPacijent,' ',p.mboPacijent) AS Pacijent FROM pacijent p;";
+
+            $result = $conn->query($sql);
+
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $response[] = $row;
+                }
+            }
+        }
+        //Vraćam odgovor
+        return $response;
+    }
+
+    //Funkcija koja dohvaća sve zdravstvene ustanove
+    function dohvatiZdravstveneUstanove(){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = []; 
+        $sql = "SELECT TRIM(idZdrUst) AS idZdrUst, TRIM(nazivZdrUst) AS nazivZdrUst,
+                TRIM(adresaZdrUst) AS adresaZdrUst, TRIM(brojTelZdrUst) AS brojTelZdrUst, 
+                TRIM(pbrZdrUst) AS pbrZdrUst FROM zdr_ustanova";
+
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+        //Vraćam odgovor baze
+        return $response;
+    }
+
     //Funkcija koja dohvaća sve zdravstvene radnike
     function dohvatiZdravstveneRadnike(){
         //Dohvaćam bazu 
@@ -174,7 +259,8 @@ class ImportService{
         //Kreiram prazno polje odgovora
         $response = [];   
         
-        $sql = "SELECT * FROM dijagnoze";
+        $sql = "SELECT TRIM(mkbSifra) AS mkbSifra, 
+                TRIM(imeDijagnoza) AS imeDijagnoza FROM dijagnoze";
 
         $result = $conn->query($sql);
 

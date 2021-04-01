@@ -1,7 +1,7 @@
 <?php
-include('../backend-path.php');
+include('../../backend-path.php');
 //Importam potrebne klase pomoću autoloadera
-require_once BASE_PATH.'\includes\autoloader2.inc.php';
+require_once BASE_PATH.'\includes\autoloader3.inc.php';
 
 //Dohvaćam liječnički servis
 $servis = new ImportService();
@@ -17,8 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     //Kreiram prazno polje
     $response = [];
 
-    $response = $servis->dohvatiPacijente();
-
+    //Punim polje sa odgovorom funkcije
+    $response = $servis->dohvatiZdravstveneUstanove();
+    //Vraćam odgovor frontendu
     echo json_encode($response);
 }
 ?>
