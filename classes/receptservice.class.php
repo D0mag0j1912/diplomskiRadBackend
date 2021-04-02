@@ -399,34 +399,23 @@ class ReceptService{
     }
 
     //Funkcija koja dohvaća inicijalne dijagnoze u unosu novog recepta
-    function dohvatiInicijalneDijagnoze($idPacijent){
+    function dohvatiInicijalneDijagnoze($mboPacijent,$idObrada){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
         //Kreiram prazno polje
         $response = [];
-        //Kreiram upit za dohvaćanjem MBO-a pacijenta kojemu se upisiva povijest bolesti
-        $sqlMBO = "SELECT p.mboPacijent AS MBO FROM pacijent p 
-                WHERE p.idPacijent = '$idPacijent'";
-        //Rezultat upita spremam u varijablu $resultMBO
-        $resultMBO = mysqli_query($conn,$sqlMBO);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultMBO) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowMBO = mysqli_fetch_assoc($resultMBO)){
-                //Vrijednost rezultata spremam u varijablu $mboPacijent
-                $mboPacijent = $rowMBO['MBO'];
-            }
-        }
 
         //Kreiram upit koji dohvaća sporedne podatke povijest bolesti ZADNJEG RETKA (jer ako ovo ne napravim, vraćati će mi samo zadnju sek. dijagnozu)
         $sqlZadnjiRedak = "SELECT * FROM povijestBolesti pb
                         WHERE pb.idRecept IS NULL 
                         AND pb.mboPacijent = '$mboPacijent' 
+                        AND pb.idObradaLijecnik = '$idObrada'
                         AND pb.idPovijestBolesti = 
                         (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
                         WHERE pb2.idRecept IS NULL 
-                        AND pb2.mboPacijent = '$mboPacijent')";
+                        AND pb2.mboPacijent = '$mboPacijent' 
+                        AND pb2.idObradaLijecnik = '$idObrada')";
         $resultZadnjiRedak = $conn->query($sqlZadnjiRedak);
         //Ako ima rezultata
         if($resultZadnjiRedak->num_rows > 0){
@@ -440,11 +429,11 @@ class ReceptService{
         }
 
         //Dohvaćam primarnu i sve sekundarne dijagnoze 
-        $sql = "SELECT DISTINCT(d.imeDijagnoza) AS NazivPrimarna, 
-                IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d2.imeDijagnoza FROM dijagnoze d2 WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna 
+        $sql = "SELECT DISTINCT(TRIM(d.imeDijagnoza)) AS NazivPrimarna, 
+                IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT TRIM(d2.imeDijagnoza) FROM dijagnoze d2 WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna 
                 ,pb.idObradaLijecnik,pb.tipSlucaj,pb.vrijeme,pb.datum FROM povijestBolesti pb 
                 JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
-                WHERE pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                WHERE TRIM(pb.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                 AND pb.tipSlucaj = '$tipSlucaj' 
                 AND pb.datum = '$datum' 
                 AND pb.vrijeme = '$vrijeme' 
