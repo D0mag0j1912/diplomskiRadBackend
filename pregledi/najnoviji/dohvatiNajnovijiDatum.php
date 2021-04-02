@@ -2,7 +2,7 @@
 include('../../backend-path.php');
 //Importam potrebne klase pomoću autoloadera
 require_once BASE_PATH.'\includes\autoloader3.inc.php';
-
+include('../../getMBO.php');
 //Dohvaćam servis otvorenog slučaja
 $servis = new PreglediService();
 
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $idPacijent = (int)$idPacijent;
         $tipKorisnik = mysqli_real_escape_string($conn, trim($_GET['tipKorisnik']));
         //Punim polje sa vrijednostima polja iz funkcije
-        $response = $servis->dohvatiNajnovijiDatum($tipKorisnik,$servis->getMBO($idPacijent));
+        $response = $servis->dohvatiNajnovijiDatum($tipKorisnik,getMBO($idPacijent));
         //Vraćam frontendu rezultat
         echo json_encode($response);
     }

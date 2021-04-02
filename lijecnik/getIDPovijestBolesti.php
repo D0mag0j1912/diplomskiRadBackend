@@ -2,11 +2,9 @@
 include('../backend-path.php');
 //Importam potrebne klase pomoću autoloadera
 require_once BASE_PATH.'\includes\autoloader2.inc.php';
-
+include('../getMBO.php');
 //Dohvaćam liječnički servis
 $servis = new PovijestBolestiService();
-//Dohvaćam servis prethodnih pregleda radi funkcije za ID => MBO
-$servisPrethodniPregled = new PreglediService();
 //Kreiram objekt tipa "Baza"
 $baza = new Baza();
 
@@ -24,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $idObrada = (int)$idObrada;
         $mkbSifraPrimarna = mysqli_real_escape_string($conn, trim($_GET['mkbSifraPrimarna']));
         
-        $response = $servis->getIDPovijestBolesti($servisPrethodniPregled->getMBO($idPacijent),$idObrada,$mkbSifraPrimarna);
+        $response = $servis->getIDPovijestBolesti(getMBO($idPacijent),$idObrada,$mkbSifraPrimarna);
 
         echo json_encode($response);
     }

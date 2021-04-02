@@ -2,10 +2,9 @@
 include('../backend-path.php');
 //Importam potrebne klase pomoću autoloadera
 require_once BASE_PATH.'\includes\autoloader2.inc.php';
-
+include('../getMBO.php');
 //Dohvaćam servis otvorenog slučaja
 $servis = new OtvoreniSlucajService();
-$servisPrethodniPregled = new PreglediService();
 //Kreiram objekt tipa "Baza"
 $baza = new Baza();
 
@@ -22,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         //Uzmi tu vrijednosti ID-a i pretvori je u INTEGER
         $id = (int)$_GET['id'];
         //Punim polje sa vrijednostima polja iz funkcije
-        $response = $servis->dohvatiSveSekundarneDijagnoze($servis->svePrimarneDijagnoze($servisPrethodniPregled->getMBO($id)),$servisPrethodniPregled->getMBO($id));
+        $response = $servis->dohvatiSveSekundarneDijagnoze($servis->svePrimarneDijagnoze(getMBO($id)),getMBO($id));
         //Vraćam frontendu rezultat
         echo json_encode($response);
     }
