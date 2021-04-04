@@ -2,7 +2,8 @@
 /********************************* 
 OVDJE SE NALAZE SVE BACKEND METODE ZA REGISTRACIJU
 */
-
+//Postavljam vremensku zonu
+date_default_timezone_set('Europe/Zagreb');
 //Importam autoloader koji će automatski importat klasu čiji tip objekta kreiram
 require_once BASE_PATH.'\includes\autoloader.inc.php';
 

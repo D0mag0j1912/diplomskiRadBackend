@@ -17,8 +17,10 @@ class PovezanaPovijestBolestiService{
         $response = [];
 
 
-        $sql = "SELECT DISTINCT(d.imeDijagnoza) AS NazivPrimarna, 
-                IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT d2.imeDijagnoza FROM dijagnoze d2 WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna,pb.* FROM povijestBolesti pb 
+        $sql = "SELECT DISTINCT(TRIM(d.imeDijagnoza)) AS NazivPrimarna, 
+                IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT TRIM(d2.imeDijagnoza) FROM dijagnoze d2 
+                                                        WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna
+                ,pb.* FROM povijestBolesti pb 
                 JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
                 WHERE pb.datum = '$datum' 
                 AND pb.razlogDolaska = '$razlogDolaska' 

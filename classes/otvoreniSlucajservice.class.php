@@ -108,8 +108,9 @@ class OtvoreniSlucajService{
         //ZA SVAKU PRIMARNU DIJAGNOZU, PRONAĐI SVE SEKUNDARNE DIJAGNOZE
         foreach($vanjsko as $unutarnje){
             foreach($unutarnje as $imeAtributa=>$sifraPrimarna){
-                $sql = "SELECT DISTINCT(p.mkbSifraSekundarna), p.mkbSifraPrimarna,
-                        IF(p.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d 
+                $sql = "SELECT DISTINCT(TRIM(p.mkbSifraSekundarna)) AS mkbSifraSekundarna, 
+                        TRIM(p.mkbSifraPrimarna) AS mkbSifraPrimarna,
+                        IF(p.mkbSifraSekundarna = NULL, NULL, (SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
                                                             WHERE d.mkbSifra = p.mkbSifraSekundarna)) AS NazivSekundarna,
                         DATE_FORMAT(p.datumPregled,'%d.%m.%Y') AS Datum, p.vrijemePregled, p.tipSlucaj FROM pregled p
                         WHERE p.mboPacijent = '$mboPacijent' 
@@ -136,9 +137,10 @@ class OtvoreniSlucajService{
         //Kreiram prazno polje odgovora
         $response = [];
 
-        $sql = "SELECT DISTINCT(d.imeDijagnoza) AS NazivPrimarna, 
-                IF(p.mkbSifraSekundarna = NULL, NULL, (SELECT d.imeDijagnoza FROM dijagnoze d WHERE d.mkbSifra = p.mkbSifraSekundarna)) AS NazivSekundarna, 
-                p.idObradaMedSestra,p.mkbSifraPrimarna, p.idPregled, p.bojaPregled FROM dijagnoze d 
+        $sql = "SELECT DISTINCT(TRIM(d.imeDijagnoza)) AS NazivPrimarna, 
+                IF(p.mkbSifraSekundarna = NULL, NULL, (SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
+                                                    WHERE d.mkbSifra = p.mkbSifraSekundarna)) AS NazivSekundarna, 
+                p.idObradaMedSestra,TRIM(p.mkbSifraPrimarna) AS mkbSifraPrimarna, p.idPregled, p.bojaPregled FROM dijagnoze d 
                 JOIN pregled p ON d.mkbSifra = p.mkbSifraPrimarna
                 WHERE p.mboPacijent = '$mboPacijent' 
                 AND p.mkbSifraPrimarna = '$mkbSifraPrimarna' 
@@ -210,13 +212,14 @@ class OtvoreniSlucajService{
         }
         //Kada ima nešto u pretrazi:
         else{
-            $sql = "SELECT DISTINCT(p.mkbSifraPrimarna), DATE_FORMAT(p.datumPregled,'%d.%m.%Y') AS Datum, 
-                d.imeDijagnoza AS NazivPrimarna, p.vrijemePregled, p.tipSlucaj FROM pregled p
+            $sql = "SELECT DISTINCT(TRIM(p.mkbSifraPrimarna)) AS mkbSifraPrimarna, 
+                DATE_FORMAT(p.datumPregled,'%d.%m.%Y') AS Datum, 
+                TRIM(d.imeDijagnoza) AS NazivPrimarna, p.vrijemePregled, p.tipSlucaj FROM pregled p
                 LEFT JOIN dijagnoze d ON p.mkbSifraPrimarna = d.mkbSifra 
                 LEFT JOIN dijagnoze d2 ON p.mkbSifraSekundarna = d2.mkbSifra
                 WHERE p.mboPacijent = '$mboPacijent'
-                AND (UPPER(d.imeDijagnoza) LIKE UPPER('%{$pretraga}%')  
-                OR UPPER(d2.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
+                AND (UPPER(TRIM(d.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')  
+                OR UPPER(TRIM(d2.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')
                 OR UPPER(p.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
                 OR UPPER(p.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') 
                 OR UPPER(p.datumPregled) LIKE UPPER('%{$pretraga}%')) 
