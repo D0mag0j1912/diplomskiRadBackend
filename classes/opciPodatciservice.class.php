@@ -70,12 +70,12 @@ class OpciPodatciService{
         $sql = "SELECT p.idPregled,p.bojaPregled FROM pregled p 
                 WHERE p.mboPacijent = '$mboPacijent' 
                 AND p.idObradaMedSestra = '$idObrada' 
-                AND p.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                AND TRIM(p.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                 AND p.idPregled = 
                 (SELECT MAX(p2.idPregled) FROM pregled p2 
                 WHERE p2.mboPacijent = '$mboPacijent' 
                 AND p2.idObradaMedSestra = '$idObrada' 
-                AND p2.mkbSifraPrimarna = '$mkbSifraPrimarna')";
+                AND TRIM(p2.mkbSifraPrimarna) = '$mkbSifraPrimarna')";
         //Rezultat upita spremam u varijablu $resultMBO
         $result = mysqli_query($conn,$sql);
         //Ako rezultat upita ima podataka u njemu (znači nije prazan)
@@ -165,8 +165,9 @@ class OpciPodatciService{
         if($tipSlucaj == 'noviSlucaj'){
             /******************************** */
             //Provjera je li postoji već ova primarna dijagnoza u bazi
-            $sqlProvjera = "SELECT p.mkbSifraPrimarna FROM pregled p
-                            WHERE p.idObradaMedSestra = '$idObrada' AND p.mboPacijent = '$mbo'";
+            $sqlProvjera = "SELECT TRIM(p.mkbSifraPrimarna) FROM pregled p
+                            WHERE p.idObradaMedSestra = '$idObrada' 
+                            AND p.mboPacijent = '$mbo'";
             //Rezultat upita spremam u varijablu $resultProvjera
             $resultProvjera = mysqli_query($conn,$sqlProvjera);
             //Ako rezultat upita ima podataka u njemu (znači nije prazan)

@@ -87,7 +87,7 @@ class ReceptHandlerService{
                     r.idPacijent, r.datumRecept, r.vrijemeRecept FROM recept r 
                     JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
                     WHERE r.dostatnost = '$dostatnost' AND r.datumRecept = '$datumRecept' 
-                    AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                    AND r.idPacijent = '$idPacijent' AND TRIM(r.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                     AND r.proizvod = '$zasticenoImeLijek' AND r.oblikJacinaPakiranjeLijek = '$oblikJacinaPakiranjeLijek' 
                     AND r.vrijemeRecept = '$vrijemeRecept'";
             $result = $conn->query($sql);
@@ -144,7 +144,7 @@ class ReceptHandlerService{
                         r.idPacijent, r.datumRecept, r.vrijemeRecept FROM recept r 
                         JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
                         WHERE r.dostatnost = '$dostatnost' AND r.datumRecept = '$datumRecept' 
-                        AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                        AND r.idPacijent = '$idPacijent' AND TRIM(r.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                         AND r.proizvod = '$zasticenoImeLijek' AND r.oblikJacinaPakiranjeLijek = '$oblikJacinaPakiranjeLijek' 
                         AND r.vrijemeRecept = '$vrijemeRecept'";
                 $result = $conn->query($sql);
@@ -167,7 +167,7 @@ class ReceptHandlerService{
                         r.idPacijent, r.datumRecept, r.vrijemeRecept FROM recept r 
                         JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
                         WHERE r.dostatnost = '$dostatnost' AND r.datumRecept = '$datumRecept' 
-                        AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                        AND r.idPacijent = '$idPacijent' AND TRIM(r.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                         AND r.proizvod = '$proizvod' 
                         AND r.vrijemeRecept = '$vrijemeRecept'";
                 $result = $conn->query($sql);
@@ -234,7 +234,7 @@ class ReceptHandlerService{
             //Prolazim poljem ID-ova pacijenata
             foreach($ids as $id){
                 //Kreiram SQL upit koji će dohvatiti recepte za ID pacijenta
-                $sql = "SELECT DISTINCT(r.mkbSifraPrimarna) AS mkbSifraPrimarna,CONCAT(p.imePacijent,' ',p.prezPacijent) AS Pacijent, 
+                $sql = "SELECT DISTINCT(TRIM(r.mkbSifraPrimarna)) AS mkbSifraPrimarna,CONCAT(p.imePacijent,' ',p.prezPacijent) AS Pacijent, 
                         DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
                         IF(r.oblikJacinaPakiranjeLijek IS NULL, 
                         r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod, 
@@ -351,7 +351,7 @@ class ReceptHandlerService{
                     }
                     else{
                         //Kreiram upit koji dohvaća podatke recepata zadnjih 7 pacijenata koje je liječnik stavio u obradu
-                        $sql = "SELECT DISTINCT(r.mkbSifraPrimarna) AS mkbSifraPrimarna,CONCAT(p.imePacijent,' ',p.prezPacijent) AS Pacijent, 
+                        $sql = "SELECT DISTINCT(TRIM(r.mkbSifraPrimarna)) AS mkbSifraPrimarna,CONCAT(p.imePacijent,' ',p.prezPacijent) AS Pacijent, 
                                 DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
                                 IF(r.oblikJacinaPakiranjeLijek IS NULL, 
                                 r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod, 
@@ -397,7 +397,7 @@ class ReceptHandlerService{
                 //Ako ima pronađenih recepata za trenutno aktivnog pacijenta
                 else{
                     //Kreiram upit koji će dohvatiti recepte aktivnog pacijenta u obradi
-                    $sql = "SELECT DISTINCT(r.mkbSifraPrimarna) AS mkbSifraPrimarna,CONCAT(p.imePacijent,' ',p.prezPacijent) AS Pacijent, 
+                    $sql = "SELECT DISTINCT(TRIM(r.mkbSifraPrimarna)) AS mkbSifraPrimarna,CONCAT(p.imePacijent,' ',p.prezPacijent) AS Pacijent, 
                             DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
                             IF(r.oblikJacinaPakiranjeLijek IS NULL, 
                             r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod, 
@@ -521,7 +521,7 @@ class ReceptHandlerService{
                 }
                 else{
                     //Kreiram upit koji dohvaća recepte za zadnjih 7 pacijenata koje je liječnik stavio u obradu
-                    $sql = "SELECT DISTINCT(r.mkbSifraPrimarna) AS mkbSifraPrimarna,CONCAT(p.imePacijent,' ',p.prezPacijent) AS Pacijent, 
+                    $sql = "SELECT DISTINCT(TRIM(r.mkbSifraPrimarna)) AS mkbSifraPrimarna,CONCAT(p.imePacijent,' ',p.prezPacijent) AS Pacijent, 
                             DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
                             IF(r.oblikJacinaPakiranjeLijek IS NULL, 
                             r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod, 
@@ -567,7 +567,7 @@ class ReceptHandlerService{
             //Ako ima pronađenih recepata:
             else{
                 //Kreiram upit koji će dohvatiti recepte aktivnog pacijenta u obradi
-                $sql = "SELECT DISTINCT(r.mkbSifraPrimarna) AS mkbSifraPrimarna, 
+                $sql = "SELECT DISTINCT(TRIM(r.mkbSifraPrimarna)) AS mkbSifraPrimarna, 
                         CONCAT(p.imePacijent,' ',p.prezPacijent) AS Pacijent, 
                         DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
                         IF(r.oblikJacinaPakiranjeLijek IS NULL, 

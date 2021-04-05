@@ -52,8 +52,8 @@ class NalaziListService {
                     OR UPPER(s.prezSpecijalist) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(zu.nazivZdrUst) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(zd.nazivDjel) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(n.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(n.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(TRIM(n.mkbSifraPrimarna)) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(TRIM(n.mkbSifraSekundarna)) LIKE UPPER('%{$pretraga}%')
                     OR UPPER(TRIM(d.imeDijagnoza)) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(TRIM(d2.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')) 
                     GROUP BY n.mkbSifraPrimarna 

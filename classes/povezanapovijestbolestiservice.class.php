@@ -24,7 +24,7 @@ class PovezanaPovijestBolestiService{
                 JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
                 WHERE pb.datum = '$datum' 
                 AND pb.razlogDolaska = '$razlogDolaska' 
-                AND pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                AND TRIM(pb.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                 AND pb.vrijeme = '$vrijeme' 
                 AND pb.tipSlucaj = '$tipSlucaj'
                 AND pb.mboPacijent IN 

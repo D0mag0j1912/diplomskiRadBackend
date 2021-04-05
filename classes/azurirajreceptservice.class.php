@@ -23,7 +23,7 @@ class AzurirajReceptService{
     $vrijeme = date('H:i');
     //Kreiram sql upit koji će prebrojiti koliko ima SEKUNDARNIH DIJAGNOZA TRENUTNO U BAZI ZA ODREĐENU PRIMARNU DIJAGNOZU, ZA ODREĐENI DATUM, VRIJEME I PACIJENTA
     $sqlCountSekundarna = "SELECT COUNT(r.mkbSifraSekundarna) AS BrojSekundarna FROM recept r
-                        WHERE r.mkbSifraPrimarna = '$poslanaMKBSifra' 
+                        WHERE TRIM(r.mkbSifraPrimarna) = '$poslanaMKBSifra' 
                         AND r.datumRecept = '$poslaniDatum' 
                         AND r.vrijemeRecept = '$poslanoVrijeme' 
                         AND r.idPacijent = '$idPacijent';";
@@ -225,7 +225,7 @@ class AzurirajReceptService{
                     WHERE r.idPacijent = ? 
                     AND r.datumRecept = ? 
                     AND r.vrijemeRecept = ? 
-                    AND r.mkbSifraPrimarna = ?";
+                    AND TRIM(r.mkbSifraPrimarna) = ?";
             //Kreiranje prepared statementa
             $stmt = mysqli_stmt_init($conn);
             //Ako je statement neuspješan
@@ -247,7 +247,7 @@ class AzurirajReceptService{
                             WHERE r.idPacijent = '$idPacijent' 
                             AND r.datumRecept = '$datum' 
                             AND r.vrijemeRecept = '$vrijeme' 
-                            AND r.mkbSifraPrimarna = '$mkbSifraPrimarna'";
+                            AND TRIM(r.mkbSifraPrimarna) = '$mkbSifraPrimarna'";
                 $resultRecept = $conn->query($sqlRecept);
                 
                 //Ako pacijent IMA evidentiranih recepata:
@@ -283,7 +283,7 @@ class AzurirajReceptService{
         else if($brojSekundarnaBaza > 1){
             //Kreiram upit kojim dohvaćam sve ID-ove recepata
             $sqlRecept = "SELECT r.idRecept FROM recept r 
-                        WHERE r.mkbSifraPrimarna = '$poslanaMKBSifra' 
+                        WHERE TRIM(r.mkbSifraPrimarna) = '$poslanaMKBSifra' 
                         AND r.idPacijent = '$idPacijent' 
                         AND r.datumRecept = '$poslaniDatum' 
                         AND r.vrijemeRecept = '$poslanoVrijeme'";
@@ -486,7 +486,7 @@ class AzurirajReceptService{
             $brisanje = true;
             //Kreiram upit kojim dohvaćam sve ID-ove recepata
             $sqlRecept = "SELECT r.idRecept FROM recept r 
-                        WHERE r.mkbSifraPrimarna = '$poslanaMKBSifra' 
+                        WHERE TRIM(r.mkbSifraPrimarna) = '$poslanaMKBSifra' 
                         AND r.idPacijent = '$idPacijent' 
                         AND r.datumRecept = '$poslaniDatum' 
                         AND r.vrijemeRecept = '$poslanoVrijeme'";
@@ -750,7 +750,7 @@ class AzurirajReceptService{
                         WHERE r.idPacijent = ? 
                         AND r.datumRecept = ? 
                         AND r.vrijemeRecept = ? 
-                        AND r.mkbSifraPrimarna = ?";
+                        AND TRIM(r.mkbSifraPrimarna) = ?";
                 //Kreiranje prepared statementa
                 $stmt = mysqli_stmt_init($conn);
                 //Ako je statement neuspješan
@@ -772,7 +772,7 @@ class AzurirajReceptService{
                                 WHERE r.idPacijent = '$idPacijent' 
                                 AND r.datumRecept = '$datum' 
                                 AND r.vrijemeRecept = '$vrijeme' 
-                                AND r.mkbSifraPrimarna = '$mkbSifraPrimarna'";
+                                AND TRIM(r.mkbSifraPrimarna) = '$mkbSifraPrimarna'";
                     $resultRecept = $conn->query($sqlRecept);
                     
                     //Ako pacijent IMA evidentiranih recepata:
@@ -834,7 +834,7 @@ class AzurirajReceptService{
                                     WHERE r.idPacijent = '$idPacijent' 
                                     AND r.datumRecept = '$datum' 
                                     AND r.vrijemeRecept = '$vrijeme' 
-                                    AND r.mkbSifraPrimarna = '$mkbSifraPrimarna'";
+                                    AND TRIM(r.mkbSifraPrimarna) = '$mkbSifraPrimarna'";
                         $resultRecept = $conn->query($sqlRecept);
                         
                         //Ako pacijent IMA evidentiranih recepata:

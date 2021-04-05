@@ -20,7 +20,7 @@ class CekaonicaService{
             $sql = "SELECT DISTINCT(TRIM(pb.mkbSifraPrimarna)) AS mkbSifraPrimarna,TRIM(d.mkbSifra) AS mkbSifra, 
                     TRIM(d.imeDijagnoza) AS imeDijagnoza,pb.idPovijestBolesti FROM dijagnoze d 
                     JOIN povijestBolesti pb ON pb.mkbSifraSekundarna = d.mkbSifra
-                    WHERE d.mkbSifra = '$mkbSifra' AND pb.idObradaLijecnik = '$idObrada'";
+                    WHERE TRIM(d.mkbSifra) = '$mkbSifra' AND pb.idObradaLijecnik = '$idObrada'";
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {
@@ -46,7 +46,8 @@ class CekaonicaService{
             $sql = "SELECT DISTINCT(TRIM(pr.mkbSifraPrimarna)) AS mkbSifraPrimarna,TRIM(d.mkbSifra) AS mkbSifra, 
                     TRIM(d.imeDijagnoza) AS imeDijagnoza,pr.idPregled FROM dijagnoze d 
                     JOIN pregled pr ON pr.mkbSifraSekundarna = d.mkbSifra
-                    WHERE d.mkbSifra = '$mkbSifra' AND pr.idObradaMedSestra = '$idObrada'";
+                    WHERE TRIM(d.mkbSifra) = '$mkbSifra' 
+                    AND pr.idObradaMedSestra = '$idObrada'";
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {
@@ -109,7 +110,7 @@ class CekaonicaService{
         
         $sql = "SELECT TRIM(pr.mkbSifraPrimarna) AS mkbSifraPrimarna, 
                 TRIM(d.imeDijagnoza) AS NazivPrimarna, 
-                GROUP_CONCAT(DISTINCT pr.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna, pr.vrijemePregled FROM pregled pr 
+                GROUP_CONCAT(DISTINCT TRIM(pr.mkbSifraSekundarna) SEPARATOR ' ') AS mkbSifraSekundarna, pr.vrijemePregled FROM pregled pr 
                 JOIN dijagnoze d ON d.mkbSifra = pr.mkbSifraPrimarna 
                 WHERE pr.idObradaMedSestra = '$idObrada' 
                 GROUP BY pr.mkbSifraPrimarna";

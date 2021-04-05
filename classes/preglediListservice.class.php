@@ -32,7 +32,7 @@ class PreglediListService{
                         $tipSlucaj = $row['tipSlucaj'];
                         //Kreiram upit koji dohvaća sve ID-ove pregleda koji se nalaze u grupaciji trenutnog ID-a pregleda, ne uključujući njega npr. [505] ako je 504 trenutni ID
                         $sqlIDS = "SELECT pb.idPovijestBolesti FROM povijestBolesti pb 
-                                    WHERE pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                    WHERE TRIM(pb.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                     AND pb.idObradaLijecnik = '$idObradaLijecnik'
                                     AND pb.datum = '$datum' 
                                     AND pb.vrijeme = '$vrijeme' 
@@ -47,7 +47,7 @@ class PreglediListService{
                             while($rowIDS = mysqli_fetch_assoc($resultIDS)){
                                 //Kreiram upit koji dohvaća MAX ID pregleda grupacije pregleda koji se trenutno gleda
                                 $sqlMAX = "SELECT pb.idPovijestBolesti FROM povijestBolesti pb 
-                                        WHERE pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                        WHERE TRIM(pb.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                         AND pb.idObradaLijecnik = '$idObradaLijecnik'
                                         AND pb.datum = '$datum' 
                                         AND pb.vrijeme = '$vrijeme' 
@@ -55,7 +55,7 @@ class PreglediListService{
                                         AND pb.tipSlucaj = '$tipSlucaj' 
                                         AND pb.idPovijestBolesti = 
                                         (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
-                                        WHERE pb2.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                        WHERE TRIM(pb2.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                         AND pb2.idObradaLijecnik = '$idObradaLijecnik'
                                         AND pb2.datum = '$datum' 
                                         AND pb2.vrijeme = '$vrijeme' 
@@ -98,7 +98,7 @@ class PreglediListService{
                         $tipSlucaj = $row['tipSlucaj'];
                         //Kreiram upit koji dohvaća sve ID-ove pregleda koji se nalaze u grupaciji trenutnog ID-a pregleda, ne uključujući njega npr. [505] ako je 504 trenutni ID
                         $sqlIDS = "SELECT p.idPregled FROM pregled p 
-                                    WHERE p.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                    WHERE TRIM(p.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                     AND p.idObradaMedSestra = '$idObradaMedSestra'
                                     AND p.datumPregled = '$datum' 
                                     AND p.vrijemePregled = '$vrijeme' 
@@ -113,7 +113,7 @@ class PreglediListService{
                             while($rowIDS = mysqli_fetch_assoc($resultIDS)){
                                 //Kreiram upit koji dohvaća MAX ID pregleda grupacije pregleda koji se trenutno gleda
                                 $sqlMAX = "SELECT p.idPregled FROM pregled p 
-                                        WHERE p.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                        WHERE TRIM(p.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                         AND p.idObradaMedSestra = '$idObradaMedSestra'
                                         AND p.datumPregled = '$datum' 
                                         AND p.vrijemePregled = '$vrijeme' 
@@ -121,7 +121,7 @@ class PreglediListService{
                                         AND p.tipSlucaj = '$tipSlucaj' 
                                         AND p.idPregled = 
                                         (SELECT MAX(p2.idPregled) FROM pregled p2 
-                                        WHERE p2.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                        WHERE TRIM(p2.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                         AND p2.idObradaMedSestra = '$idObradaMedSestra'
                                         AND p2.datumPregled = '$datum' 
                                         AND p2.vrijemePregled = '$vrijeme' 

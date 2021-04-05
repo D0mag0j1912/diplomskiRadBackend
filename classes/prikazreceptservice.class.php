@@ -136,7 +136,7 @@ class PrikazReceptService {
                     JOIN pacijent p ON p.idPacijent = r.idPacijent 
                     JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
                     WHERE r.dostatnost = '$dostatnost' AND DATE_FORMAT(r.datumRecept,'%d.%m.%Y') = '$datumRecept' 
-                    AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                    AND r.idPacijent = '$idPacijent' AND TRIM(r.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                     AND r.proizvod = '$zasticenoImeLijek' AND r.oblikJacinaPakiranjeLijek = '$oblikJacinaPakiranjeLijek' AND r.vrijemeRecept = '$vrijemeRecept'";
             $result = $conn->query($sql);
                     
@@ -196,7 +196,7 @@ class PrikazReceptService {
                         JOIN pacijent p ON p.idPacijent = r.idPacijent 
                         JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
                         WHERE r.dostatnost = '$dostatnost' AND DATE_FORMAT(r.datumRecept,'%d.%m.%Y') = '$datumRecept' 
-                        AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                        AND r.idPacijent = '$idPacijent' AND TRIM(r.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                         AND r.proizvod = '$zasticenoImeLijek' AND r.oblikJacinaPakiranjeLijek = '$oblikJacinaPakiranjeLijek' AND r.vrijemeRecept = '$vrijemeRecept'";
                 $result = $conn->query($sql);
                         
@@ -222,7 +222,7 @@ class PrikazReceptService {
                         JOIN pacijent p ON p.idPacijent = r.idPacijent 
                         JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
                         WHERE r.dostatnost = '$dostatnost' AND DATE_FORMAT(r.datumRecept,'%d.%m.%Y') = '$datumRecept' 
-                        AND r.idPacijent = '$idPacijent' AND r.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                        AND r.idPacijent = '$idPacijent' AND TRIM(r.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                         AND r.proizvod = '$proizvod' AND r.vrijemeRecept = '$vrijemeRecept'";
                 $result = $conn->query($sql);
                         

@@ -15,7 +15,7 @@ class OtvoreniSlucajService{
         $response = [];
 
         //Kreiram upit koji će provjeriti postoje li primarne dijagnoze (jer ako nema primarne, nema ni sekundarnih) za trenutno aktivnog pacijenta ZA TABLICU OPĆIH PODATAKA
-        $sqlCountDijagnozaOpci = "SELECT COUNT(DISTINCT(p.mkbSifraPrimarna)) AS BrojDijagnoza FROM  pregled p 
+        $sqlCountDijagnozaOpci = "SELECT COUNT(DISTINCT(TRIM(p.mkbSifraPrimarna))) AS BrojDijagnoza FROM  pregled p 
                                 WHERE p.mboPacijent = '$mboPacijent'";
         //Rezultat upita spremam u varijablu $resultCountDijagnozaOpci
         $resultCountDijagnozaOpci = mysqli_query($conn,$sqlCountDijagnozaOpci);
@@ -84,7 +84,7 @@ class OtvoreniSlucajService{
         //Kreiram prazno polje odgovora
         $response = [];
     
-        $sql = "SELECT DISTINCT(p.mkbSifraPrimarna) AS mkbSifraPrimarna FROM pregled p
+        $sql = "SELECT DISTINCT(TRIM(p.mkbSifraPrimarna)) AS mkbSifraPrimarna FROM pregled p
                 WHERE p.mboPacijent = '$mboPacijent'";
         
         $result = $conn->query($sql);
@@ -114,7 +114,7 @@ class OtvoreniSlucajService{
                                                             WHERE d.mkbSifra = p.mkbSifraSekundarna)) AS NazivSekundarna,
                         DATE_FORMAT(p.datumPregled,'%d.%m.%Y') AS Datum, p.vrijemePregled, p.tipSlucaj FROM pregled p
                         WHERE p.mboPacijent = '$mboPacijent' 
-                        AND p.mkbSifraPrimarna = '$sifraPrimarna'
+                        AND TRIM(p.mkbSifraPrimarna) = '$sifraPrimarna'
                         ORDER BY p.datumPregled DESC, p.vrijemePregled DESC";
                 $result = $conn->query($sql);
 
@@ -143,7 +143,7 @@ class OtvoreniSlucajService{
                 p.idObradaMedSestra,TRIM(p.mkbSifraPrimarna) AS mkbSifraPrimarna, p.idPregled, p.bojaPregled FROM dijagnoze d 
                 JOIN pregled p ON d.mkbSifra = p.mkbSifraPrimarna
                 WHERE p.mboPacijent = '$mboPacijent' 
-                AND p.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                AND TRIM(p.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                 AND p.datumPregled = '$datumPregled' 
                 AND p.vrijemePregled = '$vrijemePregled' 
                 AND p.tipSlucaj = '$tipSlucaj'";
@@ -220,8 +220,8 @@ class OtvoreniSlucajService{
                 WHERE p.mboPacijent = '$mboPacijent'
                 AND (UPPER(TRIM(d.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')  
                 OR UPPER(TRIM(d2.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')
-                OR UPPER(p.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
-                OR UPPER(p.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') 
+                OR UPPER(TRIM(p.mkbSifraPrimarna)) LIKE UPPER('%{$pretraga}%') 
+                OR UPPER(TRIM(p.mkbSifraSekundarna)) LIKE UPPER('%{$pretraga}%') 
                 OR UPPER(p.datumPregled) LIKE UPPER('%{$pretraga}%')) 
                 ORDER BY p.datumPregled DESC, p.vrijemePregled DESC
                 LIMIT 7";

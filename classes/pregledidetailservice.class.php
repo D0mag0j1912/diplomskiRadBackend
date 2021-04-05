@@ -143,14 +143,14 @@ class PreglediDetailService{
 
                     //Kreiram upit kojim dohvaćam MAKSIMALNI ID zadnjeg evidentiranog pregleda
                     $sqlMinID = "SELECT pb.idPovijestBolesti FROM povijestBolesti pb 
-                                WHERE pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                WHERE TRIM(pb.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                 AND pb.tipSlucaj = '$tipSlucaj' 
                                 AND pb.datum = '$datum' 
                                 AND pb.idObradaLijecnik = '$idObradaLijecnik' 
                                 AND pb.vrijeme = '$vrijeme' 
                                 AND pb.idPovijestBolesti = 
                                 (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
-                                WHERE pb2.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                WHERE TRIM(pb2.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                 AND pb2.tipSlucaj = '$tipSlucaj' 
                                 AND pb2.datum = '$datum' 
                                 AND pb2.idObradaLijecnik = '$idObradaLijecnik' 
@@ -196,14 +196,14 @@ class PreglediDetailService{
                     if(!empty($mkbSifraPrimarna)){
                         //Kreiram upit kojim dohvaćam MAKSIMALNI ID zadnjeg evidentiranog pregleda
                         $sqlMinID = "SELECT p.idPregled FROM pregled p 
-                                    WHERE p.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                    WHERE TRIM(p.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                     AND p.tipSlucaj = '$tipSlucaj' 
                                     AND p.datumPregled = '$datum' 
                                     AND p.idObradaMedSestra = '$idObradaMedSestra' 
                                     AND p.vrijemePregled = '$vrijemePregled' 
                                     AND p.idPregled = 
                                     (SELECT MAX(p2.idPregled) FROM pregled p2 
-                                    WHERE p2.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                    WHERE TRIM(p2.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                     AND p2.tipSlucaj = '$tipSlucaj' 
                                     AND p2.datumPregled = '$datum' 
                                     AND p2.idObradaMedSestra = '$idObradaMedSestra' 
@@ -285,14 +285,14 @@ class PreglediDetailService{
                     if(!empty($mkbSifraPrimarna)){
                         //Kreiram upit kojim dohvaćam MAKSIMALNI ID zadnjeg evidentiranog pregleda
                         $sqlMinID = "SELECT p.idPregled FROM pregled p 
-                                    WHERE p.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                    WHERE TRIM(p.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                     AND p.tipSlucaj = '$tipSlucaj' 
                                     AND p.datumPregled = '$datumPregled' 
                                     AND p.idObradaMedSestra = '$idObradaMedSestra' 
                                     AND p.vrijemePregled = '$vrijemePregled' 
                                     AND p.idPregled = 
                                     (SELECT MAX(p2.idPregled) FROM pregled p2 
-                                    WHERE p2.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                    WHERE TRIM(p2.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                     AND p2.tipSlucaj = '$tipSlucaj' 
                                     AND p2.datumPregled = '$datumPregled' 
                                     AND p2.idObradaMedSestra = '$idObradaMedSestra' 
@@ -364,14 +364,14 @@ class PreglediDetailService{
 
                     //Kreiram upit kojim dohvaćam MAKSIMALNI ID zadnjeg evidentiranog pregleda
                     $sqlMinID = "SELECT pb.idPovijestBolesti FROM povijestBolesti pb 
-                                WHERE pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                WHERE TRIM(pb.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                 AND pb.tipSlucaj = '$tipSlucaj' 
                                 AND pb.datum = '$datum' 
                                 AND pb.idObradaLijecnik = '$idObradaLijecnik' 
                                 AND pb.vrijeme = '$vrijeme' 
                                 AND pb.idPovijestBolesti = 
                                 (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
-                                WHERE pb2.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                WHERE TRIM(pb2.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                 AND pb2.tipSlucaj = '$tipSlucaj' 
                                 AND pb2.datum = '$datum' 
                                 AND pb2.idObradaLijecnik = '$idObradaLijecnik' 
@@ -412,7 +412,7 @@ class PreglediDetailService{
                     WHERE pb.datum = '$datum' 
                     AND pb.vrijeme = '$vrijeme' 
                     AND pb.tipSlucaj = '$tipSlucaj' 
-                    AND pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                    AND TRIM(pb.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                     AND pb.mboPacijent = '$mboPacijent';";
             //Rezultat upita spremam u varijablu $result
             $result = mysqli_query($conn,$sql);
@@ -434,7 +434,7 @@ class PreglediDetailService{
                     WHERE p.datumPregled = '$datum' 
                     AND p.vrijemePregled = '$vrijeme' 
                     AND p.tipSlucaj = '$tipSlucaj' 
-                    AND p.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                    AND TRIM(p.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                     AND p.mboPacijent = '$mboPacijent';";
             //Rezultat upita spremam u varijablu $result
             $result = mysqli_query($conn,$sql);

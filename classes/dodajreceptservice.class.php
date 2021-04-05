@@ -36,7 +36,7 @@ class DodajReceptService{
     } 
     //Gledam koliko ima sek. dijagnoza pregled u bazi gdje se dodava ID recepta
     $sqlCountSekundarna = "SELECT COUNT(pb.mkbSifraSekundarna) AS BrojSekundarna FROM povijestBolesti pb
-                        WHERE pb.mkbSifraPrimarna = '$poslanaMKBSifra' 
+                        WHERE TRIM(pb.mkbSifraPrimarna) = '$poslanaMKBSifra' 
                         AND pb.idObradaLijecnik = '$poslaniIDObrada' 
                         AND pb.mboPacijent = '$mboPacijent' 
                         AND pb.tipSlucaj = '$poslaniTipSlucaj' 
@@ -261,7 +261,7 @@ class DodajReceptService{
                 //Kreiram upit kojim ću unijeti ID recepta u tablicu "povijestBolesti"
                 $sqlUpdate ="UPDATE povijestBolesti pb SET pb.idRecept = ?, 
                             pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?  
-                            WHERE pb.mkbSifraPrimarna = ? 
+                            WHERE TRIM(pb.mkbSifraPrimarna) = ? 
                             AND pb.idObradaLijecnik = ? 
                             AND pb.mboPacijent = ? 
                             AND pb.vrijeme = ? 
@@ -291,7 +291,7 @@ class DodajReceptService{
                 //Brišem sve retke iz tablice ambulanta za ovu povijest bolesti
                 $sqlDeleteAmbulanta = "DELETE a FROM ambulanta a
                                     JOIN povijestbolesti pb ON pb.idPovijestBolesti = a.idPovijestBolesti 
-                                    WHERE pb.mkbSifraPrimarna = ? 
+                                    WHERE TRIM(pb.mkbSifraPrimarna) = ? 
                                     AND pb.idObradaLijecnik = ? 
                                     AND pb.mboPacijent = ? 
                                     AND pb.vrijeme = ? 
@@ -311,7 +311,7 @@ class DodajReceptService{
 
                     //Prije nego što izbrišem redak povijesti bolesti, dohvaćam ga
                     $sqlPovijestBolesti = "SELECT * FROM povijestbolesti 
-                                        WHERE mkbSifraPrimarna = '$poslanaMKBSifra' 
+                                        WHERE TRIM(mkbSifraPrimarna) = '$poslanaMKBSifra' 
                                         AND idObradaLijecnik = '$poslaniIDObrada' 
                                         AND mboPacijent = '$mboPacijent' 
                                         AND vrijeme = '$poslanoVrijeme' 
@@ -339,7 +339,7 @@ class DodajReceptService{
                     } 
                     //Brišem sve retke iz tablice povijesti bolesti
                     $sqlDelete = "DELETE FROM povijestBolesti 
-                                WHERE mkbSifraPrimarna = ? 
+                                WHERE TRIM(mkbSifraPrimarna) = ? 
                                 AND idObradaLijecnik = ? 
                                 AND mboPacijent = ? 
                                 AND vrijeme = ? 
@@ -433,14 +433,14 @@ class DodajReceptService{
     else{
         //Kreiram upit koji dohvaća MINIMALNI ID povijesti bolesti za određenog pacijenta i određenu sesiju obrade
         $sqlMin = "SELECT pb.idPovijestBolesti FROM povijestbolesti pb 
-                WHERE pb.mkbSifraPrimarna = '$poslanaMKBSifra' 
+                WHERE TRIM(pb.mkbSifraPrimarna) = '$poslanaMKBSifra' 
                 AND pb.idObradaLijecnik = '$poslaniIDObrada' 
                 AND pb.mboPacijent = '$mboPacijent' 
                 AND pb.tipSlucaj = '$poslaniTipSlucaj' 
                 AND pb.vrijeme = '$poslanoVrijeme'
                 AND pb.idPovijestBolesti = 
                 (SELECT MIN(pb2.idPovijestBolesti) FROM povijestbolesti pb2  
-                WHERE pb2.mkbSifraPrimarna = '$poslanaMKBSifra' 
+                WHERE TRIM(pb2.mkbSifraPrimarna) = '$poslanaMKBSifra' 
                 AND pb2.idObradaLijecnik = '$poslaniIDObrada' 
                 AND pb2.mboPacijent = '$mboPacijent' 
                 AND pb2.tipSlucaj = '$poslaniTipSlucaj' 
@@ -469,7 +469,7 @@ class DodajReceptService{
             //Brišem sve retke iz tablice ambulanta za ovu povijest bolesti
             $sqlDeleteAmbulanta = "DELETE a FROM ambulanta a
                                 JOIN povijestbolesti pb ON pb.idPovijestBolesti = a.idPovijestBolesti 
-                                WHERE pb.mkbSifraPrimarna = ? 
+                                WHERE TRIM(pb.mkbSifraPrimarna) = ? 
                                 AND pb.idObradaLijecnik = ? 
                                 AND pb.mboPacijent = ? 
                                 AND pb.tipSlucaj = ? 
@@ -488,7 +488,7 @@ class DodajReceptService{
                 mysqli_stmt_execute($stmtDeleteAmbulanta);
                 //Prije nego što ubacim novi redak povijesti bolesti, dohvaćam redak koji sam ažurirao u prethodnom if uvjetu 
                 $sqlPovijestBolesti = "SELECT * FROM povijestbolesti 
-                                    WHERE mkbSifraPrimarna = '$poslanaMKBSifra' 
+                                    WHERE TRIM(mkbSifraPrimarna) = '$poslanaMKBSifra' 
                                     AND idObradaLijecnik = '$poslaniIDObrada' 
                                     AND mboPacijent = '$mboPacijent' 
                                     AND tipSlucaj = '$poslaniTipSlucaj' 
@@ -516,7 +516,7 @@ class DodajReceptService{
                 } 
                 //Brišem sve retke iz tablice povijesti bolesti
                 $sqlDelete = "DELETE FROM povijestBolesti 
-                            WHERE mkbSifraPrimarna = ? 
+                            WHERE TRIM(mkbSifraPrimarna) = ? 
                             AND idObradaLijecnik = ? 
                             AND mboPacijent = ? 
                             AND tipSlucaj = ? 
@@ -744,7 +744,7 @@ class DodajReceptService{
                 if($brojSekundarnaBaza <= $brojacSekundarnaForma && $brojacSekundarnaForma == 1){
                     //Kreiram upit kojim ću unijeti ID recepta u tablicu "povijestBolesti"
                     $sqlUpdate ="UPDATE povijestBolesti pb SET pb.idRecept = ?,pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ? 
-                                WHERE pb.mkbSifraPrimarna = ? 
+                                WHERE TRIM(pb.mkbSifraPrimarna) = ? 
                                 AND pb.idObradaLijecnik = ? 
                                 AND pb.mboPacijent = ? 
                                 AND pb.tipSlucaj = ? 
@@ -774,7 +774,7 @@ class DodajReceptService{
                     if($brojSekundarnaBaza == 0 && $brojacIteracija == 1){
                         //Kreiram upit kojim ću unijeti ID recepta u tablicu "povijestBolesti"
                         $sqlUpdate ="UPDATE povijestBolesti pb SET pb.idRecept = ?,pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ? 
-                                    WHERE pb.mkbSifraPrimarna = ? 
+                                    WHERE TRIM(pb.mkbSifraPrimarna) = ? 
                                     AND pb.idObradaLijecnik = ? 
                                     AND pb.mboPacijent = ? 
                                     AND pb.tipSlucaj = ? 
@@ -804,14 +804,14 @@ class DodajReceptService{
                         $sqlPovijestBolesti = "SELECT * FROM povijestbolesti pb
                                             WHERE pb.idObradaLijecnik = '$poslaniIDObrada' 
                                             AND pb.mboPacijent = '$mboPacijent' 
-                                            AND pb.mkbSifraPrimarna = '$poslanaMKBSifra' 
+                                            AND TRIM(pb.mkbSifraPrimarna) = '$poslanaMKBSifra' 
                                             AND pb.tipSlucaj = '$poslaniTipSlucaj' 
                                             AND pb.vrijeme = '$poslanoVrijeme'
                                             AND pb.idPovijestBolesti = 
                                             (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
                                             WHERE pb2.mboPacijent = '$mboPacijent' 
                                             AND pb2.idObradaLijecnik = '$poslaniIDObrada' 
-                                            AND pb2.mkbSifraPrimarna = '$poslanaMKBSifra' 
+                                            AND TRIM(pb2.mkbSifraPrimarna) = '$poslanaMKBSifra' 
                                             AND pb2.tipSlucaj = '$poslaniTipSlucaj' 
                                             AND pb2.vrijeme = '$poslanoVrijeme')";
                         $resultPovijestBolesti = $conn->query($sqlPovijestBolesti);
@@ -932,7 +932,7 @@ class DodajReceptService{
                         
                         //Kreiram upit koji dohvaća SLJEDEĆI MINIMALNI ID povijesti bolesti za ovog pacijenta za ovu sesiju obrade
                         $sqlSljedeciMin = "SELECT pb.idPovijestBolesti FROM povijestbolesti pb 
-                                        WHERE pb.mkbSifraPrimarna = '$poslanaMKBSifra' 
+                                        WHERE TRIM(pb.mkbSifraPrimarna) = '$poslanaMKBSifra' 
                                         AND pb.mboPacijent = '$mboPacijent' 
                                         AND pb.idObradaLijecnik = '$poslaniIDObrada' 
                                         AND pb.tipSlucaj = '$poslaniTipSlucaj' 
@@ -978,14 +978,14 @@ class DodajReceptService{
                         $sqlPovijestBolesti = "SELECT * FROM povijestbolesti pb
                                             WHERE pb.idObradaLijecnik = '$poslaniIDObrada' 
                                             AND pb.mboPacijent = '$mboPacijent' 
-                                            AND pb.mkbSifraPrimarna = '$poslanaMKBSifra' 
+                                            AND TRIM(pb.mkbSifraPrimarna) = '$poslanaMKBSifra' 
                                             AND pb.tipSlucaj = '$poslaniTipSlucaj' 
                                             AND pb.vrijeme = '$poslanoVrijeme'
                                             AND pb.idPovijestBolesti = 
                                             (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
                                             WHERE pb2.mboPacijent = '$mboPacijent' 
                                             AND pb2.idObradaLijecnik = '$poslaniIDObrada' 
-                                            AND pb2.mkbSifraPrimarna = '$poslanaMKBSifra' 
+                                            AND TRIM(pb2.mkbSifraPrimarna) = '$poslanaMKBSifra' 
                                             AND pb2.tipSlucaj = '$poslaniTipSlucaj' 
                                             AND pb2.vrijeme = '$poslanoVrijeme')";
                         $resultPovijestBolesti = $conn->query($sqlPovijestBolesti);

@@ -42,7 +42,7 @@ function provjeriIstuGrupaciju($tipKorisnik,$ids){
                     $tipSlucaj = $row['tipSlucaj'];
                     //Kreiram upit koji dohvaća MAX ID pregleda grupacije pregleda koji se trenutno gleda
                     $sqlIDS = "SELECT pb.idPovijestBolesti FROM povijestBolesti pb 
-                            WHERE pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                            WHERE TRIM(pb.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                             AND pb.idObradaLijecnik = '$idObradaLijecnik'
                             AND pb.datum = '$datum' 
                             AND pb.vrijeme = '$vrijeme' 
@@ -57,7 +57,7 @@ function provjeriIstuGrupaciju($tipKorisnik,$ids){
                         while($rowIDS = mysqli_fetch_assoc($resultIDS)){
                             //Kreiram upit koji dohvaća MAX ID pregleda grupacije pregleda koji se trenutno gleda
                             $sqlMAX = "SELECT pb.idPovijestBolesti FROM povijestBolesti pb 
-                                    WHERE pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                    WHERE TRIM(pb.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                     AND pb.idObradaLijecnik = '$idObradaLijecnik'
                                     AND pb.datum = '$datum' 
                                     AND pb.vrijeme = '$vrijeme' 
@@ -65,7 +65,7 @@ function provjeriIstuGrupaciju($tipKorisnik,$ids){
                                     AND pb.tipSlucaj = '$tipSlucaj' 
                                     AND pb.idPovijestBolesti = 
                                     (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
-                                    WHERE pb2.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                                    WHERE TRIM(pb2.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                     AND pb2.idObradaLijecnik = '$idObradaLijecnik'
                                     AND pb2.datum = '$datum' 
                                     AND pb2.vrijeme = '$vrijeme' 

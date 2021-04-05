@@ -17,12 +17,12 @@ class PovijestBolestiService{
         $sql = "SELECT pb.idPovijestBolesti,pb.bojaPregled FROM povijestBolesti pb 
             WHERE pb.mboPacijent = '$mboPacijent' 
             AND pb.idObradaLijecnik = '$idObrada' 
-            AND pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+            AND TRIM(pb.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
             AND pb.idPovijestBolesti = 
             (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
             WHERE pb2.mboPacijent = '$mboPacijent' 
             AND pb2.idObradaLijecnik = '$idObrada' 
-            AND pb2.mkbSifraPrimarna = '$mkbSifraPrimarna')";
+            AND TRIM(pb2.mkbSifraPrimarna) = '$mkbSifraPrimarna')";
         //Rezultat upita spremam u varijablu $resultMBO
         $result = mysqli_query($conn,$sql);
         //Ako rezultat upita ima podataka u njemu (znači nije prazan)
@@ -135,8 +135,9 @@ class PovijestBolestiService{
         if($tipSlucaj == "noviSlucaj"){
             /******************************** */
             //Provjera je li postoji već ova primarna dijagnoza u bazi
-            $sqlProvjera = "SELECT pb.mkbSifraPrimarna FROM povijestBolesti pb 
-                            WHERE pb.idObradaLijecnik = '$idObrada' AND pb.mboPacijent IN 
+            $sqlProvjera = "SELECT TRIM(pb.mkbSifraPrimarna) FROM povijestBolesti pb 
+                            WHERE pb.idObradaLijecnik = '$idObrada' 
+                            AND pb.mboPacijent IN 
                             (SELECT pacijent.mboPacijent FROM pacijent 
                             WHERE pacijent.idPacijent = '$idPacijent')";
             //Rezultat upita spremam u varijablu $resultProvjera

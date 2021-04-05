@@ -13,7 +13,7 @@ class NalaziDetailService {
         $response = [];
 
         $sql = "SELECT n.idPacijent, n.idSpecijalist, n.idZdrUst, 
-                n.sifDjel, n.mkbSifraPrimarna, n.misljenjeSpecijalist, 
+                n.sifDjel, TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, n.misljenjeSpecijalist, 
                 n.datumNalaz, n.vrijemeNalaz 
                 FROM nalaz n 
                 WHERE n.idNalaz = '$idNalaz'";
@@ -40,7 +40,7 @@ class NalaziDetailService {
                         AND n.idSpecijalist = '$idSpecijalist' 
                         AND n.idZdrUst = '$idZdrUst' 
                         AND n.sifDjel = '$sifDjel' 
-                        AND n.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                        AND TRIM(n.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                         AND n.misljenjeSpecijalist = '$misljenjeSpecijalist' 
                         AND n.datumNalaz = '$datumNalaz' 
                         AND n.vrijemeNalaz = '$vrijemeNalaz'";
