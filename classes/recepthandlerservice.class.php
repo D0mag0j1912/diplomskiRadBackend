@@ -80,7 +80,8 @@ class ReceptHandlerService{
         //Ako je proizvod pronađen u OSNOVNOJ LISTI
         if($pronasao == true){
             //Kreiram sql upit koji će dohvatiti podatke pacijenta i recepta
-            $sql = "SELECT r.mkbSifraPrimarna, d.imeDijagnoza AS nazivPrimarna, GROUP_CONCAT(DISTINCT r.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna,
+            $sql = "SELECT TRIM(r.mkbSifraPrimarna) AS mkbSifraPrimarna, 
+                    TRIM(d.imeDijagnoza) AS nazivPrimarna, GROUP_CONCAT(DISTINCT TRIM(r.mkbSifraSekundarna) SEPARATOR ' ') AS mkbSifraSekundarna,
                     r.proizvod, r.oblikJacinaPakiranjeLijek, r.kolicina, r.doziranje, 
                     r.dostatnost, r.hitnost, r.ponovljiv, r.brojPonavljanja, r.sifraSpecijalist, 
                     r.idPacijent, r.datumRecept, r.vrijemeRecept FROM recept r 
@@ -136,7 +137,8 @@ class ReceptHandlerService{
             //Ako je lijek PRONAĐEN u DOPUNSKOJ LISTI LIJEKOVA
             if($pronasao == true){
                 //Kreiram sql upit koji će dohvatiti podatke pacijenta i recepta
-                $sql = "SELECT r.mkbSifraPrimarna,d.imeDijagnoza AS nazivPrimarna, GROUP_CONCAT(DISTINCT r.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna,
+                $sql = "SELECT TRIM(r.mkbSifraPrimarna) AS mkbSifraPrimarna, 
+                        TRIM(d.imeDijagnoza) AS nazivPrimarna, GROUP_CONCAT(DISTINCT TRIM(r.mkbSifraSekundarna) SEPARATOR ' ') AS mkbSifraSekundarna,
                         r.proizvod, r.oblikJacinaPakiranjeLijek, r.kolicina, r.doziranje, 
                         r.dostatnost, r.hitnost, r.ponovljiv, r.brojPonavljanja, r.sifraSpecijalist, 
                         r.idPacijent, r.datumRecept, r.vrijemeRecept FROM recept r 
@@ -158,7 +160,8 @@ class ReceptHandlerService{
             //Ako OJP i zaštićeno ime NISU pronađeni u DOPUNSKOJ LISTI lijekova
             else if($pronasao == false){
                 //Kreiram sql upit koji će dohvatiti podatke pacijenta i recepta
-                $sql = "SELECT r.mkbSifraPrimarna, d.imeDijagnoza AS nazivPrimarna, GROUP_CONCAT(DISTINCT r.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna,
+                $sql = "SELECT TRIM(r.mkbSifraPrimarna) AS mkbSifraPrimarna, 
+                        TRIM(d.imeDijagnoza) AS nazivPrimarna, GROUP_CONCAT(DISTINCT TRIM(r.mkbSifraSekundarna) SEPARATOR ' ') AS mkbSifraSekundarna,
                         r.proizvod, r.oblikJacinaPakiranjeLijek, r.kolicina, r.doziranje, 
                         r.dostatnost, r.hitnost, r.ponovljiv, r.brojPonavljanja, r.sifraSpecijalist, 
                         r.idPacijent, r.datumRecept, r.vrijemeRecept FROM recept r 
@@ -418,7 +421,7 @@ class ReceptHandlerService{
         }
         //Ako $pretraga nije prazna
         else{
-            $sql = "SELECT DISTINCT(r.mkbSifraPrimarna) AS mkbSifraPrimarna,CONCAT(p.imePacijent,' ',p.prezPacijent) AS Pacijent, 
+            $sql = "SELECT DISTINCT(TRIM(r.mkbSifraPrimarna)) AS mkbSifraPrimarna,CONCAT(p.imePacijent,' ',p.prezPacijent) AS Pacijent, 
                     DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
                     IF(r.oblikJacinaPakiranjeLijek IS NULL, 
                     r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod, 
@@ -426,10 +429,10 @@ class ReceptHandlerService{
                     LEFT JOIN pacijent p ON p.idPacijent = r.idPacijent 
                     LEFT JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna 
                     LEFT JOIN dijagnoze d2 ON d2.mkbSifra = r.mkbSifraSekundarna
-                    WHERE UPPER(r.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(d.imeDijagnoza) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(r.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(d2.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
+                    WHERE UPPER(TRIM(r.mkbSifraPrimarna)) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(TRIM(d.imeDijagnoza)) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(TRIM(r.mkbSifraSekundarna)) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(TRIM(d2.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')
                     OR UPPER(CONCAT(p.imePacijent,' ',p.prezPacijent)) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(DATE_FORMAT(r.datumRecept,'%d.%m.%Y')) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(IF(r.oblikJacinaPakiranjeLijek IS NULL,r.proizvod,CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek))) LIKE UPPER('%{$pretraga}%') 

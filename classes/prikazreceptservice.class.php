@@ -37,8 +37,9 @@ class PrikazReceptService {
         //Za svaku pojedinu šifru sekundarne dijagnoze iz polja, pronađi joj šifru i naziv iz baze
         foreach($polje as $mkbSifra){
             
-            $sql = "SELECT d.mkbSifra,d.imeDijagnoza FROM dijagnoze d
-                    WHERE d.mkbSifra = '$mkbSifra'";
+            $sql = "SELECT TRIM(d.mkbSifra) AS mkbSifra, 
+                    TRIM(d.imeDijagnoza) AS imeDijagnoza FROM dijagnoze d
+                    WHERE TRIM(d.mkbSifra) = '$mkbSifra'";
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {
@@ -124,8 +125,8 @@ class PrikazReceptService {
         //Ako je proizvod pronađen u OSNOVNOJ LISTI
         if($pronasao == true){
             //Kreiram sql upit koji će dohvatiti podatke pacijenta i recepta
-            $sql = "SELECT CONCAT(r.mkbSifraPrimarna,' | ',d.imeDijagnoza) AS mkbSifraPrimarna, 
-                    GROUP_CONCAT(DISTINCT r.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna, 
+            $sql = "SELECT CONCAT(TRIM(r.mkbSifraPrimarna),' | ',TRIM(d.imeDijagnoza)) AS mkbSifraPrimarna, 
+                    GROUP_CONCAT(DISTINCT TRIM(r.mkbSifraSekundarna) SEPARATOR ' ') AS mkbSifraSekundarna, 
                     r.ponovljiv, DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
                     IF(r.oblikJacinaPakiranjeLijek IS NULL, 
                     r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod,
@@ -184,8 +185,8 @@ class PrikazReceptService {
             //Ako je lijek PRONAĐEN u DOPUNSKOJ LISTI LIJEKOVA
             if($pronasao == true){
                 //Kreiram sql upit koji će dohvatiti podatke pacijenta i recepta
-                $sql = "SELECT CONCAT(r.mkbSifraPrimarna,' | ',d.imeDijagnoza) AS mkbSifraPrimarna, 
-                        GROUP_CONCAT(DISTINCT r.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna, 
+                $sql = "SELECT CONCAT(TRIM(r.mkbSifraPrimarna),' | ',TRIM(d.imeDijagnoza)) AS mkbSifraPrimarna, 
+                        GROUP_CONCAT(DISTINCT TRIM(r.mkbSifraSekundarna) SEPARATOR ' ') AS mkbSifraSekundarna, 
                         r.ponovljiv, DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
                         IF(r.oblikJacinaPakiranjeLijek IS NULL, 
                         r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod,
@@ -210,8 +211,8 @@ class PrikazReceptService {
             //Ako OJP i zaštićeno ime NISU pronađeni u DOPUNSKOJ LISTI lijekova
             else if($pronasao == false){
                 //Kreiram sql upit koji će dohvatiti podatke pacijenta i recepta
-                $sql = "SELECT CONCAT(r.mkbSifraPrimarna,' | ',d.imeDijagnoza) AS mkbSifraPrimarna, 
-                        GROUP_CONCAT(DISTINCT r.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna, 
+                $sql = "SELECT CONCAT(TRIM(r.mkbSifraPrimarna),' | ',TRIM(d.imeDijagnoza)) AS mkbSifraPrimarna, 
+                        GROUP_CONCAT(DISTINCT TRIM(r.mkbSifraSekundarna) SEPARATOR ' ') AS mkbSifraSekundarna, 
                         r.ponovljiv, DATE_FORMAT(r.datumRecept,'%d.%m.%Y') AS Datum, 
                         IF(r.oblikJacinaPakiranjeLijek IS NULL, 
                         r.proizvod, CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)) AS proizvod,

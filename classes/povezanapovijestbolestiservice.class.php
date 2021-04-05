@@ -86,17 +86,16 @@ class PovezanaPovijestBolestiService{
             $sql = "SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
                 pb.razlogDolaska, 
                 TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,
-                d.imeDijagnoza AS NazivPrimarna,
+                TRIM(d.imeDijagnoza) AS NazivPrimarna,
                 pb.tipSlucaj,pb.vrijeme FROM povijestbolesti pb 
                 LEFT JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                 LEFT JOIN dijagnoze d2 ON d2.mkbSifra = pb.mkbSifraSekundarna
                 WHERE (UPPER(pb.datum) LIKE UPPER('%{$pretraga}%') 
                 OR UPPER(pb.razlogDolaska) LIKE UPPER('%{$pretraga}%') 
-                OR UPPER(pb.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
-                OR UPPER(pb.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%')
-                OR UPPER(d.imeDijagnoza) LIKE UPPER('%{$pretraga}%') 
-                OR UPPER(d2.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
-                OR UPPER(pb.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%')) 
+                OR UPPER(TRIM(pb.mkbSifraPrimarna)) LIKE UPPER('%{$pretraga}%') 
+                OR UPPER(TRIM(pb.mkbSifraSekundarna)) LIKE UPPER('%{$pretraga}%')
+                OR UPPER(TRIM(d.imeDijagnoza)) LIKE UPPER('%{$pretraga}%') 
+                OR UPPER(TRIM(d2.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')) 
                 AND pb.mboPacijent = '$mboPacijent' 
                 GROUP BY pb.mkbSifraPrimarna
                 ORDER BY Datum DESC, vrijeme DESC
@@ -127,12 +126,13 @@ class PovezanaPovijestBolestiService{
         //Kreiram prazno polje odgovora
         $response = [];
 
-        $sql = "SELECT DISTINCT(TRIM(pb.mkbSifraPrimarna)) AS mkbSifraPrimarna,d.mkbSifra,d.imeDijagnoza, 
+        $sql = "SELECT DISTINCT(TRIM(pb.mkbSifraPrimarna)) AS mkbSifraPrimarna, 
+                TRIM(d.mkbSifra) AS mkbSifra, TRIM(d.imeDijagnoza) AS imeDijagnoza, 
                 DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,pb.vrijeme,pb.razlogDolaska,pb.tipSlucaj FROM dijagnoze d 
                 JOIN povijestbolesti pb ON pb.mkbSifraSekundarna = d.mkbSifra 
                 WHERE pb.datum = '$datum' 
                 AND pb.razlogDolaska = '$razlogDolaska' 
-                AND pb.mkbSifraPrimarna = '$mkbSifraPrimarna' 
+                AND TRIM(pb.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                 AND pb.tipSlucaj = '$tipSlucaj' 
                 AND pb.vrijeme = '$vrijeme' 
                 AND pb.mboPacijent IN 

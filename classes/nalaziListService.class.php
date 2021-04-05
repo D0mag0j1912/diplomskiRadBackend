@@ -54,8 +54,8 @@ class NalaziListService {
                     OR UPPER(zd.nazivDjel) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(n.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(n.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%')
-                    OR UPPER(d.imeDijagnoza) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(d2.imeDijagnoza) LIKE UPPER('%{$pretraga}%')) 
+                    OR UPPER(TRIM(d.imeDijagnoza)) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(TRIM(d2.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')) 
                     GROUP BY n.mkbSifraPrimarna 
                     ORDER BY n.datumNalaz DESC, n.vrijemeNalaz DESC 
                     LIMIT 8";
@@ -84,8 +84,9 @@ class NalaziListService {
         $conn = $baza->spojiSBazom();
         $response = [];
 
-        $sql = "SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, zu.idZdrUst, zu.nazivZdrUst, 
-                n.mkbSifraPrimarna, d.imeDijagnoza 
+        $sql = "SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, zu.idZdrUst, 
+                TRIM(zu.nazivZdrUst) AS nazivZdrUst, 
+                TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, TRIM(d.imeDijagnoza) AS imeDijagnoza 
                 FROM nalaz n 
                 JOIN zdr_ustanova zu ON zu.idZdrUst = n.idZdrUst 
                 JOIN dijagnoze d ON d.mkbSifra = n.mkbSifraPrimarna 

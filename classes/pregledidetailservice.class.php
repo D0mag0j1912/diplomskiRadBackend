@@ -23,10 +23,10 @@ class PreglediDetailService{
                     OR UPPER(pb.anamneza) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(pb.statusPacijent) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(pb.nalaz) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(pb.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(d.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
-                    OR UPPER(d2.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
-                    OR UPPER(pb.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(TRIM(pb.mkbSifraPrimarna)) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(TRIM(d.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(TRIM(d2.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(TRIM(pb.mkbSifraSekundarna)) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(pb.terapija) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(pb.preporukaLijecnik) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(pb.napomena) LIKE UPPER('%{$pretraga}%') 
@@ -40,10 +40,10 @@ class PreglediDetailService{
                     OR UPPER(pb2.anamneza) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(pb2.statusPacijent) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(pb2.nalaz) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(pb2.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(d3.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
-                    OR UPPER(d4.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
-                    OR UPPER(pb2.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(TRIM(pb2.mkbSifraPrimarna)) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(TRIM(d3.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(TRIM(d4.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(TRIM(pb2.mkbSifraSekundarna)) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(pb2.terapija) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(pb2.preporukaLijecnik) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(pb2.napomena) LIKE UPPER('%{$pretraga}%') 
@@ -74,10 +74,10 @@ class PreglediDetailService{
                     OR UPPER(p.nazivPoduzeca) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(ko.opisOsiguranika) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(p.nazivDrzave) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(p.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(d.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
-                    OR UPPER(p.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(d2.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(TRIM(p.mkbSifraPrimarna)) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(TRIM(d.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(TRIM(p.mkbSifraSekundarna)) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(TRIM(d2.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')
                     OR UPPER(DATE_FORMAT(p.datumPregled,'%d.%m.%Y')) LIKE UPPER('%{$pretraga}%')) 
                     AND p.idPregled = 
                     (SELECT MAX(p2.idPregled) FROM pregled p2 
@@ -92,10 +92,10 @@ class PreglediDetailService{
                     OR UPPER(p2.nazivPoduzeca) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(p2.nazivDrzave) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(ko2.opisOsiguranika) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(p2.mkbSifraPrimarna) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(d3.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
-                    OR UPPER(p2.mkbSifraSekundarna) LIKE UPPER('%{$pretraga}%') 
-                    OR UPPER(d4.imeDijagnoza) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(TRIM(p2.mkbSifraPrimarna)) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(TRIM(d3.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(TRIM(p2.mkbSifraSekundarna)) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(TRIM(d4.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')
                     OR UPPER(DATE_FORMAT(p2.datumPregled,'%d.%m.%Y')) LIKE UPPER('%{$pretraga}%')))"; 
             $result = $conn->query($sql);
 
@@ -408,7 +408,7 @@ class PreglediDetailService{
             //Kreiram upit koji dohvaća sve sekundarne dijagnoze
             $sql = "SELECT IF(pb.mkbSifraSekundarna IS NULL, NULL, 
                     CONCAT((SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
-                            WHERE d.mkbSifra = pb.mkbSifraSekundarna),' [',pb.mkbSifraSekundarna,']')) AS sekundarneDijagnoze FROM povijestbolesti pb 
+                            WHERE d.mkbSifra = pb.mkbSifraSekundarna),' [',TRIM(pb.mkbSifraSekundarna),']')) AS sekundarneDijagnoze FROM povijestbolesti pb 
                     WHERE pb.datum = '$datum' 
                     AND pb.vrijeme = '$vrijeme' 
                     AND pb.tipSlucaj = '$tipSlucaj' 
@@ -430,7 +430,7 @@ class PreglediDetailService{
             //Kreiram upit koji dohvaća sve sekundarne dijagnoze
             $sql = "SELECT IF(p.mkbSifraSekundarna IS NULL, NULL, 
                     CONCAT((SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
-                            WHERE d.mkbSifra = p.mkbSifraSekundarna),' [',p.mkbSifraSekundarna,']')) AS sekundarneDijagnoze FROM pregled p 
+                            WHERE d.mkbSifra = p.mkbSifraSekundarna),' [',TRIM(p.mkbSifraSekundarna),']')) AS sekundarneDijagnoze FROM pregled p 
                     WHERE p.datumPregled = '$datum' 
                     AND p.vrijemePregled = '$vrijeme' 
                     AND p.tipSlucaj = '$tipSlucaj' 
@@ -463,9 +463,9 @@ class PreglediDetailService{
             //Kreiram upit koji će dohvatiti sve povijesti bolesti 
             $sql = "SELECT pb.idPovijestBolesti, pb.razlogDolaska, pb.anamneza, 
                     pb.statusPacijent, pb.nalaz, 
-                    CONCAT(TRIM(d.imeDijagnoza),' [',pb.mkbSifraPrimarna,']') AS primarnaDijagnoza,
+                    CONCAT(TRIM(d.imeDijagnoza),' [',TRIM(pb.mkbSifraPrimarna),']') AS primarnaDijagnoza,
                     pb.terapija, pb.preporukaLijecnik, pb.napomena, kor.tip,
-                    pb.datum, pb.vrijeme, pb.tipSlucaj, pb.mkbSifraPrimarna,
+                    pb.datum, pb.vrijeme, pb.tipSlucaj, TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,
                     IF(pb.idRecept IS NULL, NULL, (SELECT r.proizvod FROM recept r 
                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
                                                 WHERE pb.idPovijestBolesti = '$id')) AS proizvod,
@@ -529,8 +529,8 @@ class PreglediDetailService{
                     CONCAT(k.opisOsiguranika,' [',p.oznakaOsiguranika,']') AS oznakaOsiguranika,
                     p.nazivDrzave,
                     IF(p.mkbSifraPrimarna IS NULL, NULL, CONCAT((SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
-                                                                WHERE d.mkbSifra = p.mkbSifraPrimarna),' [',p.mkbSifraPrimarna,']')) AS primarnaDijagnoza, kor.tip,
-                    p.datumPregled, p.vrijemePregled, p.tipSlucaj, p.mkbSifraPrimarna
+                                                                WHERE d.mkbSifra = p.mkbSifraPrimarna),' [',TRIM(p.mkbSifraPrimarna),']')) AS primarnaDijagnoza, kor.tip,
+                    p.datumPregled, p.vrijemePregled, p.tipSlucaj, TRIM(p.mkbSifraPrimarna) AS mkbSifraPrimarna
                     FROM pregled p 
                     JOIN kategorije_osiguranje k ON k.oznakaOsiguranika = p.oznakaOsiguranika 
                     JOIN ambulanta a ON a.idPregled = p.idPregled 

@@ -17,7 +17,8 @@ class CekaonicaService{
         
         //Za svaku pojedinu šifru sekundarne dijagnoze iz polja, pronađi joj šifru i naziv iz baze
         foreach($polje as $mkbSifra){
-            $sql = "SELECT DISTINCT(TRIM(pb.mkbSifraPrimarna)) AS mkbSifraPrimarna,d.mkbSifra,d.imeDijagnoza,pb.idPovijestBolesti FROM dijagnoze d 
+            $sql = "SELECT DISTINCT(TRIM(pb.mkbSifraPrimarna)) AS mkbSifraPrimarna,TRIM(d.mkbSifra) AS mkbSifra, 
+                    TRIM(d.imeDijagnoza) AS imeDijagnoza,pb.idPovijestBolesti FROM dijagnoze d 
                     JOIN povijestBolesti pb ON pb.mkbSifraSekundarna = d.mkbSifra
                     WHERE d.mkbSifra = '$mkbSifra' AND pb.idObradaLijecnik = '$idObrada'";
             $result = $conn->query($sql);
@@ -42,7 +43,8 @@ class CekaonicaService{
         
         //Za svaku pojedinu šifru sekundarne dijagnoze iz polja, pronađi joj šifru i naziv iz baze
         foreach($polje as $mkbSifra){
-            $sql = "SELECT DISTINCT(TRIM(pr.mkbSifraPrimarna)) AS mkbSifraPrimarna,d.mkbSifra,d.imeDijagnoza,pr.idPregled FROM dijagnoze d 
+            $sql = "SELECT DISTINCT(TRIM(pr.mkbSifraPrimarna)) AS mkbSifraPrimarna,TRIM(d.mkbSifra) AS mkbSifra, 
+                    TRIM(d.imeDijagnoza) AS imeDijagnoza,pr.idPregled FROM dijagnoze d 
                     JOIN pregled pr ON pr.mkbSifraSekundarna = d.mkbSifra
                     WHERE d.mkbSifra = '$mkbSifra' AND pr.idObradaMedSestra = '$idObrada'";
             $result = $conn->query($sql);
@@ -66,8 +68,9 @@ class CekaonicaService{
         //Kreiram prazno polje odgovora
         $response = []; 
         
-        $sql = "SELECT pb.idPovijestBolesti,pb.anamneza,pb.razlogDolaska,TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
-                GROUP_CONCAT(DISTINCT pb.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna, pb.vrijeme,
+        $sql = "SELECT pb.idPovijestBolesti,pb.anamneza,pb.razlogDolaska,TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna, 
+                TRIM(d.imeDijagnoza) AS NazivPrimarna, 
+                GROUP_CONCAT(DISTINCT TRIM(pb.mkbSifraSekundarna) SEPARATOR ' ') AS mkbSifraSekundarna, pb.vrijeme,
                 CASE 
                     WHEN r.oblikJacinaPakiranjeLijek IS NULL THEN r.proizvod 
                     WHEN r.oblikJacinaPakiranjeLijek IS NOT NULL THEN CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)
@@ -104,7 +107,8 @@ class CekaonicaService{
         //Kreiram prazno polje odgovora
         $response = []; 
         
-        $sql = "SELECT TRIM(pr.mkbSifraPrimarna) AS mkbSifraPrimarna,d.imeDijagnoza AS NazivPrimarna, 
+        $sql = "SELECT TRIM(pr.mkbSifraPrimarna) AS mkbSifraPrimarna, 
+                TRIM(d.imeDijagnoza) AS NazivPrimarna, 
                 GROUP_CONCAT(DISTINCT pr.mkbSifraSekundarna SEPARATOR ' ') AS mkbSifraSekundarna, pr.vrijemePregled FROM pregled pr 
                 JOIN dijagnoze d ON d.mkbSifra = pr.mkbSifraPrimarna 
                 WHERE pr.idObradaMedSestra = '$idObrada' 
