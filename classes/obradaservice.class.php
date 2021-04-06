@@ -749,29 +749,8 @@ class ObradaService{
             //Izvršavanje statementa
             mysqli_stmt_execute($stmt);
 
-            //Ubacivam podatke u tablicu "pacijent_dodatno" ZATO ŠTO JE PACIJENT AŽURIRAN
-            $sqlPacijentDodavno = "INSERT INTO pacijent_dodatno (idPacijent, datAzurPacijent, tipAzurPacijent) VALUES (?,?,?)";
-
-            //Kreiranje prepared statementa
-            $stmtPacijentDodatno = mysqli_stmt_init($conn);
-            //Ako je statement neuspješan
-            if(!mysqli_stmt_prepare($stmtPacijentDodatno,$sqlPacijentDodavno)){
-                $response["success"] = "false";
-                $response["message"] = "Prepared statement pacijent_dodatno ne valja!";
-            }
-            //Ako je prepared statement u redu
-            else{
-                //Trenutni datum
-                $datum = date('Y-m-d');
-                $tipAzurPacijent = "osnovniPodatci";
-                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                mysqli_stmt_bind_param($stmtPacijentDodatno,"iss", $idPacijent, $datum, $tipAzurPacijent);
-                //Izvršavanje statementa
-                mysqli_stmt_execute($stmtPacijentDodatno);
-
-                $response["success"] = "true";
-                $response["message"] = "Podatci uspješno ažurirani!";
-            }
+            $response["success"] = "true";
+            $response["message"] = "Podatci uspješno ažurirani!";
         }
         //Vraćam odgovor
         return $response;
@@ -842,45 +821,24 @@ class ObradaService{
             //Izvršavanje statementa
             mysqli_stmt_execute($stmtZdr);
 
-            //Ubacivam podatke u tablicu "pacijent_dodatno" ZATO ŠTO JE PACIJENT AŽURIRAN
-            $sqlPacijentDodavno = "INSERT INTO pacijent_dodatno (idPacijent, datAzurPacijent, tipAzurPacijent) VALUES (?,?,?)";
-
+            $sql = "UPDATE pacijent p SET p.mboPacijent = ? 
+                        WHERE p.idPacijent = ?";
             //Kreiranje prepared statementa
-            $stmtPacijentDodatno = mysqli_stmt_init($conn);
+            $stmt = mysqli_stmt_init($conn);
             //Ako je statement neuspješan
-            if(!mysqli_stmt_prepare($stmtPacijentDodatno,$sqlPacijentDodavno)){
+            if(!mysqli_stmt_prepare($stmt,$sql)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement pacijent_dodatno ne valja!";
+                $response["message"] = "Prepared statement osnovnih podataka ne valja!";
             }
             //Ako je prepared statement u redu
             else{
-                //Trenutni datum
-                $datum = date('Y-m-d');
-                $tipAzurPacijent = "zdravstveniPodatci";
                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                mysqli_stmt_bind_param($stmtPacijentDodatno,"iss", $idPacijent, $datum, $tipAzurPacijent);
+                mysqli_stmt_bind_param($stmt,"si",$mbo,$idPacijent);
                 //Izvršavanje statementa
-                mysqli_stmt_execute($stmtPacijentDodatno);
+                mysqli_stmt_execute($stmt);
 
-                $sql = "UPDATE pacijent p SET p.mboPacijent = ? 
-                        WHERE p.idPacijent = ?";
-                //Kreiranje prepared statementa
-                $stmt = mysqli_stmt_init($conn);
-                //Ako je statement neuspješan
-                if(!mysqli_stmt_prepare($stmt,$sql)){
-                    $response["success"] = "false";
-                    $response["message"] = "Prepared statement osnovnih podataka ne valja!";
-                }
-                //Ako je prepared statement u redu
-                else{
-                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                    mysqli_stmt_bind_param($stmt,"si",$mbo,$idPacijent);
-                    //Izvršavanje statementa
-                    mysqli_stmt_execute($stmt);
-
-                    $response["success"] = "true";
-                    $response["message"] = "Podatci uspješno ažurirani!";
-                }
+                $response["success"] = "true";
+                $response["message"] = "Podatci uspješno ažurirani!";
             }
         }
         //Vraćam odgovor

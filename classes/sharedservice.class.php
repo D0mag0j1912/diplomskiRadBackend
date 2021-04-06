@@ -7,14 +7,16 @@ date_default_timezone_set('Europe/Zagreb');
 
 class SharedService {
     //Funkcija koja dohvaća zadnje generirani ID obrade povijesti bolesti
-    function dohvatiSlucajniIDObrada(){
+    function dohvatiSlucajniIDObrada($mboPacijent){
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
         $response = [];
 
         $sql = "SELECT pb.idObradaLijecnik FROM povijestBolesti pb 
-                WHERE pb.idPovijestBolesti = 
-                (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2)";
+                WHERE pb.mboPacijent = '$mboPacijent'
+                AND pb.idPovijestBolesti = 
+                (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
+                WHERE pb2.mboPacijent = '$mboPacijent')";
         $result = $conn->query($sql);
 
         if ($result->num_rows > 0) {

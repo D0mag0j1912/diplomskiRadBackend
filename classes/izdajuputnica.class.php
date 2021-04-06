@@ -33,6 +33,10 @@ class IzdajUputnica {
                 $idObradaLijecnik = $rowZadnjiRedak['idObradaLijecnik'];
             }
         }
+        //Ako pacijent nema još zapisanu povijest bolesti u ovoj sesiji obrade
+        else{
+            return null;
+        }
 
         //Dohvaćam primarnu i sve sekundarne dijagnoze 
         $sql = "SELECT DISTINCT(TRIM(d.imeDijagnoza)) AS NazivPrimarna, 
