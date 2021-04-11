@@ -252,7 +252,7 @@ class DodajReceptService{
             $resultRecept = mysqli_query($conn,"SELECT MAX(r.idRecept) AS ID FROM recept r");
             //Ulazim u polje rezultata i idem redak po redak
             while($rowRecept = mysqli_fetch_array($resultRecept)){
-                //Dohvaćam željeni ID povijesti bolesti
+                //Dohvaćam željeni ID recepta
                 $idRecept = $rowRecept['ID'];
             } 
 
