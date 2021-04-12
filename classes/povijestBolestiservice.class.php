@@ -118,24 +118,28 @@ class PovijestBolestiService{
         }
         //Ako pacijent nije aktivan u obradi, generiram RANDOM broj koji će predstavljati tu obradu
         if(empty($idObrada)){
-            //Generiram random broj
-            $idObrada = rand(1000,10000);
-            //Kreiram upit koji provjerava postoji li već ovaj random generirani broj u bazi za ovog pacijenta
-            $sqlProvjeraObrada = "SELECT pb.idObradaLijecnik FROM povijestBolesti pb 
-                                WHERE pb.idObradaLijecnik = '$idObrada'";
-            //Rezultat upita spremam u varijablu $resultProvjeraObrada
-            $resultProvjeraObrada = mysqli_query($conn,$sqlProvjeraObrada);
-            //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-            if(mysqli_num_rows($resultProvjeraObrada) > 0){
-                //Generiram novi random broj
+            //Označavam da slučajno generirani ID obrade već postoji u bazi
+            $ispravan = false;
+            while($ispravan != true){
+                //Generiram random broj
                 $idObrada = rand(1000,10000);
-            } 
+                //Kreiram upit koji provjerava postoji li već ovaj random generirani broj u bazi za ovog pacijenta
+                $sqlProvjeraObrada = "SELECT pb.idObradaLijecnik FROM povijestBolesti pb 
+                                    WHERE pb.idObradaLijecnik = '$idObrada'";
+                //Rezultat upita spremam u varijablu $resultProvjeraObrada
+                $resultProvjeraObrada = mysqli_query($conn,$sqlProvjeraObrada);
+                //Ako se novo generirani slučajni ID obrade NE NALAZI u bazi
+                if(mysqli_num_rows($resultProvjeraObrada) == 0){
+                    //Izlazim iz petlje
+                    $ispravan = true;
+                } 
+            }
         }
         //Ako je novi slučaj
         if($tipSlucaj == "noviSlucaj"){
             /******************************** */
             //Provjera je li postoji već ova primarna dijagnoza u bazi
-            $sqlProvjera = "SELECT TRIM(pb.mkbSifraPrimarna) FROM povijestBolesti pb 
+            $sqlProvjera = "SELECT TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna FROM povijestBolesti pb 
                             WHERE pb.idObradaLijecnik = '$idObrada' 
                             AND pb.mboPacijent IN 
                             (SELECT pacijent.mboPacijent FROM pacijent 

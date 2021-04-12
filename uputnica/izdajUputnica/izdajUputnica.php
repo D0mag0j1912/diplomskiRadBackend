@@ -25,7 +25,10 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
 
         //Dekodiram potrebna polja
         $molimTraziSe = urldecode($request->molimTraziSe);
-        $napomena = urldecode($request->napomena);
+        //Dekodiranje
+        if($request->napomena != null) {
+            $napomena = urldecode($request->napomena);
+        }
         
         $idZdrUst = mysqli_real_escape_string($conn, trim($request->idZdrUst));
         if(!empty($idZdrUst)){
@@ -46,7 +49,8 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         }
         $vrstaPregled = mysqli_real_escape_string($conn, trim($request->vrstaPregled));
         $molimTraziSe = mysqli_real_escape_string($conn, trim($molimTraziSe));
-        $napomena = mysqli_real_escape_string($conn, trim($napomena));
+        //Ako postoji ova varijabla $napomena, uzmi nju, ako ne postoji uzmi $request..
+        $napomena = mysqli_real_escape_string($conn, trim(isset($napomena) ? $napomena : $request->napomena));
         $idLijecnik = mysqli_real_escape_string($conn, trim($request->idLijecnik));
         $idLijecnik = (int)$idLijecnik;
         $poslanaPrimarna = mysqli_real_escape_string($conn, trim($request->poslanaPrimarna));

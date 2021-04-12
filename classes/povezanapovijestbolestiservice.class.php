@@ -173,25 +173,36 @@ class PovezanaPovijestBolestiService{
         //Ako ovaj pacijent ima zabilježene povijesti bolesti
         else{
             $sql = "SELECT * FROM 
-                    (SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
+                    (SELECT YEAR(pb.datum) AS Godina,pb.idPovijestBolesti,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
                     pb.razlogDolaska,
                     CONCAT(TRIM(d.imeDijagnoza),' | ',TRIM(pb.mkbSifraPrimarna)) AS primarnaDijagnoza, 
-                    pb.tipSlucaj,pb.vrijeme,pb.anamneza FROM povijestbolesti pb 
+                    pb.tipSlucaj,pb.vrijeme,pb.anamneza,
+                    (SELECT COUNT(*) FROM povijestbolesti pb2 
+                    WHERE pb2.prosliPregled = pb.idPovijestBolesti) AS prosliPregled FROM povijestbolesti pb 
                     JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                     WHERE pb.mboPacijent = '$mboPacijent' 
                     AND pb.prosliPregled IS NOT NULL 
-                    GROUP BY pb.prosliPregled 
+                    AND pb.idPovijestBolesti IN 
+                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
+                    WHERE pb2.mboPacijent = '$mboPacijent' 
+                    AND pb2.prosliPregled IS NOT NULL 
+                    GROUP BY pb2.prosliPregled)
                     UNION ALL 
-                    SELECT YEAR(pb.datum) AS Godina,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
+                    SELECT YEAR(pb.datum) AS Godina,pb.idPovijestBolesti,DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,
                     pb.razlogDolaska,
                     CONCAT(TRIM(d.imeDijagnoza),' | ',TRIM(pb.mkbSifraPrimarna)) AS primarnaDijagnoza, 
-                    pb.tipSlucaj,pb.vrijeme,pb.anamneza FROM povijestbolesti pb 
+                    pb.tipSlucaj,pb.vrijeme,pb.anamneza, 
+                    (SELECT COUNT(*) FROM povijestbolesti pb2 
+                    WHERE pb2.prosliPregled = pb.idPovijestBolesti) AS prosliPregled FROM povijestbolesti pb 
                     JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                     WHERE pb.mboPacijent = '$mboPacijent' 
                     AND pb.prosliPregled IS NULL 
-                    GROUP BY pb.vrijeme) AS povezanaPovijestBolesti 
-                    ORDER BY Datum DESC, vrijeme DESC 
-                    LIMIT 7";
+                    AND pb.idPovijestBolesti IN 
+                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
+                    WHERE pb2.mboPacijent = '$mboPacijent' 
+                    AND pb2.prosliPregled IS NULL 
+                    GROUP BY pb2.vrijeme)) AS povezanaPovijestBolesti 
+                    ORDER BY Datum DESC, vrijeme DESC";
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {

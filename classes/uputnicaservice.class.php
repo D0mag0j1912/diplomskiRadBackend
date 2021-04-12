@@ -26,6 +26,7 @@ class UputnicaService {
                 LEFT JOIN zdr_djel zd ON zd.sifDjel = u.sifDjel 
                 LEFT JOIN zdr_radnici zr ON zr.sifraSpecijalist = u.sifraSpecijalist 
                 LEFT JOIN zdr_ustanova zu ON zu.idZdrUst = u.idZdrUst 
+                GROUP BY u.oznaka
                 ORDER BY u.datum DESC, u.vrijeme DESC";
         //Rezultat upita spremam u varijablu $result
         $result = mysqli_query($conn,$sql);

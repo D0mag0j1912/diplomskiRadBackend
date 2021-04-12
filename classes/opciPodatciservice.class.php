@@ -165,7 +165,7 @@ class OpciPodatciService{
         if($tipSlucaj == 'noviSlucaj'){
             /******************************** */
             //Provjera je li postoji već ova primarna dijagnoza u bazi
-            $sqlProvjera = "SELECT TRIM(p.mkbSifraPrimarna) FROM pregled p
+            $sqlProvjera = "SELECT TRIM(p.mkbSifraPrimarna) AS mkbSifraPrimarna FROM pregled p
                             WHERE p.idObradaMedSestra = '$idObrada' 
                             AND p.mboPacijent = '$mbo'";
             //Rezultat upita spremam u varijablu $resultProvjera

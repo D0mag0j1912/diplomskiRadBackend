@@ -82,7 +82,7 @@ class IzdajUputnica {
     //Funkcija koja dodava uputnicu
     function dodajUputnicu($idZdrUst, $sifDjel, $idPacijent, $mboPacijent, $sifraSpecijalist, 
                         $mkbSifraPrimarna, $mkbSifraSekundarna, $vrstaPregled,
-                        $molimTraziSe, $napomena, $idLijecnik, $poslanaMKBSifra,
+                        $molimTraziSe, $napomenaUputnica, $idLijecnik, $poslanaMKBSifra,
                         $poslaniIDObrada, $poslaniTipSlucaj, $poslanoVrijeme){
         //Dohvaćam bazu 
         $baza = new Baza();
@@ -93,6 +93,22 @@ class IzdajUputnica {
         $datum = date('Y-m-d');
         //Trenutno vrijeme
         $vrijeme = date('H:i');
+        //Označavam da slučajno generirana oznaka već postoji u bazi
+        $ispravan = false;
+        while($ispravan != true){
+            //Generiram slučajni oznaku po kojom grupiram
+            $oznaka = uniqid();
+            //Kreiram upit koji provjerava postoji li već ova random generirana oznaka u bazi
+            $sqlProvjeraOznaka = "SELECT u.oznaka FROM uputnica u 
+                                WHERE u.oznaka = '$oznaka';";
+            //Rezultat upita spremam u varijablu $resultProvjeraOznaka
+            $resultProvjeraOznaka = mysqli_query($conn,$sqlProvjeraOznaka);
+            //Ako se novo generirana oznaka NE NALAZI u bazi
+            if(mysqli_num_rows($resultProvjeraOznaka) == 0){
+                //Izlazim iz petlje
+                $ispravan = true;
+            } 
+        }
 
         //Gledam koliko ima sek. dijagnoza pregled u bazi gdje se dodava ID uputnice
         $sqlCountSekundarna = "SELECT COUNT(pb.mkbSifraSekundarna) AS BrojSekundarna FROM povijestBolesti pb
@@ -116,8 +132,8 @@ class IzdajUputnica {
             //Kreiram upit za dodavanje nove uputnice u bazu
             $sql = "INSERT INTO uputnica (idZdrUst,sifDjel,idPacijent,sifraSpecijalist, 
                                         mkbSifraPrimarna,mkbSifraSekundarna,vrstaPregleda, 
-                                        molimTraziSe,napomena,datum,vrijeme) VALUES 
-                                        (?,?,?,?,?,?,?,?,?,?,?)";
+                                        molimTraziSe,napomena,datum,vrijeme,oznaka) VALUES 
+                                        (?,?,?,?,?,?,?,?,?,?,?,?)";
             //Kreiranje prepared statementa
             $stmt = mysqli_stmt_init($conn);
             //Ako je statement neuspješan
@@ -133,10 +149,16 @@ class IzdajUputnica {
                 if(empty($sifraSpecijalist)){
                     $sifraSpecijalist = NULL;
                 }
+                if(empty($napomenaUputnica)){
+                    $napomenaUputnica = NULL;
+                }
+                if(empty($idZdrUst)){
+                    $idZdrUst = NULL;
+                }
                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                mysqli_stmt_bind_param($stmt,"iiiisssssss", $idZdrUst, $sifDjel, $idPacijent, $sifraSpecijalist, 
+                mysqli_stmt_bind_param($stmt,"iiiissssssss", $idZdrUst, $sifDjel, $idPacijent, $sifraSpecijalist, 
                                                             $mkbSifraPrimarna, $prazna, $vrstaPregled, $molimTraziSe, 
-                                                            $napomena, $datum, $vrijeme);
+                                                            $napomenaUputnica, $datum, $vrijeme, $oznaka);
                 //Izvršavanje statementa
                 mysqli_stmt_execute($stmt);
 
@@ -435,8 +457,8 @@ class IzdajUputnica {
                 //Kreiram upit za dodavanje nove uputnice u bazu
                 $sql = "INSERT INTO uputnica (idZdrUst,sifDjel,idPacijent,sifraSpecijalist, 
                                             mkbSifraPrimarna,mkbSifraSekundarna,vrstaPregleda, 
-                                            molimTraziSe,napomena,datum,vrijeme) VALUES 
-                                            (?,?,?,?,?,?,?,?,?,?,?)";
+                                            molimTraziSe,napomena,datum,vrijeme, oznaka) VALUES 
+                                            (?,?,?,?,?,?,?,?,?,?,?,?)";
                 //Kreiranje prepared statementa
                 $stmt = mysqli_stmt_init($conn);
                 //Ako je statement neuspješan
@@ -449,10 +471,16 @@ class IzdajUputnica {
                     if(empty($sifraSpecijalist)){
                         $sifraSpecijalist = NULL;
                     }
+                    if(empty($napomenaUputnica)){
+                        $napomenaUputnica = NULL;
+                    }
+                    if(empty($idZdrUst)){
+                        $idZdrUst = NULL;
+                    }
                     //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                    mysqli_stmt_bind_param($stmt,"iiiisssssss", $idZdrUst, $sifDjel, $idPacijent, $sifraSpecijalist, 
+                    mysqli_stmt_bind_param($stmt,"iiiissssssss", $idZdrUst, $sifDjel, $idPacijent, $sifraSpecijalist, 
                                                                 $mkbSifraPrimarna, $mkb, $vrstaPregled, $molimTraziSe, 
-                                                                $napomena, $datum, $vrijeme);
+                                                                $napomenaUputnica, $datum, $vrijeme, $oznaka);
                     //Izvršavanje statementa
                     mysqli_stmt_execute($stmt);
     

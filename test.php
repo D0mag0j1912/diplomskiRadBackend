@@ -12,8 +12,21 @@ $conn = $baza->spojiSBazom();
 date_default_timezone_set('Europe/Zagreb');
 
 
-$primarnaDijagnoza = "Enteritis uzrokovan adenovirusima | A08.2";
-
-$lastSpace = strrpos($primarnaDijagnoza," ");
-echo trim(substr($primarnaDijagnoza,$lastSpace,strlen($primarnaDijagnoza)));
+//Označavam da slučajno generirana oznaka već postoji u bazi
+$ispravan = false;
+while($ispravan != true){
+    //Generiram slučajni oznaku po kojom grupiram
+    $oznaka = uniqid();
+    //Kreiram upit koji provjerava postoji li već ova random generirana oznaka u bazi
+    $sqlProvjeraOznaka = "SELECT u.oznaka FROM uputnica u 
+                        WHERE u.oznaka = '$oznaka';";
+    //Rezultat upita spremam u varijablu $resultProvjeraOznaka
+    $resultProvjeraOznaka = mysqli_query($conn,$sqlProvjeraOznaka);
+    //Ako se novo generirana oznaka NE NALAZI u bazi
+    if(mysqli_num_rows($resultProvjeraOznaka) == 0){
+        //Izlazim iz petlje
+        $ispravan = true;
+    } 
+}
+echo $oznaka;
 ?>
