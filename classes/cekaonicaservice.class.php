@@ -7,7 +7,7 @@ date_default_timezone_set('Europe/Zagreb');
 class CekaonicaService{
 
     //Funkcija koja dohvaća naziv i šifru sekundarnih dijagnoza na osnovu šifre sek. dijagnoze
-    function dohvatiNazivSifraPovijestBolesti($polje,$idObrada){
+    function dohvatiNazivSifraPovijestBolesti($datum,$vrijeme,$tipSlucaj,$mkbSifraPrimarna,$idObrada){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -15,25 +15,27 @@ class CekaonicaService{
         //Kreiram prazno polje odgovora
         $response = [];
         
-        //Za svaku pojedinu šifru sekundarne dijagnoze iz polja, pronađi joj šifru i naziv iz baze
-        foreach($polje as $mkbSifra){
-            $sql = "SELECT DISTINCT(TRIM(pb.mkbSifraPrimarna)) AS mkbSifraPrimarna,TRIM(d.mkbSifra) AS mkbSifra, 
-                    TRIM(d.imeDijagnoza) AS imeDijagnoza,pb.idPovijestBolesti FROM dijagnoze d 
-                    JOIN povijestBolesti pb ON pb.mkbSifraSekundarna = d.mkbSifra
-                    WHERE TRIM(d.mkbSifra) = '$mkbSifra' AND pb.idObradaLijecnik = '$idObrada'";
-            $result = $conn->query($sql);
+        $sql = "SELECT IF(pb.mkbSifraSekundarna IS NULL, NULL, 
+                CONCAT((SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
+                        WHERE d.mkbSifra = pb.mkbSifraSekundarna),' [',TRIM(pb.mkbSifraSekundarna),']')) AS sekundarneDijagnoze, 
+                DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,pb.vrijeme,pb.tipSlucaj FROM povijestbolesti pb 
+                WHERE pb.datum = '$datum' 
+                AND pb.vrijeme = '$vrijeme' 
+                AND pb.tipSlucaj = '$tipSlucaj' 
+                AND TRIM(pb.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
+                AND pb.idObradaLijecnik = '$idObrada';";
+        $result = $conn->query($sql);
 
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    $response[] = $row;
-                }
-            } 
-        }   
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        } 
         return $response;
     }
 
     //Funkcija koja dohvaća naziv i šifru sekundarnih dijagnoza na osnovu šifre sek. dijagnoze
-    function dohvatiNazivSifraOpciPodatci($polje,$idObrada){
+    function dohvatiNazivSifraOpciPodatci($datum,$vrijeme,$tipSlucaj,$mkbSifraPrimarna,$idObrada){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -41,21 +43,23 @@ class CekaonicaService{
         //Kreiram prazno polje odgovora
         $response = [];
         
-        //Za svaku pojedinu šifru sekundarne dijagnoze iz polja, pronađi joj šifru i naziv iz baze
-        foreach($polje as $mkbSifra){
-            $sql = "SELECT DISTINCT(TRIM(pr.mkbSifraPrimarna)) AS mkbSifraPrimarna,TRIM(d.mkbSifra) AS mkbSifra, 
-                    TRIM(d.imeDijagnoza) AS imeDijagnoza,pr.idPregled FROM dijagnoze d 
-                    JOIN pregled pr ON pr.mkbSifraSekundarna = d.mkbSifra
-                    WHERE TRIM(d.mkbSifra) = '$mkbSifra' 
-                    AND pr.idObradaMedSestra = '$idObrada'";
-            $result = $conn->query($sql);
 
-            if ($result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    $response[] = $row;
-                }
-            } 
-        }
+        $sql = "SELECT IF(p.mkbSifraSekundarna IS NULL, NULL, 
+                CONCAT((SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
+                        WHERE d.mkbSifra = p.mkbSifraSekundarna),' [',TRIM(p.mkbSifraSekundarna),']')) AS sekundarneDijagnoze, 
+                DATE_FORMAT(p.datumPregled,'%d.%m.%Y') AS Datum,p.vrijemePregled,p.tipSlucaj FROM pregled p 
+                WHERE p.datumPregled = '$datum' 
+                AND p.vrijemePregled = '$vrijeme' 
+                AND p.tipSlucaj = '$tipSlucaj' 
+                AND TRIM(p.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
+                AND p.idObradaMedSestra = '$idObrada';";
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        } 
 
         return $response;
     }
@@ -70,24 +74,49 @@ class CekaonicaService{
         $response = []; 
         
         $sql = "SELECT pb.idPovijestBolesti,pb.anamneza,pb.razlogDolaska,TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna, 
-                TRIM(d.imeDijagnoza) AS NazivPrimarna, 
-                GROUP_CONCAT(DISTINCT TRIM(pb.mkbSifraSekundarna) SEPARATOR ' ') AS mkbSifraSekundarna, pb.vrijeme,
+                TRIM(d.imeDijagnoza) AS NazivPrimarna, pb.vrijeme, pb.tipSlucaj,
+                DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum, p.imePacijent, p.prezPacijent, p.mboPacijent, 
+                p2.mboPacijent AS mboAktivniPacijent,
                 CASE 
                     WHEN r.oblikJacinaPakiranjeLijek IS NULL THEN r.proizvod 
                     WHEN r.oblikJacinaPakiranjeLijek IS NOT NULL THEN CONCAT(r.proizvod,' ',r.oblikJacinaPakiranjeLijek)
                 END AS proizvod, r.kolicina, r.doziranje, r.dostatnost, r.hitnost, r.ponovljiv, 
                 r.brojPonavljanja, 
                 CASE 
-                    WHEN r.sifraSpecijalist IS NOT NULL THEN (SELECT CONCAT(zr.tipSpecijalist,' [',zr.sifraSpecijalist,']'))
+                    WHEN r.sifraSpecijalist IS NOT NULL THEN (SELECT CONCAT((SELECT TRIM(zr.tipSpecijalist) FROM zdr_radnici zr 
+                                                                            WHERE zr.sifraSpecijalist = r.sifraSpecijalist),' [',TRIM(r.sifraSpecijalist),']'))
                     WHEN r.sifraSpecijalist IS NULL THEN NULL
-                END AS specijalist
+                END AS specijalist,
+                CASE 
+                    WHEN u.idZdrUst IS NOT NULL THEN (SELECT CONCAT((SELECT TRIM(zu.nazivZdrUst) FROM zdr_ustanova zu 
+                                                                    WHERE zu.idZdrUst = u.idZdrUst),' [',TRIM(u.idZdrUst),']'))
+                    WHEN u.idZdrUst IS NULL THEN NULL
+                END AS zdravstvenaUstanova,
+                CASE 
+                    WHEN u.sifDjel IS NOT NULL THEN (SELECT CONCAT((SELECT TRIM(zd.nazivDjel) FROM zdr_djel zd 
+                                                                    WHERE zd.sifDjel = u.sifDjel),' [',TRIM(u.sifDjel),']'))
+                    WHEN u.sifDjel IS NULL THEN NULL
+                END AS zdravstvenaDjelatnost,
+                CASE 
+                    WHEN u.sifraSpecijalist IS NOT NULL THEN (SELECT CONCAT((SELECT TRIM(zr.tipSpecijalist) FROM zdr_radnici zr 
+                                                                            WHERE zr.sifraSpecijalist = u.sifraSpecijalist),' [',TRIM(u.sifraSpecijalist),']'))
+                    WHEN u.sifraSpecijalist IS NULL THEN NULL
+                END AS specijalistUputnica,
+                u.vrstaPregleda AS vrstaPregled,u.molimTraziSe,
+                CASE 
+                    WHEN u.napomena IS NOT NULL THEN u.napomena
+                    WHEN u.napomena IS NULL THEN NULL
+                END AS napomena
                 FROM povijestbolesti pb 
                 LEFT JOIN recept r ON r.idRecept = pb.idRecept 
-                LEFT JOIN zdr_radnici zr ON zr.sifraSpecijalist = r.sifraSpecijalist
+                LEFT JOIN uputnica u ON u.idUputnica = pb.idUputnica
                 LEFT JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
+                LEFT JOIN pacijent p ON p.mboPacijent = pb.mboPacijent 
+                LEFT JOIN obrada_lijecnik o ON o.idObrada = pb.idObradaLijecnik 
+                LEFT JOIN pacijent p2 ON p2.idPacijent = o.idPacijent
                 WHERE pb.idObradaLijecnik = '$idObrada'
-                GROUP BY pb.mkbSifraPrimarna 
-                ORDER BY pb.vrijeme DESC";
+                GROUP BY pb.vrijeme 
+                ORDER BY pb.datum DESC, pb.vrijeme DESC";
         $result = $conn->query($sql);
 
         if ($result->num_rows > 0) {
@@ -109,11 +138,16 @@ class CekaonicaService{
         $response = []; 
         
         $sql = "SELECT TRIM(pr.mkbSifraPrimarna) AS mkbSifraPrimarna, 
-                TRIM(d.imeDijagnoza) AS NazivPrimarna, 
-                GROUP_CONCAT(DISTINCT TRIM(pr.mkbSifraSekundarna) SEPARATOR ' ') AS mkbSifraSekundarna, pr.vrijemePregled FROM pregled pr 
+                TRIM(d.imeDijagnoza) AS NazivPrimarna, pr.vrijemePregled, pr.tipSlucaj,
+                DATE_FORMAT(pr.datumPregled,'%d.%m.%Y') AS Datum, p.imePacijent, p.prezPacijent, p.mboPacijent,
+                p2.mboPacijent AS mboAktivniPacijent FROM pregled pr
                 JOIN dijagnoze d ON d.mkbSifra = pr.mkbSifraPrimarna 
+                JOIN pacijent p ON p.mboPacijent = pr.mboPacijent 
+                JOIN obrada_med_sestra o ON o.idObrada = pr.idObradaMedSestra 
+                JOIN pacijent p2 ON p2.idPacijent = o.idPacijent
                 WHERE pr.idObradaMedSestra = '$idObrada' 
-                GROUP BY pr.mkbSifraPrimarna";
+                GROUP BY pr.vrijemePregled 
+                ORDER BY pr.datumPregled DESC, pr.vrijemePregled DESC";
         $result = $conn->query($sql);
 
         if ($result->num_rows > 0) {
@@ -135,7 +169,9 @@ class CekaonicaService{
         $response = []; 
         //Ako je tip korisnika "lijecnik":
         if($tip == "lijecnik"){
-            $sql = "SELECT p.imePacijent,p.prezPacijent,DATE_FORMAT(o.datumDodavanja,'%d.%m.%Y') AS Datum,o.idObrada FROM pacijent p 
+            $sql = "SELECT p.imePacijent,p.prezPacijent, 
+                    DATE_FORMAT(o.datumDodavanja,'%d.%m.%Y') AS Datum,
+                    o.idObrada FROM pacijent p 
                     JOIN obrada_lijecnik o ON o.idPacijent = p.idPacijent 
                     WHERE o.idObrada = '$idObrada'";
             $result = $conn->query($sql);
@@ -148,7 +184,9 @@ class CekaonicaService{
         }
         //Ako je tip korisnika "sestra":
         else if($tip == "sestra"){
-            $sql = "SELECT p.imePacijent,p.prezPacijent,DATE_FORMAT(o.datumDodavanja,'%d.%m.%Y') AS Datum,o.idObrada FROM pacijent p 
+            $sql = "SELECT p.imePacijent,p.prezPacijent,
+                    DATE_FORMAT(o.datumDodavanja,'%d.%m.%Y') AS Datum, 
+                    o.idObrada FROM pacijent p 
                     JOIN obrada_med_sestra o ON o.idPacijent = p.idPacijent 
                     WHERE o.idObrada = '$idObrada'";
             $result = $conn->query($sql);

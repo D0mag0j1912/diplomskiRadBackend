@@ -18,9 +18,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $response = [];
 
     //Ako je frontend poslao ID čekaonice
-    if(isset($_GET['mkbSifraSekundarna']) && isset($_GET['idObrada']) && isset($_GET['tip'])){
-        //Dohvati spojene šifre sekundarnih dijagnoza
-        $mkbSifraSekundarna = $_GET['mkbSifraSekundarna'];
+    if(isset($_GET['datum']) && 
+        isset($_GET['vrijeme']) && 
+        isset($_GET['tipSlucaj']) && 
+        isset($_GET['primarnaDijagnoza']) && 
+        isset($_GET['idObrada']) && 
+        isset($_GET['tip'])){
+        //Uzmi vrijednost datuma pregleda 
+        $datum = date('Y-m-d', strtotime($_GET["datum"]));
+        //Dohvaćam vrijeme
+        $vrijeme = mysqli_real_escape_string($conn, trim($_GET['vrijeme']));
+        //Dohvaćam tip slučaja
+        $tipSlucaj = mysqli_real_escape_string($conn, trim($_GET['tipSlucaj']));
+        //Dohvaćam MKB šifru primarne dijagnoze
+        $primarnaDijagnoza = mysqli_real_escape_string($conn, trim($_GET['primarnaDijagnoza']));
+        //Dohvaćam poziciju zadnjeg space-a
+        $firstSpace = strpos($primarnaDijagnoza," ");
+        //Uzmi vrijednost šifre primarne dijagnoze
+        $mkbSifraPrimarna = trim(substr($primarnaDijagnoza,0,$firstSpace));
         //Dohvati ID obrade
         $idObrada = $_GET['idObrada'];
         $idObrada = (int)$idObrada;
@@ -28,17 +43,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $tip = mysqli_real_escape_string($conn, trim($_GET['tip']));
         //Ako je tip korisnika "lijecnik":
         if($tip == "lijecnik"){
-            //Svaku pojedinu sekundarnu dijagnozu iz stringa odvoji kao jedan element polja
-            $polje = explode(" ",$mkbSifraSekundarna);
             //Punim polje sa odgovorom funkcije
-            $response = $servis->dohvatiNazivSifraPovijestBolesti($polje,$idObrada);
+            $response = $servis->dohvatiNazivSifraPovijestBolesti($datum,$vrijeme,$tipSlucaj,$mkbSifraPrimarna,$idObrada);
         }
         //Ako je tip korisnika "medicinska sestra":
         else if($tip == "sestra"){
-            //Svaku pojedinu sekundarnu dijagnozu iz stringa odvoji kao jedan element polja
-            $polje = explode(" ",$mkbSifraSekundarna);
             //Punim polje sa odgovorom funkcije
-            $response = $servis->dohvatiNazivSifraOpciPodatci($polje,$idObrada);
+            $response = $servis->dohvatiNazivSifraOpciPodatci($datum,$vrijeme,$tipSlucaj,$mkbSifraPrimarna,$idObrada);
         }
         //Vrati odgovor frontendu
         echo json_encode($response);
