@@ -452,7 +452,7 @@ class PreglediDetailService{
     }
 
     //Funkcija koja dohvaća podatke cijelog pregleda na osnovu tipa korisnika
-    function dohvatiCijeliPregled($tipKorisnik,$id){
+    function dohvatiCijeliPregled($tipKorisnik,$idPovijestBolesti){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -466,41 +466,68 @@ class PreglediDetailService{
                     CONCAT(TRIM(d.imeDijagnoza),' [',TRIM(pb.mkbSifraPrimarna),']') AS primarnaDijagnoza,
                     pb.terapija, pb.preporukaLijecnik, pb.napomena, kor.tip,
                     pb.datum, pb.vrijeme, pb.tipSlucaj, TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna,
-                    IF(pb.idRecept IS NULL, NULL, (SELECT r.proizvod FROM recept r 
+                    IF(pb.idRecept IS NULL, NULL, (SELECT TRIM(r.proizvod) FROM recept r 
                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
-                                                WHERE pb.idPovijestBolesti = '$id')) AS proizvod,
-                    IF(pb.idRecept IS NULL, NULL, (SELECT r.oblikJacinaPakiranjeLijek FROM recept r 
+                                                WHERE pb.idPovijestBolesti = '$idPovijestBolesti')) AS proizvod,
+                    IF(pb.idRecept IS NULL, NULL, (SELECT TRIM(r.oblikJacinaPakiranjeLijek) FROM recept r 
                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
-                                                WHERE pb.idPovijestBolesti = '$id')) AS oblikJacinaPakiranjeLijek,
+                                                WHERE pb.idPovijestBolesti = '$idPovijestBolesti')) AS oblikJacinaPakiranjeLijek,
                     IF(pb.idRecept IS NULL, NULL, (SELECT r.kolicina FROM recept r 
                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
-                                                WHERE pb.idPovijestBolesti = '$id')) AS kolicina,
+                                                WHERE pb.idPovijestBolesti = '$idPovijestBolesti')) AS kolicina,
                     IF(pb.idRecept IS NULL, NULL, (SELECT r.doziranje FROM recept r 
                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
-                                                WHERE pb.idPovijestBolesti = '$id')) AS doziranje,
+                                                WHERE pb.idPovijestBolesti = '$idPovijestBolesti')) AS doziranje,
                     IF(pb.idRecept IS NULL, NULL, (SELECT r.dostatnost FROM recept r 
                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
-                                                WHERE pb.idPovijestBolesti = '$id')) AS dostatnost,
+                                                WHERE pb.idPovijestBolesti = '$idPovijestBolesti')) AS dostatnost,
                     IF(pb.idRecept IS NULL, NULL, (SELECT r.hitnost FROM recept r 
                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
-                                                WHERE pb.idPovijestBolesti = '$id')) AS hitnost,
+                                                WHERE pb.idPovijestBolesti = '$idPovijestBolesti')) AS hitnost,
                     IF(pb.idRecept IS NULL, NULL, (SELECT r.ponovljiv FROM recept r 
                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
-                                                WHERE pb.idPovijestBolesti = '$id')) AS ponovljiv,
+                                                WHERE pb.idPovijestBolesti = '$idPovijestBolesti')) AS ponovljiv,
                     IF(pb.idRecept IS NULL, NULL, (SELECT r.brojPonavljanja FROM recept r 
                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
-                                                WHERE pb.idPovijestBolesti = '$id')) AS brojPonavljanja,
-                    IF(pb.idRecept IS NULL, NULL, (SELECT CONCAT((SELECT DISTINCT(zr.tipSpecijalist) FROM zdr_radnici zr 
+                                                WHERE pb.idPovijestBolesti = '$idPovijestBolesti')) AS brojPonavljanja,
+                    IF(pb.idRecept IS NULL, NULL, (SELECT CONCAT((SELECT DISTINCT(TRIM(zr.tipSpecijalist)) FROM zdr_radnici zr 
                                                                 JOIN recept r ON r.sifraSpecijalist = zr.sifraSpecijalist 
                                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
-                                                                WHERE pb.idPovijestBolesti = '$id'),' [',r.sifraSpecijalist,']') FROM recept r 
+                                                                WHERE pb.idPovijestBolesti = '$idPovijestBolesti'),' [',r.sifraSpecijalist,']') FROM recept r 
                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
-                                                WHERE pb.idPovijestBolesti = '$id')) AS specijalist FROM povijestBolesti pb 
+                                                WHERE pb.idPovijestBolesti = '$idPovijestBolesti')) AS specijalist,
+                    IF(pb.idUputnica IS NULL, NULL, (SELECT CONCAT((SELECT TRIM(zu.nazivZdrUst) FROM zdr_ustanova zu 
+                                                                JOIN uputnica u ON u.idZdrUst = zu.idZdrUst 
+                                                                JOIN povijestbolesti pb ON pb.idUputnica = u.idUputnica 
+                                                                WHERE pb.idPovijestBolesti = '$idPovijestBolesti'),' [',u.idZdrUst,']') FROM uputnica u 
+                                                    JOIN povijestbolesti pb ON pb.idUputnica = u.idUputnica 
+                                                    WHERE pb.idPovijestBolesti = '$idPovijestBolesti')) AS zdravstvenaUstanova,
+                    IF(pb.idUputnica IS NULL, NULL, (SELECT CONCAT((SELECT TRIM(zd.nazivDjel) FROM zdr_djel zd 
+                                                                JOIN uputnica u ON u.sifDjel = zd.sifDjel 
+                                                                JOIN povijestbolesti pb ON pb.idUputnica = u.idUputnica 
+                                                                WHERE pb.idPovijestBolesti = '$idPovijestBolesti'),' [',u.sifDjel,']') FROM uputnica u 
+                                                    JOIN povijestbolesti pb ON pb.idUputnica = u.idUputnica 
+                                                    WHERE pb.idPovijestBolesti = '$idPovijestBolesti')) AS zdravstvenaDjelatnost,
+                    IF(pb.idUputnica IS NULL, NULL, (SELECT u.vrstaPregleda FROM uputnica u 
+                                                    JOIN povijestbolesti pb ON pb.idUputnica = u.idUputnica 
+                                                    WHERE pb.idPovijestBolesti = '$idPovijestBolesti')) AS vrstaPregled,
+                    IF(pb.idUputnica IS NULL, NULL, (SELECT CONCAT((SELECT DISTINCT(TRIM(zr.tipSpecijalist)) FROM zdr_radnici zr 
+                                                                JOIN uputnica u ON u.sifraSpecijalist = zr.sifraSpecijalist 
+                                                                JOIN povijestbolesti pb ON pb.idUputnica = u.idUputnica 
+                                                                WHERE pb.idPovijestBolesti = '$idPovijestBolesti'),' [',u.sifraSpecijalist,']') FROM uputnica u 
+                                                JOIN povijestbolesti pb ON pb.idUputnica = u.idUputnica 
+                                                WHERE pb.idPovijestBolesti = '$idPovijestBolesti')) AS specijalistUputnica,
+                    IF(pb.idUputnica IS NULL, NULL, (SELECT TRIM(u.molimTraziSe) FROM uputnica u 
+                                                    JOIN povijestbolesti pb ON pb.idUputnica = u.idUputnica 
+                                                    WHERE pb.idPovijestBolesti = '$idPovijestBolesti')) AS molimTraziSe,
+                    IF(pb.idUputnica IS NULL, NULL, (SELECT TRIM(u.napomena) FROM uputnica u 
+                                                    JOIN povijestbolesti pb ON pb.idUputnica = u.idUputnica 
+                                                    WHERE pb.idPovijestBolesti = '$idPovijestBolesti')) AS napomena FROM povijestBolesti pb 
                     JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
                     JOIN ambulanta a ON a.idPovijestBolesti = pb.idPovijestBolesti 
                     JOIN lijecnik l ON l.idLijecnik = a.idLijecnik 
                     JOIN korisnik kor ON kor.idKorisnik = l.idKorisnik
-                    WHERE pb.idPovijestBolesti = '$id';";
+                    WHERE pb.idPovijestBolesti = '$idPovijestBolesti'";
             //Rezultat upita spremam u varijablu $result
             $result = mysqli_query($conn,$sql);
             //Ako rezultat upita ima podataka u njemu (znači nije prazan)
