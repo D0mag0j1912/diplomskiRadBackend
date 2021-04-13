@@ -141,11 +141,6 @@ class NarucivanjeService{
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
 
-        /* $sql = "SELECT DATE_FORMAT(v.vrijeme,'%H:%i') AS Vrijeme, n.*,d.nazivDana,p.imePacijent,p.prezPacijent,p.mboPacijent FROM vremena v 
-                LEFT JOIN narucivanje n ON v.vrijeme = n.vrijemeNarucivanje 
-                LEFT JOIN datumi d ON d.datum = n.datumNarucivanje
-                LEFT JOIN pacijent p ON p.idPacijent = n.idPacijent
-                ORDER BY Vrijeme;"; */ 
         $sql = "SELECT DATE_FORMAT(v.vrijeme,'%H:%i') AS Vrijeme, 
                 (SELECT CONCAT(p.imePacijent,' ',p.prezPacijent,' ',p.mboPacijent,' ',n.idNarucivanje,' ',vp.bojaPregled) FROM pacijent p 
                                             JOIN narucivanje n ON n.idPacijent = p.idPacijent 
@@ -273,6 +268,31 @@ class NarucivanjeService{
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
+        
+        //Ako su minute vremena == 0, ostavi kako jest
+        if((int)(date('i',strtotime($vrijeme))) === 0){
+            $vrijeme = $vrijeme;
+        }
+        //Ako su minute vremena == 30, ostavi kako jest
+        else if( (int)(date('i',strtotime($vrijeme))) === 30){
+            $vrijeme = $vrijeme;
+        }
+        //Ako su minute vremena > 0 && minute < 15, zaokruži na manji puni sat
+        else if( (int)(date('i',strtotime($vrijeme))) > 0 && (int)(date('i',strtotime($vrijeme))) < 15){
+            $vrijeme = date("H:i", strtotime("-".(int)(date('i',strtotime($vrijeme)))." minutes", strtotime($vrijeme) ) );  
+        }
+        //Ako su minute vremena >= 15 && minute < 30, zaokruži na pola sata 
+        else if( (int)(date('i',strtotime($vrijeme))) >= 15 && (int)(date('i',strtotime($vrijeme))) < 30){
+            $vrijeme = date("H:i", strtotime("+".(30-(int)(date('i',strtotime($vrijeme))))." minutes",strtotime($vrijeme) ) );
+        }
+        //Ako su minute vremena > 30 && minute < 45, zaokruži na pola sata
+        else if( (int)(date('i',strtotime($vrijeme))) > 30 && (int)(date('i',strtotime($vrijeme))) < 45){
+            $vrijeme = date("H:i", strtotime("-".((int)(date('i',strtotime($vrijeme)))-30)." minutes", strtotime($vrijeme) ) );
+        }
+        //Ako su minute vremena >=45 && minute < 60, zaokruži na veći puni sat
+        else if( (int)(date('i',strtotime($vrijeme))) >= 45 && (int)(date('i',strtotime($vrijeme))) < 60){
+            $vrijeme = date("H:i", strtotime("+".(60-(int)(date('i',strtotime($vrijeme))))." minutes",strtotime($vrijeme) ) );
+        }
 
         
         //Kreiram sql upit koji će provjeriti postoji li već naručeni pacijent za taj termin
@@ -315,31 +335,6 @@ class NarucivanjeService{
                 $idVrstaPregled = $rowVrstaPregled['ID'];
             } 
 
-            //Ako su minute vremena == 0, ostavi kako jest
-            if((int)(date('i',strtotime($vrijeme))) === 0){
-                $vrijeme = $vrijeme;
-            }
-            //Ako su minute vremena == 30, ostavi kako jest
-            else if( (int)(date('i',strtotime($vrijeme))) === 30){
-                $vrijeme = $vrijeme;
-            }
-            //Ako su minute vremena > 0 && minute < 15, zaokruži na manji puni sat
-            else if( (int)(date('i',strtotime($vrijeme))) > 0 && (int)(date('i',strtotime($vrijeme))) < 15){
-                $vrijeme = date("H:i", strtotime("-".(int)(date('i',strtotime($vrijeme)))." minutes", strtotime($vrijeme) ) );  
-            }
-            //Ako su minute vremena >= 15 && minute < 30, zaokruži na pola sata 
-            else if( (int)(date('i',strtotime($vrijeme))) >= 15 && (int)(date('i',strtotime($vrijeme))) < 30){
-                $vrijeme = date("H:i", strtotime("+".(30-(int)(date('i',strtotime($vrijeme))))." minutes",strtotime($vrijeme) ) );
-            }
-            //Ako su minute vremena > 30 && minute < 45, zaokruži na pola sata
-            else if( (int)(date('i',strtotime($vrijeme))) > 30 && (int)(date('i',strtotime($vrijeme))) < 45){
-                $vrijeme = date("H:i", strtotime("-".((int)(date('i',strtotime($vrijeme)))-30)." minutes", strtotime($vrijeme) ) );
-            }
-            //Ako su minute vremena >=45 && minute < 60, zaokruži na veći puni sat
-            else if( (int)(date('i',strtotime($vrijeme))) >= 45 && (int)(date('i',strtotime($vrijeme))) < 60){
-                $vrijeme = date("H:i", strtotime("+".(60-(int)(date('i',strtotime($vrijeme))))." minutes",strtotime($vrijeme) ) );
-            }
-
             //Kreiram upit koji će ažurirati tablicu "narucivanje"
             $sql = "UPDATE narucivanje SET 
                     idPacijent = ?,datumNarucivanje = ?, vrijemeNarucivanje = ?, napomenaNarucivanje = ?,idVrstaPregled = ? 
@@ -374,6 +369,30 @@ class NarucivanjeService{
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
+        //Ako su minute vremena == 0, ostavi kako jest
+        if((int)(date('i',strtotime($vrijeme))) === 0){
+            $vrijeme = $vrijeme;
+        }
+        //Ako su minute vremena == 30, ostavi kako jest
+        else if( (int)(date('i',strtotime($vrijeme))) === 30){
+            $vrijeme = $vrijeme;
+        }
+        //Ako su minute vremena > 0 && minute < 15, zaokruži na manji puni sat
+        else if( (int)(date('i',strtotime($vrijeme))) > 0 && (int)(date('i',strtotime($vrijeme))) < 15){
+            $vrijeme = date("H:i", strtotime("-".(int)(date('i',strtotime($vrijeme)))." minutes", strtotime($vrijeme) ) );  
+        }
+        //Ako su minute vremena >= 15 && minute < 30, zaokruži na pola sata 
+        else if( (int)(date('i',strtotime($vrijeme))) >= 15 && (int)(date('i',strtotime($vrijeme))) < 30){
+            $vrijeme = date("H:i", strtotime("+".(30-(int)(date('i',strtotime($vrijeme))))." minutes",strtotime($vrijeme) ) );
+        }
+        //Ako su minute vremena > 30 && minute < 45, zaokruži na pola sata
+        else if( (int)(date('i',strtotime($vrijeme))) > 30 && (int)(date('i',strtotime($vrijeme))) < 45){
+            $vrijeme = date("H:i", strtotime("-".((int)(date('i',strtotime($vrijeme)))-30)." minutes", strtotime($vrijeme) ) );
+        }
+        //Ako su minute vremena >=45 && minute < 60, zaokruži na veći puni sat
+        else if( (int)(date('i',strtotime($vrijeme))) >= 45 && (int)(date('i',strtotime($vrijeme))) < 60){
+            $vrijeme = date("H:i", strtotime("+".(60-(int)(date('i',strtotime($vrijeme))))." minutes",strtotime($vrijeme) ) );
+        }
 
         //Kreiram sql upit koji će provjeriti postoji li već naručeni pacijent za taj termin
         $sqlCountNarudzba = "SELECT COUNT(*) AS BrojNarudzba FROM narucivanje n 
@@ -412,30 +431,6 @@ class NarucivanjeService{
             while($rowVrstaPregled = mysqli_fetch_array($resultVrstaPregled)){
                 //Dohvaćam željeni ID pregleda
                 $idVrstaPregled = $rowVrstaPregled['ID'];
-            }
-            //Ako su minute vremena == 0, ostavi kako jest
-            if((int)(date('i',strtotime($vrijeme))) === 0){
-                $vrijeme = $vrijeme;
-            }
-            //Ako su minute vremena == 30, ostavi kako jest
-            else if( (int)(date('i',strtotime($vrijeme))) === 30){
-                $vrijeme = $vrijeme;
-            }
-            //Ako su minute vremena > 0 && minute < 15, zaokruži na manji puni sat
-            else if( (int)(date('i',strtotime($vrijeme))) > 0 && (int)(date('i',strtotime($vrijeme))) < 15){
-                $vrijeme = date("H:i", strtotime("-".(int)(date('i',strtotime($vrijeme)))." minutes", strtotime($vrijeme) ) );  
-            }
-            //Ako su minute vremena >= 15 && minute < 30, zaokruži na pola sata 
-            else if( (int)(date('i',strtotime($vrijeme))) >= 15 && (int)(date('i',strtotime($vrijeme))) < 30){
-                $vrijeme = date("H:i", strtotime("+".(30-(int)(date('i',strtotime($vrijeme))))." minutes",strtotime($vrijeme) ) );
-            }
-            //Ako su minute vremena > 30 && minute < 45, zaokruži na pola sata
-            else if( (int)(date('i',strtotime($vrijeme))) > 30 && (int)(date('i',strtotime($vrijeme))) < 45){
-                $vrijeme = date("H:i", strtotime("-".((int)(date('i',strtotime($vrijeme)))-30)." minutes", strtotime($vrijeme) ) );
-            }
-            //Ako su minute vremena >=45 && minute < 60, zaokruži na veći puni sat
-            else if( (int)(date('i',strtotime($vrijeme))) >= 45 && (int)(date('i',strtotime($vrijeme))) < 60){
-                $vrijeme = date("H:i", strtotime("+".(60-(int)(date('i',strtotime($vrijeme))))." minutes",strtotime($vrijeme) ) );
             }
 
             //Kreiram upit koji će unijeti novi zapis u tablicu "narucivanje"

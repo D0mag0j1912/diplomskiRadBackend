@@ -45,10 +45,16 @@ class OtvoreniSlucajService{
                         WHEN p.mkbSifraPrimarna IS NOT NULL THEN (SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
                                                                 WHERE d.mkbSifra = p.mkbSifraPrimarna)
                         WHEN p.mkbSifraPrimarna IS NULL THEN NULL
-                    END AS NazivPrimarna FROM pregled p 
+                    END AS NazivPrimarna,
+                    (SELECT COUNT(*) FROM pregled p2 
+                    WHERE p2.prosliPregled = p.idPregled) AS prosliPregled FROM pregled p 
                     WHERE p.mboPacijent = '$mboPacijent' 
                     AND p.prosliPregled IS NOT NULL 
-                    GROUP BY p.prosliPregled
+                    AND p.idPregled IN 
+                    (SELECT MAX(p2.idPregled) FROM pregled p2 
+                    WHERE p2.mboPacijent = '$mboPacijent' 
+                    AND p2.prosliPregled IS NOT NULL 
+                    GROUP BY p2.prosliPregled)
                     UNION ALL
                     SELECT 
                     CASE 
@@ -60,12 +66,17 @@ class OtvoreniSlucajService{
                         WHEN p.mkbSifraPrimarna IS NOT NULL THEN (SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
                                                                 WHERE d.mkbSifra = p.mkbSifraPrimarna)
                         WHEN p.mkbSifraPrimarna IS NULL THEN NULL
-                    END AS NazivPrimarna  FROM pregled p 
+                    END AS NazivPrimarna,
+                    (SELECT COUNT(*) FROM pregled p2 
+                    WHERE p2.prosliPregled = p.idPregled) AS prosliPregled FROM pregled p 
                     WHERE p.mboPacijent = '$mboPacijent' 
                     AND p.prosliPregled IS NULL 
-                    GROUP BY p.vrijemePregled) AS Pretraga
-                    ORDER BY Datum DESC, vrijemePregled DESC
-                    LIMIT 7";
+                    AND p.idPregled IN 
+                    (SELECT MAX(p2.idPregled) FROM pregled p2 
+                    WHERE p2.mboPacijent = '$mboPacijent' 
+                    AND p2.prosliPregled IS NULL 
+                    GROUP BY p2.vrijemePregled)) AS OtvoreniSlucajevi
+                    ORDER BY Datum DESC, vrijemePregled DESC";
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {
@@ -181,10 +192,16 @@ class OtvoreniSlucajService{
                         WHEN p.mkbSifraPrimarna IS NOT NULL THEN (SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
                                                                 WHERE d.mkbSifra = p.mkbSifraPrimarna)
                         WHEN p.mkbSifraPrimarna IS NULL THEN NULL
-                    END AS NazivPrimarna FROM pregled p 
+                    END AS NazivPrimarna,
+                    (SELECT COUNT(*) FROM pregled p2 
+                    WHERE p2.prosliPregled = p.idPregled) AS prosliPregled FROM pregled p 
                     WHERE p.mboPacijent = '$mboPacijent' 
                     AND p.prosliPregled IS NOT NULL 
-                    GROUP BY p.prosliPregled
+                    AND p.idPregled IN 
+                    (SELECT MAX(p2.idPregled) FROM pregled p2 
+                    WHERE p2.mboPacijent = '$mboPacijent' 
+                    AND p2.prosliPregled IS NOT NULL 
+                    GROUP BY p2.prosliPregled)
                     UNION ALL
                     SELECT 
                     CASE 
@@ -196,12 +213,17 @@ class OtvoreniSlucajService{
                         WHEN p.mkbSifraPrimarna IS NOT NULL THEN (SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
                                                                 WHERE d.mkbSifra = p.mkbSifraPrimarna)
                         WHEN p.mkbSifraPrimarna IS NULL THEN NULL
-                    END AS NazivPrimarna  FROM pregled p 
+                    END AS NazivPrimarna,
+                    (SELECT COUNT(*) FROM pregled p2 
+                    WHERE p2.prosliPregled = p.idPregled) AS prosliPregled FROM pregled p 
                     WHERE p.mboPacijent = '$mboPacijent' 
                     AND p.prosliPregled IS NULL 
-                    GROUP BY p.vrijemePregled) AS Pretraga
-                    ORDER BY Datum DESC, vrijemePregled DESC
-                    LIMIT 7";
+                    AND p.idPregled IN 
+                    (SELECT MAX(p2.idPregled) FROM pregled p2 
+                    WHERE p2.mboPacijent = '$mboPacijent' 
+                    AND p2.prosliPregled IS NULL 
+                    GROUP BY p2.vrijemePregled)) AS OtvoreniSlucajevi
+                    ORDER BY Datum DESC, vrijemePregled DESC";
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {
@@ -212,19 +234,25 @@ class OtvoreniSlucajService{
         }
         //Kada ima nešto u pretrazi:
         else{
-            $sql = "SELECT DISTINCT(TRIM(p.mkbSifraPrimarna)) AS mkbSifraPrimarna, 
-                DATE_FORMAT(p.datumPregled,'%d.%m.%Y') AS Datum, 
-                TRIM(d.imeDijagnoza) AS NazivPrimarna, p.vrijemePregled, p.tipSlucaj FROM pregled p
-                LEFT JOIN dijagnoze d ON p.mkbSifraPrimarna = d.mkbSifra 
-                LEFT JOIN dijagnoze d2 ON p.mkbSifraSekundarna = d2.mkbSifra
-                WHERE p.mboPacijent = '$mboPacijent'
-                AND (UPPER(TRIM(d.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')  
-                OR UPPER(TRIM(d2.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')
-                OR UPPER(TRIM(p.mkbSifraPrimarna)) LIKE UPPER('%{$pretraga}%') 
-                OR UPPER(TRIM(p.mkbSifraSekundarna)) LIKE UPPER('%{$pretraga}%') 
-                OR UPPER(p.datumPregled) LIKE UPPER('%{$pretraga}%')) 
-                ORDER BY p.datumPregled DESC, p.vrijemePregled DESC
-                LIMIT 7";
+            $sql = "SELECT p.idPregled,TRIM(p.mkbSifraPrimarna) AS mkbSifraPrimarna, 
+                    DATE_FORMAT(p.datumPregled,'%d.%m.%Y') AS Datum, 
+                    TRIM(d.imeDijagnoza) AS NazivPrimarna, p.vrijemePregled, 
+                    p.tipSlucaj, 
+                    (SELECT COUNT(*) FROM pregled p2 
+                    WHERE p2.prosliPregled = 
+                    (SELECT MAX(p3.idPregled) FROM pregled p3 
+                    WHERE p3.vrijemePregled = p.vrijemePregled 
+                    AND p3.datumPregled = p.datumPregled)) AS prosliPregled FROM pregled p
+                    LEFT JOIN dijagnoze d ON p.mkbSifraPrimarna = d.mkbSifra 
+                    LEFT JOIN dijagnoze d2 ON p.mkbSifraSekundarna = d2.mkbSifra
+                    WHERE p.mboPacijent = '$mboPacijent'
+                    AND (UPPER(TRIM(d.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')  
+                    OR UPPER(TRIM(d2.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(TRIM(p.mkbSifraPrimarna)) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(TRIM(p.mkbSifraSekundarna)) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(p.datumPregled) LIKE UPPER('%{$pretraga}%')) 
+                    GROUP BY p.vrijemePregled
+                    ORDER BY p.datumPregled DESC, p.vrijemePregled DESC";
             $result = $conn->query($sql);
 
             //Ako ima pronađenih rezultata za navedenu pretragu
