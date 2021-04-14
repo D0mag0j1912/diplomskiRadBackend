@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     //Ako je s frontenda poslan parametar vremena
     if(isset($_GET['vrijeme'])){
-        $vrijeme = date('H:i', strtotime($_GET["vrijeme"]));
+        $vrijeme = date('H:i:s', strtotime($_GET["vrijeme"]));
         //Popuni polje sa podatcima
         $response = $servis->dohvatiVrijeme($vrijeme);
         //Vrati odgovor

@@ -20,7 +20,7 @@ class AzurirajReceptService{
     //Trenutni datum
     $datum = date('Y-m-d');
     //Trenutno vrijeme
-    $vrijeme = date('H:i');
+    $vrijeme = date('H:i:s');
     //Kreiram sql upit koji će prebrojiti koliko ima SEKUNDARNIH DIJAGNOZA TRENUTNO U BAZI ZA ODREĐENU PRIMARNU DIJAGNOZU, ZA ODREĐENI DATUM, VRIJEME I PACIJENTA
     $sqlCountSekundarna = "SELECT COUNT(r.mkbSifraSekundarna) AS BrojSekundarna FROM recept r
                         WHERE TRIM(r.mkbSifraPrimarna) = '$poslanaMKBSifra' 

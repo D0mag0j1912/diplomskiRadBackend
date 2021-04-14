@@ -92,7 +92,7 @@ class IzdajUputnica {
         //Trenutni datum
         $datum = date('Y-m-d');
         //Trenutno vrijeme
-        $vrijeme = date('H:i');
+        $vrijeme = date('H:i:s');
         //Označavam da slučajno generirana oznaka već postoji u bazi
         $ispravan = false;
         while($ispravan != true){

@@ -102,9 +102,9 @@ class OpciPodatciService{
         //Trenutni datum
         $datum = date('Y-m-d');
         //Trenutno vrijeme za naručivanje
-        $vrijeme = date('H:i');
+        $vrijeme = date('H:i:s');
         //Trenutno vrijeme pregleda
-        $vrijemePregled = date("H:i");
+        $vrijemePregled = date("H:i:s");
         //Status obrade
         $statusObrada = "Aktivan";
         //Inicijaliziram polje random boja 
@@ -124,19 +124,19 @@ class OpciPodatciService{
         }
         //Ako su minute vremena > 0 && minute < 15, zaokruži na manji puni sat
         else if( (int)(date('i',strtotime($vrijeme))) > 0 && (int)(date('i',strtotime($vrijeme))) < 15){
-            $vrijeme = date("H:i", strtotime("-".(int)(date('i',strtotime($vrijeme)))." minutes", strtotime($vrijeme) ) );  
+            $vrijeme = date("H:i:s", strtotime("-".(int)(date('i',strtotime($vrijeme)))." minutes", strtotime($vrijeme) ) );  
         }
         //Ako su minute vremena >= 15 && minute < 30, zaokruži na pola sata 
         else if( (int)(date('i',strtotime($vrijeme))) >= 15 && (int)(date('i',strtotime($vrijeme))) < 30){
-            $vrijeme = date("H:i", strtotime("+".(30-(int)(date('i',strtotime($vrijeme))))." minutes",strtotime($vrijeme) ) );
+            $vrijeme = date("H:i:s", strtotime("+".(30-(int)(date('i',strtotime($vrijeme))))." minutes",strtotime($vrijeme) ) );
         }
         //Ako su minute vremena > 30 && minute < 45, zaokruži na pola sata
         else if( (int)(date('i',strtotime($vrijeme))) > 30 && (int)(date('i',strtotime($vrijeme))) < 45){
-            $vrijeme = date("H:i", strtotime("-".((int)(date('i',strtotime($vrijeme)))-30)." minutes", strtotime($vrijeme) ) );
+            $vrijeme = date("H:i:s", strtotime("-".((int)(date('i',strtotime($vrijeme)))-30)." minutes", strtotime($vrijeme) ) );
         }
         //Ako su minute vremena >=45 && minute < 60, zaokruži na veći puni sat
         else if( (int)(date('i',strtotime($vrijeme))) >= 45 && (int)(date('i',strtotime($vrijeme))) < 60){
-            $vrijeme = date("H:i", strtotime("+".(60-(int)(date('i',strtotime($vrijeme))))." minutes",strtotime($vrijeme) ) );
+            $vrijeme = date("H:i:s", strtotime("+".(60-(int)(date('i',strtotime($vrijeme))))." minutes",strtotime($vrijeme) ) );
         }
 
         //Kreiram sql upit koji će provjeriti JE LI TRENUTNO AKTIVNI PACIJENT NARUČEN U OVO VRIJEME NA OVAJ DATUM
@@ -304,8 +304,26 @@ class OpciPodatciService{
                     //Izvršavanje statementa
                     mysqli_stmt_execute($stmtAmbulanta);
 
-                    $response["success"] = "true";
-                    $response["message"] = "Podatci uspješno dodani!";
+                    //Ažuriram tablicu zdravstvenih podataka
+                    $sqlZdr = "UPDATE zdr_podatci z SET z.brojIskazniceDopunsko = ?, z.kategorijaOsiguranja = ?,
+                                z.drzavaOsiguranja = ?
+                                WHERE z.mboPacijent = ?";
+                    //Kreiranje prepared statementa
+                    $stmtZdr = mysqli_stmt_init($conn);
+                    //Ako je statement neuspješan
+                    if(!mysqli_stmt_prepare($stmtZdr,$sqlZdr)){
+                        $response["success"] = "false";
+                        $response["message"] = "Prepared statement zdravstvenih podataka ne valja!";
+                    }
+                    //Ako je prepared statement u redu
+                    else{
+                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                        mysqli_stmt_bind_param($stmtZdr,"ssss",$brIskDopunsko, $oznakaOsiguranika, $nazivDrzave, $mbo);
+                        //Izvršavanje statementa
+                        mysqli_stmt_execute($stmtZdr);
+                        $response["success"] = "true";
+                        $response["message"] = "Podatci uspješno dodani!";
+                    }
                 }
             }
             return $response;
@@ -439,14 +457,31 @@ class OpciPodatciService{
                         mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idMedSestra,$idPacijent,$idPregled);
                         //Izvršavanje statementa
                         mysqli_stmt_execute($stmtAmbulanta);
-
-                        $response["success"] = "true";
-                        $response["message"] = "Podatci uspješno dodani!";
                     }
                 }
             }
-            return $response; 
+            //Ažuriram tablicu zdravstvenih podataka
+            $sqlZdr = "UPDATE zdr_podatci z SET z.brojIskazniceDopunsko = ?, z.kategorijaOsiguranja = ?,
+                        z.drzavaOsiguranja = ?
+                        WHERE z.mboPacijent = ?";
+            //Kreiranje prepared statementa
+            $stmtZdr = mysqli_stmt_init($conn);
+            //Ako je statement neuspješan
+            if(!mysqli_stmt_prepare($stmtZdr,$sqlZdr)){
+                $response["success"] = "false";
+                $response["message"] = "Prepared statement zdravstvenih podataka ne valja!";
+            }
+            //Ako je prepared statement u redu
+            else{
+                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                mysqli_stmt_bind_param($stmtZdr,"ssss",$brIskDopunsko, $oznakaOsiguranika, $nazivDrzave, $mbo);
+                //Izvršavanje statementa
+                mysqli_stmt_execute($stmtZdr);
+                $response["success"] = "true";
+                $response["message"] = "Podatci uspješno dodani!";
+            } 
         } 
+        return $response;
     }
 }
 ?>

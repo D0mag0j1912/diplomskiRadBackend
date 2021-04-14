@@ -12,7 +12,7 @@ class LogoutService{
         //Generiram trenutno vrijeme
         $trenutniDatum = date("Y-m-d");
         //Trenutno vrijeme
-        $vrijeme = date('H:i');
+        $vrijeme = date('H:i:s');
         //Pokreće se nova sesija
         session_start();
 

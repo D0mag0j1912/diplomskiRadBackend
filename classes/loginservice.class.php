@@ -80,7 +80,7 @@ class LoginService{
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
         //Trenutno vrijeme
-        $vrijeme = date('H:i');
+        $vrijeme = date('H:i:s');
         //Kreiram upit koji provjerava postoji li uneseni email u bazi
         $sql = "SELECT * FROM korisnik k 
                 WHERE k.email = ?";

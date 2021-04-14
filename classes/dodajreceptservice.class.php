@@ -20,7 +20,7 @@ class DodajReceptService{
     //Trenutni datum
     $datum = date('Y-m-d');
     //Trenutno vrijeme
-    $vrijeme = date('H:i');
+    $vrijeme = date('H:i:s');
     //Kreiram upit za dohvaćanjem MBO-a pacijenta kojemu se upisiva povijest bolesti
     $sqlMBO = "SELECT p.mboPacijent AS MBO FROM pacijent p 
             WHERE p.idPacijent = '$idPacijent'";

@@ -48,9 +48,9 @@ class PovijestBolestiService{
         //Trenutni datum
         $datum = date('Y-m-d');
         //Trenutno vrijeme za naručivanje
-        $vrijeme = date('H:i');
+        $vrijeme = date('H:i:s');
         //Trenutno vrijeme za pregled
-        $vrijemePregled = date("H:i");
+        $vrijemePregled = date("H:i:s");
         //Status pacijenta
         $statusObrada = "Aktivan";
         //Inicijaliziram polje random boja 
@@ -80,19 +80,19 @@ class PovijestBolestiService{
         }
         //Ako su minute vremena > 0 && minute < 15, zaokruži na manji puni sat
         else if( (int)(date('i',strtotime($vrijeme))) > 0 && (int)(date('i',strtotime($vrijeme))) < 15){
-            $vrijeme = date("H:i", strtotime("-".(int)(date('i',strtotime($vrijeme)))." minutes", strtotime($vrijeme) ) );  
+            $vrijeme = date("H:i:s", strtotime("-".(int)(date('i',strtotime($vrijeme)))." minutes", strtotime($vrijeme) ) );  
         }
         //Ako su minute vremena >= 15 && minute < 30, zaokruži na pola sata 
         else if( (int)(date('i',strtotime($vrijeme))) >= 15 && (int)(date('i',strtotime($vrijeme))) < 30){
-            $vrijeme = date("H:i", strtotime("+".(30-(int)(date('i',strtotime($vrijeme))))." minutes",strtotime($vrijeme) ) );
+            $vrijeme = date("H:i:s", strtotime("+".(30-(int)(date('i',strtotime($vrijeme))))." minutes",strtotime($vrijeme) ) );
         }
         //Ako su minute vremena > 30 && minute < 45, zaokruži na pola sata
         else if( (int)(date('i',strtotime($vrijeme))) > 30 && (int)(date('i',strtotime($vrijeme))) < 45){
-            $vrijeme = date("H:i", strtotime("-".((int)(date('i',strtotime($vrijeme)))-30)." minutes", strtotime($vrijeme) ) );
+            $vrijeme = date("H:i:s", strtotime("-".((int)(date('i',strtotime($vrijeme)))-30)." minutes", strtotime($vrijeme) ) );
         }
         //Ako su minute vremena >=45 && minute < 60, zaokruži na veći puni sat
         else if( (int)(date('i',strtotime($vrijeme))) >= 45 && (int)(date('i',strtotime($vrijeme))) < 60){
-            $vrijeme = date("H:i", strtotime("+".(60-(int)(date('i',strtotime($vrijeme))))." minutes",strtotime($vrijeme) ) );
+            $vrijeme = date("H:i:s", strtotime("+".(60-(int)(date('i',strtotime($vrijeme))))." minutes",strtotime($vrijeme) ) );
         }
         //Kreiram sql upit koji će provjeriti JE LI TRENUTNO AKTIVNI PACIJENT NARUČEN U OVO VRIJEME NA OVAJ DATUM
         $sqlCountNarucen = "SELECT COUNT(*) AS BrojNarucen FROM narucivanje n 
