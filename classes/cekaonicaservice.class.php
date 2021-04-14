@@ -137,7 +137,18 @@ class CekaonicaService{
         //Kreiram prazno polje odgovora
         $response = []; 
         
-        $sql = "SELECT TRIM(pr.mkbSifraPrimarna) AS mkbSifraPrimarna, 
+        $sql = "SELECT
+                CASE 
+                    WHEN pr.nacinPlacanja = 'hzzo' THEN (SELECT CONCAT('HZZO (',pu.nazivSluzbe,' [',p2.podrucniUredHZZO,'])') FROM pregled p2 
+                                                        JOIN podrucni_ured pu ON pu.sifUred = p2.podrucniUredHZZO 
+                                                        WHERE p2.idPregled = pr.idPregled)
+                    WHEN pr.nacinPlacanja = 'ozljeda' THEN (SELECT CONCAT('Ozljeda (',pu.nazivSluzbe,' [',p2.podrucniUredOzljeda,'])') FROM pregled p2 
+                                                            JOIN podrucni_ured pu ON pu.sifUred = p2.podrucniUredOzljeda 
+                                                            WHERE p2.idPregled = pr.idPregled)
+                    WHEN pr.nacinPlacanja = 'poduzece' THEN CONCAT('Naziv poduzeća: ',pr.nazivPoduzeca)
+                    WHEN pr.nacinPlacanja = 'osobno' THEN pr.nacinPlacanja
+                END AS nacinPlacanja,
+                TRIM(pr.mkbSifraPrimarna) AS mkbSifraPrimarna, 
                 TRIM(d.imeDijagnoza) AS NazivPrimarna, pr.vrijemePregled, pr.tipSlucaj,
                 DATE_FORMAT(pr.datumPregled,'%d.%m.%Y') AS Datum, p.imePacijent, p.prezPacijent, p.mboPacijent,
                 p2.mboPacijent AS mboAktivniPacijent FROM pregled pr
@@ -145,7 +156,7 @@ class CekaonicaService{
                 JOIN pacijent p ON p.mboPacijent = pr.mboPacijent 
                 JOIN obrada_med_sestra o ON o.idObrada = pr.idObradaMedSestra 
                 JOIN pacijent p2 ON p2.idPacijent = o.idPacijent
-                WHERE pr.idObradaMedSestra = '$idObrada' 
+                WHERE pr.idObradaMedSestra = '$idObrada'
                 GROUP BY pr.vrijemePregled 
                 ORDER BY pr.datumPregled DESC, pr.vrijemePregled DESC";
         $result = $conn->query($sql);
