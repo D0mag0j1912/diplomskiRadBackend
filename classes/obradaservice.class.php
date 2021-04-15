@@ -6,6 +6,32 @@ date_default_timezone_set('Europe/Zagreb');
 
 class ObradaService{
 
+    //Funkcija koja sprema izračunati BMI, visinu te težinu u bazu
+    function spremiBMI($visina,$tezina,$bmi,$idPacijent){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        $sql = "UPDATE pacijent p SET p.visina = ?, p.tezina = ?, p.bmi = ? 
+                WHERE p.idPacijent = ?";
+        //Kreiranje prepared statementa
+        $stmt = mysqli_stmt_init($conn);
+        //Ako je statement neuspješan
+        if(!mysqli_stmt_prepare($stmt,$sql)){
+            $response["success"] = "false";
+            $response["message"] = "Prepared statement ne valja!";
+            return false;
+        }
+        //Ako je prepared statement u redu
+        else{
+            //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+            mysqli_stmt_bind_param($stmt,"iidi",$visina, $tezina, $bmi, $idPacijent);
+            //Izvršavanje statementa
+            mysqli_stmt_execute($stmt);
+            return true;
+        } 
+    }
+
     //Funkcija koja provjerava JE LI PACIJENT OBRAĐEN OD STRANE LIJEČNIKA 
     function dohvatiObradenPovijestBolesti($idPacijent){
         //Dohvaćam bazu 
