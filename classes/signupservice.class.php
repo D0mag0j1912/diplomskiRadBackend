@@ -138,7 +138,7 @@ class SignupService{
 			if($korisnik->tip == "sestra"){
 				
 				//Kreiram upit za spremanje podataka u bazu podataka u tablicu "med_sestra"
-				$sqlMedSestra = "INSERT INTO med_sestra (imeMedSestra,prezMedSestra,adrMedSestra,datKreirMedSestra,nazSpecMedSestra,idKorisnik,idZdrUst) VALUES (?,?,?,?,?,?,?)";
+				$sqlMedSestra = "INSERT INTO med_sestra (imeMedSestra,prezMedSestra,adrMedSestra,datKreirMedSestra,idKorisnik,idZdrUst,sifraSpecijalist) VALUES (?,?,?,?,?,?,?)";
 				//Kreiram prepared statment
 				$stmtMedSestra = mysqli_stmt_init($conn);
 				//Ako je prepared statment neuspješno izvršen
@@ -156,8 +156,25 @@ class SignupService{
 					}
 					$trenutniDatum = date("Y-m-d");
 					$idZdrUst = 258825880;
+
+                    //Dohvaćam šifru specijalista koju ubacivam u tablicu "med_sestra"
+                    $sqlSpecijalizacija = "SELECT zr.sifraSpecijalist FROM zdr_radnici zr 
+                                        WHERE zr.tipSpecijalist = '$korisnik->specijalizacija'";
+                    //Dohvaćam rezultat ovog upita u polje
+                    $resultSpecijalizacija = mysqli_query($conn,$sqlSpecijalizacija);
+                    //Ako polje ima redaka u sebi
+                    if(mysqli_num_rows($resultSpecijalizacija) > 0){
+                        //Idem redak po redak rezultata upita 
+                        while($rowSpecijalizacija = mysqli_fetch_assoc($resultSpecijalizacija)){
+                            //Vrijednost rezultata spremam u varijablu $sifraSpecijalist
+                            $sifraSpecijalist = $rowSpecijalizacija['sifraSpecijalist'];
+                        }
+                    }
+                    else{
+                        $sifraSpecijalist = NULL;
+                    }
 					//Sve unesene vrijednosti medicinske sestre što je korisnik unio se stavljaju umjesto upitnika
-					mysqli_stmt_bind_param($stmtMedSestra,"sssssii",$korisnik->ime,$korisnik->prezime,$korisnik->adresa,$trenutniDatum,$korisnik->specijalizacija,$idKorisnik,$idZdrUst);
+					mysqli_stmt_bind_param($stmtMedSestra,"ssssiii",$korisnik->ime,$korisnik->prezime,$korisnik->adresa,$trenutniDatum,$idKorisnik,$idZdrUst,$sifraSpecijalist);
 					//Izvršavam statement
 					mysqli_stmt_execute($stmtMedSestra);
 					$response["success"] = "true";
@@ -167,7 +184,7 @@ class SignupService{
 			if($korisnik->tip == "lijecnik"){
 				
 				//Kreiram upit za spremanje podataka u bazu podataka u tablicu "lijecnik"
-				$sqlLijecnik = "INSERT INTO lijecnik (imeLijecnik,prezLijecnik,adrLijecnik,datKreirLijecnik,nazSpecLijecnik,idKorisnik,idZdrUst) VALUES (?,?,?,?,?,?,?)";
+				$sqlLijecnik = "INSERT INTO lijecnik (imeLijecnik,prezLijecnik,adrLijecnik,datKreirLijecnik,idKorisnik,idZdrUst,sifraSpecijalist) VALUES (?,?,?,?,?,?,?)";
 				//Kreiram prepared statment
 				$stmtLijecnik = mysqli_stmt_init($conn);
 				//Ako je prepared statment neuspješno izvršen
@@ -185,8 +202,24 @@ class SignupService{
 					}
 					$trenutniDatum = date("Y-m-d");
 					$idZdrUst = 258825880;
+                    //Dohvaćam šifru specijalista koju ubacivam u tablicu "med_sestra"
+                    $sqlSpecijalizacija = "SELECT zr.sifraSpecijalist FROM zdr_radnici zr 
+                                        WHERE zr.tipSpecijalist = '$korisnik->specijalizacija'";
+                    //Dohvaćam rezultat ovog upita u polje
+                    $resultSpecijalizacija = mysqli_query($conn,$sqlSpecijalizacija);
+                    //Ako polje ima redaka u sebi
+                    if(mysqli_num_rows($resultSpecijalizacija) > 0){
+                        //Idem redak po redak rezultata upita 
+                        while($rowSpecijalizacija = mysqli_fetch_assoc($resultSpecijalizacija)){
+                            //Vrijednost rezultata spremam u varijablu $sifraSpecijalist
+                            $sifraSpecijalist = $rowSpecijalizacija['sifraSpecijalist'];
+                        }
+                    }
+                    else{
+                        $sifraSpecijalist = NULL;
+                    }
 					//Sve unesene vrijednosti liječnika što je korisnik unio se stavljaju umjesto upitnika
-					mysqli_stmt_bind_param($stmtLijecnik,"sssssii",$korisnik->ime,$korisnik->prezime,$korisnik->adresa,$trenutniDatum,$korisnik->specijalizacija,$idKorisnik,$idZdrUst);
+					mysqli_stmt_bind_param($stmtLijecnik,"ssssiii",$korisnik->ime,$korisnik->prezime,$korisnik->adresa,$trenutniDatum,$idKorisnik,$idZdrUst,$sifraSpecijalist);
 					//Izvršavam statement
 					mysqli_stmt_execute($stmtLijecnik);
 

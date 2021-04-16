@@ -7,7 +7,7 @@ date_default_timezone_set('Europe/Zagreb');
 class ObradaService{
 
     //Funkcija koja sprema izračunati BMI, visinu te težinu u bazu
-    function spremiBMI($visina,$tezina,$bmi,$idPacijent){
+    function spremiBMI($visina,$tezina,$bmi,$idPacijent,$idObrada){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -18,8 +18,6 @@ class ObradaService{
         $stmt = mysqli_stmt_init($conn);
         //Ako je statement neuspješan
         if(!mysqli_stmt_prepare($stmt,$sql)){
-            $response["success"] = "false";
-            $response["message"] = "Prepared statement ne valja!";
             return false;
         }
         //Ako je prepared statement u redu
@@ -28,7 +26,24 @@ class ObradaService{
             mysqli_stmt_bind_param($stmt,"iidi",$visina, $tezina, $bmi, $idPacijent);
             //Izvršavanje statementa
             mysqli_stmt_execute($stmt);
-            return true;
+
+            $sqlObrada = "UPDATE obrada_med_sestra o SET o.dodanBMI = ? 
+                        WHERE o.idObrada = ?";
+            //Kreiranje prepared statementa
+            $stmtObrada = mysqli_stmt_init($conn);
+            //Ako je statement neuspješan
+            if(!mysqli_stmt_prepare($stmtObrada,$sqlObrada)){
+                return false;
+            }
+            //Ako je prepared statement u redu
+            else{
+                $dodanBMI = "dodan";
+                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                mysqli_stmt_bind_param($stmtObrada,"si",$dodanBMI, $idObrada);
+                //Izvršavanje statementa
+                mysqli_stmt_execute($stmtObrada);
+                return true;
+            }
         } 
     }
 
