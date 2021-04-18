@@ -198,12 +198,10 @@ class CekaonicaService{
             $sql = "SELECT p.imePacijent,p.prezPacijent,
                     DATE_FORMAT(o.datumDodavanja,'%d.%m.%Y') AS Datum, 
                     o.idObrada,
-                    CASE 
-                        WHEN o.dodanBMI IS NOT NULL THEN (SELECT CONCAT('[',p2.visina,'cm - ',p2.tezina,'kg] => ',p2.bmi) FROM pacijent p2 
-                                                        WHERE p2.idPacijent = p.idPacijent)
-                        WHEN o.dodanBMI IS NULL THEN NULL
-                    END AS bmi FROM pacijent p 
-                    JOIN obrada_med_sestra o ON o.idPacijent = p.idPacijent 
+                    (SELECT CONCAT('[',tm.visina,'cm - ',tm.tezina,'kg] => ',tm.bmi) FROM tjelesnamasa tm 
+                    WHERE tm.idBMI = 
+                    (SELECT MAX(tm2.idBMI) FROM tjelesnamasa tm2)) AS bmi FROM pacijent p
+                    JOIN obrada_med_sestra o ON o.idPacijent = p.idPacijent
                     WHERE o.idObrada = '$idObrada'";
             $result = $conn->query($sql);
 

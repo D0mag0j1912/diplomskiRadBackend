@@ -12,8 +12,7 @@ class ObradaService{
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
 
-        $sql = "UPDATE pacijent p SET p.visina = ?, p.tezina = ?, p.bmi = ? 
-                WHERE p.idPacijent = ?";
+        $sql = "INSERT INTO tjelesnaMasa(idObradaMedSestra, visina, tezina, bmi) VALUES (?,?,?,?)";
         //Kreiranje prepared statementa
         $stmt = mysqli_stmt_init($conn);
         //Ako je statement neuspješan
@@ -23,27 +22,10 @@ class ObradaService{
         //Ako je prepared statement u redu
         else{
             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-            mysqli_stmt_bind_param($stmt,"iidi",$visina, $tezina, $bmi, $idPacijent);
+            mysqli_stmt_bind_param($stmt,"iiid",$idObrada,$visina,$tezina,$bmi);
             //Izvršavanje statementa
             mysqli_stmt_execute($stmt);
-
-            $sqlObrada = "UPDATE obrada_med_sestra o SET o.dodanBMI = ? 
-                        WHERE o.idObrada = ?";
-            //Kreiranje prepared statementa
-            $stmtObrada = mysqli_stmt_init($conn);
-            //Ako je statement neuspješan
-            if(!mysqli_stmt_prepare($stmtObrada,$sqlObrada)){
-                return false;
-            }
-            //Ako je prepared statement u redu
-            else{
-                $dodanBMI = "dodan";
-                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                mysqli_stmt_bind_param($stmtObrada,"si",$dodanBMI, $idObrada);
-                //Izvršavanje statementa
-                mysqli_stmt_execute($stmtObrada);
-                return true;
-            }
+            return true;
         } 
     }
 
