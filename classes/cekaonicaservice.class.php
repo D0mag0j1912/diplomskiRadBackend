@@ -6,6 +6,34 @@ date_default_timezone_set('Europe/Zagreb');
 
 class CekaonicaService{
 
+    //Funkcija koja dohvaća naplaćene usluge 
+    function dohvatiNaplaceneUsluge($tipKorisnik,$idObrada){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+
+        //Kreiram prazno polje odgovora
+        $response = [];
+
+        //Ako je tip korisnika "lijecnik":
+        if($tipKorisnik == 'sestra'){
+            $sql = "SELECT CONCAT('[',tm.visina,'cm - ',tm.tezina,'kg] => ',tm.bmi) AS bmi, 
+                    ums.iznosUsluga FROM tjelesna_masa tm 
+                    JOIN usluge_med_sestra ums ON ums.idBMI = tm.idBMI 
+                    WHERE ums.idObradaMedSestra = '$idObrada'";
+            $result = $conn->query($sql);
+            if($result->num_rows > 0){
+                while($row = $result->fetch_assoc()) {
+                    $response[] = $row;
+                }
+            }
+            else{
+                return null;
+            }
+        }
+        return $response;
+    }
+
     //Funkcija koja dohvaća naziv i šifru sekundarnih dijagnoza na osnovu šifre sek. dijagnoze
     function dohvatiNazivSifraPovijestBolesti($datum,$vrijeme,$tipSlucaj,$mkbSifraPrimarna,$idObrada){
         //Dohvaćam bazu 
@@ -182,7 +210,11 @@ class CekaonicaService{
         if($tip == "lijecnik"){
             $sql = "SELECT p.imePacijent,p.prezPacijent, 
                     DATE_FORMAT(o.datumDodavanja,'%d.%m.%Y') AS Datum,
-                    o.idObrada FROM pacijent p 
+                    o.idObrada,
+                    CASE 
+                        WHEN o.ukupnaCijenaPregled IS NULL THEN ROUND(0,2) 
+                        WHEN o.ukupnaCijenaPregled IS NOT NULL THEN ROUND(o.ukupnaCijenaPregled,2)
+                    END AS ukupnaCijenaPregled FROM pacijent p 
                     JOIN obrada_lijecnik o ON o.idPacijent = p.idPacijent 
                     WHERE o.idObrada = '$idObrada'";
             $result = $conn->query($sql);
@@ -198,9 +230,13 @@ class CekaonicaService{
             $sql = "SELECT p.imePacijent,p.prezPacijent,
                     DATE_FORMAT(o.datumDodavanja,'%d.%m.%Y') AS Datum, 
                     o.idObrada,
-                    (SELECT CONCAT('[',tm.visina,'cm - ',tm.tezina,'kg] => ',tm.bmi) FROM tjelesnamasa tm 
+                    (SELECT CONCAT('[',tm.visina,'cm - ',tm.tezina,'kg] => ',tm.bmi) FROM tjelesna_masa tm 
                     WHERE tm.idBMI = 
-                    (SELECT MAX(tm2.idBMI) FROM tjelesnamasa tm2)) AS bmi FROM pacijent p
+                    (SELECT MAX(tm2.idBMI) FROM tjelesna_masa tm2)) AS bmi,
+                    CASE 
+                        WHEN o.ukupnaCijenaPregled IS NULL THEN ROUND(0,2) 
+                        WHEN o.ukupnaCijenaPregled IS NOT NULL THEN ROUND(o.ukupnaCijenaPregled,2)
+                    END AS ukupnaCijenaPregled FROM pacijent p
                     JOIN obrada_med_sestra o ON o.idPacijent = p.idPacijent
                     WHERE o.idObrada = '$idObrada'";
             $result = $conn->query($sql);

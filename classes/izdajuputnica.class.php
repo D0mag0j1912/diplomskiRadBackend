@@ -140,6 +140,7 @@ class IzdajUputnica {
             if(!mysqli_stmt_prepare($stmt,$sql)){
                 $response["success"] = "false";
                 $response["message"] = "Prepared statement ne valja!";
+                $response["idUputnica"] = null;
             }
             //Ako je prepared statement u redu
             else{
@@ -186,6 +187,7 @@ class IzdajUputnica {
                     if(!mysqli_stmt_prepare($stmtUpdate,$sqlUpdate)){
                         $response["success"] = "false";
                         $response["message"] = "Prepared statement ne valja!";
+                        $response["idUputnica"] = null;
                     }
                     //Ako je prepared statement u redu
                     else{
@@ -198,6 +200,7 @@ class IzdajUputnica {
                         //Vraćanje uspješnog odgovora serveru
                         $response["success"] = "true";
                         $response["message"] = "Uputnica uspješno dodana!";
+                        $response["idUputnica"] = $idUputnica;
                     } 
                 }
                 //Ako je broj sek. dijagnoza u bazi povijesti bolesti VEĆI OD 1 (npr. POVIJEST BOLESTI = A00-A01,A00-A02 UPUTNICA = A00-NULL)
@@ -216,6 +219,7 @@ class IzdajUputnica {
                     if(!mysqli_stmt_prepare($stmtDeleteAmbulanta,$sqlDeleteAmbulanta)){
                         $response["success"] = "false";
                         $response["message"] = "Prepared statement ne valja!";
+                        $response["idUputnica"] = null;
                     }
                     else{
                         //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -264,6 +268,7 @@ class IzdajUputnica {
                         if(!mysqli_stmt_prepare($stmtDelete,$sqlDelete)){
                             $response["success"] = "false";
                             $response["message"] = "Prepared statement ne valja!";
+                            $response["idUputnica"] = null;
                         }
                         else{
                             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -282,6 +287,7 @@ class IzdajUputnica {
                             if(!mysqli_stmt_prepare($stmt,$sql)){
                                 $response["success"] = "false";
                                 $response["message"] = "Prepared statement ne valja!";
+                                $response["idUputnica"] = null;
                             }
                             else{
                                 $prazna = NULL;
@@ -326,6 +332,7 @@ class IzdajUputnica {
                                 if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
                                     $response["success"] = "false";
                                     $response["message"] = "Prepared statement ne valja!";
+                                    $response["idUputnica"] = null;
                                 }
                                 //Ako je prepared statement u redu
                                 else{
@@ -336,6 +343,7 @@ class IzdajUputnica {
                                     //Vraćanje uspješnog odgovora serveru
                                     $response["success"] = "true";
                                     $response["message"] = "Uputnica uspješno dodana!";
+                                    $response["idUputnica"] = $idUputnica;
                                 }
                             } 
                         }
@@ -394,6 +402,7 @@ class IzdajUputnica {
                 if(!mysqli_stmt_prepare($stmtDeleteAmbulanta,$sqlDeleteAmbulanta)){
                     $response["success"] = "false";
                     $response["message"] = "Prepared statement ne valja!";
+                    $response["idUputnica"] = null;
                 }
                 else{
                     //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -441,6 +450,7 @@ class IzdajUputnica {
                     if(!mysqli_stmt_prepare($stmtDelete,$sqlDelete)){
                         $response["success"] = "false";
                         $response["message"] = "Prepared statement ne valja!";
+                        $response["idUputnica"] = null;
                     }
                     else{
                         //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -465,6 +475,7 @@ class IzdajUputnica {
                 if(!mysqli_stmt_prepare($stmt,$sql)){
                     $response["success"] = "false";
                     $response["message"] = "Prepared statement ne valja!";
+                    $response["idUputnica"] = null;
                 }
                 //Ako je prepared statement u redu
                 else{
@@ -506,6 +517,7 @@ class IzdajUputnica {
                         if(!mysqli_stmt_prepare($stmtUpdate,$sqlUpdate)){
                             $response["success"] = "false";
                             $response["message"] = "Prepared statement ne valja!";
+                            $response["idUputnica"] = null;
                         }
                         //Ako je prepared statement u redu
                         else{
@@ -517,6 +529,7 @@ class IzdajUputnica {
                             //Vraćanje uspješnog odgovora serveru
                             $response["success"] = "true";
                             $response["message"] = "Uputnica uspješno dodana!";
+                            $response["idUputnica"] = $idUputnica;
                         } 
                     }
                     //npr. (BAZA = 1, FORMA = 2, BAZA = 2, FORMA = 2)
@@ -536,6 +549,7 @@ class IzdajUputnica {
                             if(!mysqli_stmt_prepare($stmtUpdate,$sqlUpdate)){
                                 $response["success"] = "false";
                                 $response["message"] = "Prepared statement ne valja!";
+                                $response["idUputnica"] = null;
                             }
                             //Ako je prepared statement u redu
                             else{
@@ -547,6 +561,7 @@ class IzdajUputnica {
                                 //Vraćanje uspješnog odgovora serveru
                                 $response["success"] = "true";
                                 $response["message"] = "Uputnica uspješno dodana!";
+                                $response["idUputnica"] = $idUputnica;
                             } 
                         }
                         //Ako je broj sek. dijagnoza u BAZI JENDAK 0 te je n-ta iteracija (tj. n-ta dijagnoza forme)
@@ -598,6 +613,7 @@ class IzdajUputnica {
                             if(!mysqli_stmt_prepare($stmt,$sql)){
                                 $response["success"] = "false";
                                 $response["message"] = "Prepared statement ne valja!";
+                                $response["idUputnica"] = null;
                             }
                             //Ako je prepared statement u redu
                             else{
@@ -643,6 +659,7 @@ class IzdajUputnica {
                                 if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
                                     $response["success"] = "false";
                                     $response["message"] = "Prepared statement ne valja!";
+                                    $response["idUputnica"] = null;
                                 }
                                 //Ako je prepared statement u redu
                                 else{
@@ -653,6 +670,7 @@ class IzdajUputnica {
     
                                     $response["success"] = "true";
                                     $response["message"] = "Uputnica uspješno dodana!";
+                                    $response["idUputnica"] = $idUputnica;
                                 }
                             }
                         }
@@ -667,6 +685,7 @@ class IzdajUputnica {
                             if(!mysqli_stmt_prepare($stmtUpdate,$sqlUpdate)){
                                 $response["success"] = "false";
                                 $response["message"] = "Prepared statement ne valja!";
+                                $response["idUputnica"] = null;
                             }
                             //Ako je prepared statement u redu
                             else{
@@ -708,6 +727,7 @@ class IzdajUputnica {
                             if(!mysqli_stmt_prepare($stmtUpdate,$sqlUpdate)){
                                 $response["success"] = "false";
                                 $response["message"] = "Prepared statement ne valja!";
+                                $response["idUputnica"] = null;
                             }
                             //Ako je prepared statement u redu
                             else{
@@ -720,6 +740,7 @@ class IzdajUputnica {
                                 //Vraćanje uspješnog odgovora serveru
                                 $response["success"] = "true";
                                 $response["message"] = "Uputnica uspješno dodana!";
+                                $response["idUputnica"] = $idUputnica;
                             }
                         }
                         //Ako je broj ažuriranih redak JEDNAK broju sek. dijagnoza u bazi (npr. 2 == 2) I brojač iteracija JE VEĆI od broja sek. dijagnoza u bazi (npr. 3 > 2) 
@@ -772,6 +793,7 @@ class IzdajUputnica {
                             if(!mysqli_stmt_prepare($stmt,$sql)){
                                 $response["success"] = "false";
                                 $response["message"] = "Prepared statement ne valja!";
+                                $response["idUputnica"] = null;
                             }
                             //Ako je prepared statement u redu
                             else{
@@ -817,6 +839,7 @@ class IzdajUputnica {
                                 if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
                                     $response["success"] = "false";
                                     $response["message"] = "Prepared statement ne valja!";
+                                    $response["idUputnica"] = null;
                                 }
                                 //Ako je prepared statement u redu
                                 else{
@@ -827,6 +850,7 @@ class IzdajUputnica {
                                     //Vraćanje uspješnog odgovora serveru
                                     $response["success"] = "true";
                                     $response["message"] = "Uputnica uspješno dodana!";
+                                    $response["idUputnica"] = $idUputnica;
                                 }
                             }
                         }
@@ -846,6 +870,7 @@ class IzdajUputnica {
                         if(!mysqli_stmt_prepare($stmt,$sql)){
                             $response["success"] = "false";
                             $response["message"] = "Prepared statement ne valja!";
+                            $response["idUputnica"] = null;
                         }
                         //Ako je prepared statement u redu
                         else{
@@ -891,6 +916,7 @@ class IzdajUputnica {
                             if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
                                 $response["success"] = "false";
                                 $response["message"] = "Prepared statement ne valja!";
+                                $response["idUputnica"] = null;
                             }
                             //Ako je prepared statement u redu
                             else{
@@ -902,6 +928,7 @@ class IzdajUputnica {
                                 //Vraćanje uspješnog odgovora serveru
                                 $response["success"] = "true";
                                 $response["message"] = "Uputnica uspješno dodana!";
+                                $response["idUputnica"] = $idUputnica;
                             }
                         }
                     }

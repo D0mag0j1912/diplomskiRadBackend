@@ -24,13 +24,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         //Dohvaćam ID obrade
         $idObrada = mysqli_real_escape_string($conn, trim($request->idObrada));
         $idObrada = (int)$idObrada;
-        //Dohvaćam novu cijenu
-        $novaCijena = mysqli_real_escape_string($conn, trim($request->novaCijena));
-        $novaCijena = (float)$novaCijena;
+        //Ako nova cijena nije null 
+        if($request->novaCijena != null){
+            //Dohvaćam novu cijenu
+            $novaCijena = mysqli_real_escape_string($conn, trim($request->novaCijena));
+            $novaCijena = (float)$novaCijena;
+        }
         //Dohvaćam tipa korisnika
         $tipKorisnik = mysqli_real_escape_string($conn, trim($request->tipKorisnik));
+        //Primam sve usluge sa frontenda
+        $usluge = $request->usluge;
 
-        $response = $servis->azurirajUkupnuCijenuPregleda($idObrada, $novaCijena, $tipKorisnik);
+        $response = $servis->azurirajUkupnuCijenuPregleda(
+                $idObrada, 
+                $request->novaCijena != null ? $novaCijena : $request->novaCijena, 
+                $tipKorisnik,
+                $usluge->idRecept,
+                $usluge->idUputnica,
+                $usluge->idBMI
+        ); 
         //Vraćam odgovor frontendu
         echo json_encode($response);
     }

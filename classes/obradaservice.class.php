@@ -12,12 +12,12 @@ class ObradaService{
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
 
-        $sql = "INSERT INTO tjelesnaMasa(idObradaMedSestra, visina, tezina, bmi) VALUES (?,?,?,?)";
+        $sql = "INSERT INTO tjelesna_masa(idObradaMedSestra, visina, tezina, bmi) VALUES (?,?,?,?)";
         //Kreiranje prepared statementa
         $stmt = mysqli_stmt_init($conn);
         //Ako je statement neuspješan
         if(!mysqli_stmt_prepare($stmt,$sql)){
-            return false;
+            return null;
         }
         //Ako je prepared statement u redu
         else{
@@ -25,7 +25,15 @@ class ObradaService{
             mysqli_stmt_bind_param($stmt,"iiid",$idObrada,$visina,$tezina,$bmi);
             //Izvršavanje statementa
             mysqli_stmt_execute($stmt);
-            return true;
+            
+            //Dohvaćam ZADNJE UNESENI ID BMI-a
+            $resultBMI = mysqli_query($conn,"SELECT MAX(tm.idBMI) AS ID FROM tjelesna_masa tm");
+            //Ulazim u polje rezultata i idem redak po redak
+            while($rowBMI = mysqli_fetch_array($resultBMI)){
+                //Dohvaćam željeni ID recepta
+                $idBMI = $rowBMI['ID'];
+            } 
+            return $idBMI;
         } 
     }
 
