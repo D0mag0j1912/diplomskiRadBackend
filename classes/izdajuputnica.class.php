@@ -501,6 +501,10 @@ class IzdajUputnica {
                     while($rowUputnica = mysqli_fetch_array($resultUputnica)){
                         //Dohvaćam željeni ID uputnice
                         $idUputnica = $rowUputnica['ID'];
+                        //Ako se gleda prva sekundarna dijagnoza
+                        if($brojacIteracija == 1){
+                            $prviIdUputnica = $idUputnica;
+                        }
                     } 
                     //(BAZA = 0, FORMA = 1) ILI (BAZA = 1, FORMA = 1)
                     if($brojSekundarnaBaza <= $brojacSekundarnaForma && $brojacSekundarnaForma == 1){
@@ -561,7 +565,7 @@ class IzdajUputnica {
                                 //Vraćanje uspješnog odgovora serveru
                                 $response["success"] = "true";
                                 $response["message"] = "Uputnica uspješno dodana!";
-                                $response["idUputnica"] = $idUputnica;
+                                $response["idUputnica"] = $prviIdUputnica;
                             } 
                         }
                         //Ako je broj sek. dijagnoza u BAZI JENDAK 0 te je n-ta iteracija (tj. n-ta dijagnoza forme)
@@ -670,7 +674,7 @@ class IzdajUputnica {
     
                                     $response["success"] = "true";
                                     $response["message"] = "Uputnica uspješno dodana!";
-                                    $response["idUputnica"] = $idUputnica;
+                                    $response["idUputnica"] = $prviIdUputnica;
                                 }
                             }
                         }
@@ -740,7 +744,7 @@ class IzdajUputnica {
                                 //Vraćanje uspješnog odgovora serveru
                                 $response["success"] = "true";
                                 $response["message"] = "Uputnica uspješno dodana!";
-                                $response["idUputnica"] = $idUputnica;
+                                $response["idUputnica"] = $prviIdUputnica;
                             }
                         }
                         //Ako je broj ažuriranih redak JEDNAK broju sek. dijagnoza u bazi (npr. 2 == 2) I brojač iteracija JE VEĆI od broja sek. dijagnoza u bazi (npr. 3 > 2) 
@@ -850,7 +854,7 @@ class IzdajUputnica {
                                     //Vraćanje uspješnog odgovora serveru
                                     $response["success"] = "true";
                                     $response["message"] = "Uputnica uspješno dodana!";
-                                    $response["idUputnica"] = $idUputnica;
+                                    $response["idUputnica"] = $prviIdUputnica;
                                 }
                             }
                         }
@@ -928,7 +932,7 @@ class IzdajUputnica {
                                 //Vraćanje uspješnog odgovora serveru
                                 $response["success"] = "true";
                                 $response["message"] = "Uputnica uspješno dodana!";
-                                $response["idUputnica"] = $idUputnica;
+                                $response["idUputnica"] = $prviIdUputnica;
                             }
                         }
                     }

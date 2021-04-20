@@ -32,10 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $tipSlucaj = mysqli_real_escape_string($conn, trim($_GET['tipSlucaj']));
         //Dohvaćam MKB šifru primarne dijagnoze
         $primarnaDijagnoza = mysqli_real_escape_string($conn, trim($_GET['primarnaDijagnoza']));
-        //Dohvaćam poziciju zadnjeg space-a
-        $firstSpace = strpos($primarnaDijagnoza," ");
-        //Uzmi vrijednost šifre primarne dijagnoze
-        $mkbSifraPrimarna = trim(substr($primarnaDijagnoza,0,$firstSpace));
+        //Uzimam šifru primarne dijagnoze iz uglatih
+        preg_match("/\[([^\]]*)\]/", $primarnaDijagnoza, $matches);
+        $mkbSifraPrimarna = $matches[1];
         //Dohvati ID obrade
         $idObrada = $_GET['idObrada'];
         $idObrada = (int)$idObrada;

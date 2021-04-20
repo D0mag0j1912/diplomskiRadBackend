@@ -11,10 +11,8 @@ $conn = $baza->spojiSBazom();
 //Postavljam vremensku zonu
 date_default_timezone_set('Europe/Zagreb');
 
-$primarnaDijagnoza = 'A00 | Kolera';
-//Dohvaćam poziciju zadnjeg space-a
-$firstSpace = strpos($primarnaDijagnoza," ");
-//Uzmi vrijednost šifre primarne dijagnoze
-$mkbSifraPrimarna = trim(substr($primarnaDijagnoza,0,$firstSpace));
+$primarnaDijagnoza = 'Paratifus A [A01.1]';
+preg_match("/\[([^\]]*)\]/", $primarnaDijagnoza, $matches);
+$mkbSifraPrimarna = $matches[1];
 echo $mkbSifraPrimarna;
 ?>

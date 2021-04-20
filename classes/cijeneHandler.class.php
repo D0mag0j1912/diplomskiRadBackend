@@ -15,12 +15,8 @@ class CijeneHandler {
         
         //Ako je tip prijavljenog korisnika "lijecnik":
         if($tipKorisnik == 'lijecnik'){
-            $sql = "SELECT 
-                    CASE 
-                        WHEN ol.ukupnaCijenaPregled IS NULL THEN NULL
-                        WHEN ol.ukupnaCijenaPregled IS NOT NULL THEN ROUND(ol.ukupnaCijenaPregled,2)
-                    END AS ukupnaCijenaPregled FROM obrada_lijecnik ol 
-                    WHERE ol.idObrada = '$idObrada'";
+            $sql = "SELECT ROUND(SUM(ul.iznosUsluga),2) AS ukupnaCijenaPregled FROM usluge_lijecnik ul 
+                    WHERE ul.idObradaLijecnik = '$idObrada'";
             //Rezultat upita spremam u varijablu $result
             $result = mysqli_query($conn,$sql);
             //Ako je baza vratila cijenu  
@@ -31,18 +27,14 @@ class CijeneHandler {
                     $ukupnaCijena = $row['ukupnaCijenaPregled'];
                 }
             } 
-            //Ako baza NIJE vratila cijenu, znači da nema ni ukupne ni doplate
+            //Ako baza NIJE vratila cijenu, a trebala bi, znači da nema redaka
             else{
                 $ukupnaCijena = 0.00;
             }
         }
         else if($tipKorisnik == 'sestra'){
-            $sql = "SELECT 
-                    CASE 
-                        WHEN om.ukupnaCijenaPregled IS NULL THEN NULL 
-                        WHEN om.ukupnaCijenaPregled IS NOT NULL THEN ROUND(om.ukupnaCijenaPregled,2)
-                    END AS ukupnaCijenaPregled FROM obrada_med_sestra om
-                    WHERE om.idObrada = '$idObrada'";
+            $sql = "SELECT ROUND(SUM(ums.iznosUsluga),2) AS ukupnaCijenaPregled FROM usluge_med_sestra ums
+                    WHERE ums.idObradaMedSestra = '$idObrada'";
             //Rezultat upita spremam u varijablu $result
             $result = mysqli_query($conn,$sql);
             //Ako je baza vratila cijenu  
@@ -53,7 +45,7 @@ class CijeneHandler {
                     $ukupnaCijena = $row['ukupnaCijenaPregled'];
                 }
             } 
-            //Ako baza NIJE vratila cijenu, znači da nema ni ukupne ni doplate
+            //Ako baza NIJE vratila cijenu, a trebala bi, znači da nema redaka
             else{
                 $ukupnaCijena = 0.00;
             }
@@ -75,121 +67,90 @@ class CijeneHandler {
 
         //Ako je tip korisnika "lijecnik":
         if($tipKorisnik == 'lijecnik'){
-            //Prvo gledam ima li već nekih dodanih cijena za ovu sesiju obrade
-            $sqlPrethodnaCijena = "SELECT ol.ukupnaCijenaPregled FROM obrada_lijecnik ol 
-                                WHERE ol.idObrada = '$idObrada'";
-            //Rezultat upita spremam u varijablu $resultPrethodnaCijena
-            $resultPrethodnaCijena = mysqli_query($conn,$sqlPrethodnaCijena);
-            //Ako IMA prethodnih dodanih cijena 
-            if(mysqli_num_rows($resultPrethodnaCijena) > 0){
+            //Prvo zbrajam do sada iznose svih naplaćenih usluga za ovu sesiju obrade
+            $sqlPrethodnaSuma = "SELECT SUM(ul.iznosUsluga) AS prethodnaSuma FROM usluge_lijecnik ul 
+                                WHERE ul.idObradaLijecnik = '$idObrada'";
+            //Rezultat upita spremam u varijablu $resultPrethodnaSuma
+            $resultPrethodnaSuma = mysqli_query($conn,$sqlPrethodnaSuma);
+            //Ako IMA prethodno naplaćenih pregleda
+            if(mysqli_num_rows($resultPrethodnaSuma) > 0){
                 //Idem redak po redak rezultata upita 
-                while($rowPrethodnaCijena = mysqli_fetch_assoc($resultPrethodnaCijena)){
-                    //Vrijednost rezultata spremam u varijablu $prethodnaCijena
-                    $prethodnaCijena = $rowPrethodnaCijena['ukupnaCijenaPregled'];
+                while($rowPrethodnaSuma = mysqli_fetch_assoc($resultPrethodnaSuma)){
+                    //Vrijednost rezultata spremam u varijablu $prethodnaSuma
+                    $prethodnaSuma = $rowPrethodnaSuma['prethodnaSuma'];
                 }
                 //Kao konačnu cijenu stavljam zbroj prethodne i nove cijene
-                $konacnaCijenaPregleda = $prethodnaCijena + $novaCijena;
-            } 
-            //Ako NEMA prethodnih dodanih cijena
+                $noviIznosPregleda = $prethodnaSuma + $novaCijena;
+            }
+            //Ako je ovo prvi naplaćeni pregled
             else{
-                //Kao konačnu cijenu stavljam prvu dodanu cijenu
-                $konacnaCijenaPregleda = $novaCijena;
+                $noviIznosPregleda = $novaCijena;
             }
             //Ako nova cijena nije null
             if(!empty($novaCijena)){
-                $sql = "UPDATE obrada_lijecnik ol SET ol.ukupnaCijenaPregled = ? 
-                        WHERE ol.idObrada = ?";
+                //Kreiram upit koji će dodati podatke naplaćene usluge u tablicu "racun"
+                $sqlRacun = "INSERT INTO usluge_lijecnik (idObradaLijecnik,iznosUsluga,idRecept,idUputnica) VALUES (?,?,?,?)";
                 //Kreiranje prepared statementa
-                $stmt = mysqli_stmt_init($conn);
+                $stmtRacun = mysqli_stmt_init($conn);
                 //Ako je statement neuspješan
-                if(!mysqli_stmt_prepare($stmt,$sql)){
+                if(!mysqli_stmt_prepare($stmtRacun,$sqlRacun)){
                     return false;
                 }
                 else{
-                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                    mysqli_stmt_bind_param($stmt,"di",$konacnaCijenaPregleda, $idObrada);
-                    //Izvršavanje statementa
-                    mysqli_stmt_execute($stmt);
-
-                    //Kreiram upit koji će dodati podatke naplaćene usluge u tablicu "racun"
-                    $sqlRacun = "INSERT INTO usluge_lijecnik (idObradaLijecnik,iznosUsluga,idRecept,idUputnica) VALUES (?,?,?,?)";
-                    //Kreiranje prepared statementa
-                    $stmtRacun = mysqli_stmt_init($conn);
-                    //Ako je statement neuspješan
-                    if(!mysqli_stmt_prepare($stmtRacun,$sqlRacun)){
-                        return false;
+                    if(empty($idRecept)){
+                        $idRecept = NULL;
                     }
-                    else{
-                        if(empty($idRecept)){
-                            $idRecept = NULL;
-                        }
-                        if(empty($idUputnica)){
-                            $idUputnica = NULL;
-                        }
-                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                        mysqli_stmt_bind_param($stmtRacun,"idii",$idObrada, $novaCijena, $idRecept, $idUputnica);
-                        //Izvršavanje statementa
-                        mysqli_stmt_execute($stmtRacun);
-                    } 
-                }
+                    if(empty($idUputnica)){
+                        $idUputnica = NULL;
+                    }
+                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                    mysqli_stmt_bind_param($stmtRacun,"idii",$idObrada, $novaCijena, $idRecept, $idUputnica);
+                    //Izvršavanje statementa
+                    mysqli_stmt_execute($stmtRacun);
+                } 
             }
-            return $konacnaCijenaPregleda;
+            return $noviIznosPregleda;
         }
         //Ako je tip korisnika "sestra":
         else if($tipKorisnik == 'sestra'){
-            //Prvo gledam ima li već nekih dodanih cijena za ovu sesiju obrade
-            $sqlPrethodnaCijena = "SELECT om.ukupnaCijenaPregled FROM obrada_med_sestra om 
-                                WHERE om.idObrada = '$idObrada'";
-            //Rezultat upita spremam u varijablu $resultPrethodnaCijena
-            $resultPrethodnaCijena = mysqli_query($conn,$sqlPrethodnaCijena);
-            //Ako IMA prethodnih dodanih cijena 
-            if(mysqli_num_rows($resultPrethodnaCijena) > 0){
+            //Zbrajam sve prethodne iznose pregleda
+            $sqlPrethodnaSuma = "SELECT SUM(ums.iznosUsluga) AS prethodnaSuma FROM usluge_med_sestra ums 
+                                WHERE ums.idObradaMedSestra = '$idObrada'";
+            //Rezultat upita spremam u varijablu $resultPrethodnaSuma
+            $resultPrethodnaSuma = mysqli_query($conn,$sqlPrethodnaSuma);
+            //Ako IMA prethodnih naplaćenih pregleda
+            if(mysqli_num_rows($resultPrethodnaSuma) > 0){
                 //Idem redak po redak rezultata upita 
-                while($rowPrethodnaCijena = mysqli_fetch_assoc($resultPrethodnaCijena)){
-                    //Vrijednost rezultata spremam u varijablu $prethodnaCijena
-                    $prethodnaCijena = $rowPrethodnaCijena['ukupnaCijenaPregled'];
+                while($rowPrethodnaSuma = mysqli_fetch_assoc($resultPrethodnaSuma)){
+                    //Vrijednost rezultata spremam u varijablu $prethodnaSuma
+                    $prethodnaSuma = $rowPrethodnaSuma['prethodnaSuma'];
                 }
                 //Kao konačnu cijenu stavljam zbroj prethodne i nove cijene
-                $konacnaCijenaPregleda = $prethodnaCijena + $novaCijena;
+                $noviIznosPregleda = $prethodnaSuma + $novaCijena;
             } 
-            //Ako NEMA prethodnih dodanih cijena
+            //Ako je ovo prvi naplaćeni pregled
             else{
                 //Kao konačnu cijenu stavljam prvu dodanu cijenu
-                $konacnaCijenaPregleda = $novaCijena;
+                $noviIznosPregleda = $novaCijena;
             }
             //Ako nova cijena nije null
             if(!empty($novaCijena)){
-                $sql = "UPDATE obrada_med_sestra om SET om.ukupnaCijenaPregled = ? 
-                        WHERE om.idObrada = ?";
+                //Kreiram upit koji će dodati podatke naplaćene usluge u tablicu "racun"
+                $sqlRacun = "INSERT INTO usluge_med_sestra (idObradaMedSestra,iznosUsluga,idBMI) VALUES (?,?,?)";
                 //Kreiranje prepared statementa
-                $stmt = mysqli_stmt_init($conn);
+                $stmtRacun = mysqli_stmt_init($conn);
                 //Ako je statement neuspješan
-                if(!mysqli_stmt_prepare($stmt,$sql)){
+                if(!mysqli_stmt_prepare($stmtRacun,$sqlRacun)){
                     return false;
                 }
                 else{
                     //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                    mysqli_stmt_bind_param($stmt,"di",$konacnaCijenaPregleda, $idObrada);
+                    mysqli_stmt_bind_param($stmtRacun,"iii",$idObrada, $novaCijena, $idBMI);
                     //Izvršavanje statementa
-                    mysqli_stmt_execute($stmt);
-
-                    //Kreiram upit koji će dodati podatke naplaćene usluge u tablicu "racun"
-                    $sqlRacun = "INSERT INTO usluge_med_sestra (idObradaMedSestra,iznosUsluga,idBMI) VALUES (?,?,?)";
-                    //Kreiranje prepared statementa
-                    $stmtRacun = mysqli_stmt_init($conn);
-                    //Ako je statement neuspješan
-                    if(!mysqli_stmt_prepare($stmtRacun,$sqlRacun)){
-                        return false;
-                    }
-                    else{
-                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                        mysqli_stmt_bind_param($stmtRacun,"iii",$idObrada, $novaCijena, $idBMI);
-                        //Izvršavanje statementa
-                        mysqli_stmt_execute($stmtRacun);
-                    } 
-                }
+                    mysqli_stmt_execute($stmtRacun);
+                } 
             }
-            return $konacnaCijenaPregleda;
+            return $noviIznosPregleda;
         }
     }
 

@@ -750,6 +750,10 @@ class DodajReceptService{
                 while($rowRecept = mysqli_fetch_array($resultRecept)){
                     //Dohvaćam željeni ID povijesti bolesti
                     $idRecept = $rowRecept['ID'];
+                    //Ako je prva sekundarna dijagnoza
+                    if($brojacIteracija == 1){
+                        $pomIdRecept = $idRecept;
+                    }
                 } 
                 //(BAZA = 0, FORMA = 1) ILI (BAZA = 1, FORMA = 1)
                 if($brojSekundarnaBaza <= $brojacSekundarnaForma && $brojacSekundarnaForma == 1){
@@ -810,7 +814,7 @@ class DodajReceptService{
                             //Vraćanje uspješnog odgovora serveru
                             $response["success"] = "true";
                             $response["message"] = "Recept uspješno dodan!";
-                            $response["idRecept"] = $idRecept;
+                            $response["idRecept"] = $pomIdRecept;
                         } 
                     }
                     //Ako je broj sek. dijagnoza u BAZI JENDAK 0 te je n-ta iteracija (tj. n-ta dijagnoza forme)
@@ -919,7 +923,7 @@ class DodajReceptService{
 
                                 $response["success"] = "true";
                                 $response["message"] = "Recept uspješno dodan!";
-                                $response["idRecept"] = $idRecept;
+                                $response["idRecept"] = $pomIdRecept;
                             }
                         }
                     }
@@ -989,7 +993,7 @@ class DodajReceptService{
                             //Vraćanje uspješnog odgovora serveru
                             $response["success"] = "true";
                             $response["message"] = "Recept uspješno dodan!";
-                            $response["idRecept"] = $idRecept;
+                            $response["idRecept"] = $pomIdRecept;
                         }
                     }
                     //Ako je broj ažuriranih redak JEDNAK broju sek. dijagnoza u bazi (npr. 2 == 2) I brojač iteracija JE VEĆI od broja sek. dijagnoza u bazi (npr. 3 > 2) 
@@ -1099,7 +1103,7 @@ class DodajReceptService{
                                 //Vraćanje uspješnog odgovora serveru
                                 $response["success"] = "true";
                                 $response["message"] = "Recept uspješno dodan!";
-                                $response["idRecept"] = $idRecept;
+                                $response["idRecept"] = $pomIdRecept;
                             }
                         }
                     }
@@ -1177,7 +1181,7 @@ class DodajReceptService{
                             //Vraćanje uspješnog odgovora serveru
                             $response["success"] = "true";
                             $response["message"] = "Recept uspješno dodan!";
-                            $response["idRecept"] = $idRecept;
+                            $response["idRecept"] = $pomIdRecept;
                         }
                     }
                 }

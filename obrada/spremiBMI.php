@@ -25,10 +25,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $bmi = mysqli_real_escape_string($conn, trim($request->bmi));
         $idPacijent = mysqli_real_escape_string($conn, trim($request->idPacijent));
         $idPacijent = (int)$idPacijent;
-        $idObrada = mysqli_real_escape_string($conn, trim($request->idObrada));
-        $idObrada = (int)$idObrada;
-
-        $response = $servis->spremiBMI($visina,$tezina,$bmi,$idPacijent,$idObrada);
+        $response = $servis->spremiBMI($visina,$tezina,$bmi,$idPacijent);
 
         echo json_encode($response);
     }

@@ -7,12 +7,12 @@ date_default_timezone_set('Europe/Zagreb');
 class ObradaService{
 
     //Funkcija koja sprema izračunati BMI, visinu te težinu u bazu
-    function spremiBMI($visina,$tezina,$bmi,$idPacijent,$idObrada){
+    function spremiBMI($visina,$tezina,$bmi,$idPacijent){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
 
-        $sql = "INSERT INTO tjelesna_masa(idObradaMedSestra, visina, tezina, bmi) VALUES (?,?,?,?)";
+        $sql = "INSERT INTO tjelesna_masa(visina, tezina, bmi) VALUES (?,?,?)";
         //Kreiranje prepared statementa
         $stmt = mysqli_stmt_init($conn);
         //Ako je statement neuspješan
@@ -22,7 +22,7 @@ class ObradaService{
         //Ako je prepared statement u redu
         else{
             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-            mysqli_stmt_bind_param($stmt,"iiid",$idObrada,$visina,$tezina,$bmi);
+            mysqli_stmt_bind_param($stmt,"iid",$visina,$tezina,$bmi);
             //Izvršavanje statementa
             mysqli_stmt_execute($stmt);
             
