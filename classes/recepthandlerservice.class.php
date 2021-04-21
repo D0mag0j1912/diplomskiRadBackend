@@ -58,7 +58,8 @@ class ReceptHandlerService{
 
             //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
             $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovnalistalijekova o 
-                            WHERE o.oblikJacinaPakiranjeLijek = '$ojpLijek' AND o.zasticenoImeLijek = '$imeLijek'";
+                                WHERE o.oblikJacinaPakiranjeLijek = '$ojpLijek' 
+                                AND o.zasticenoImeLijek = '$imeLijek'";
 
             $resultOsnovnaLista = $conn->query($sqlOsnovnaLista);
             //Ako je lijek pronađen u OSNOVNOJ LISTI LIJEKOVA
@@ -84,11 +85,14 @@ class ReceptHandlerService{
                     TRIM(d.imeDijagnoza) AS nazivPrimarna, GROUP_CONCAT(DISTINCT TRIM(r.mkbSifraSekundarna) SEPARATOR ' ') AS mkbSifraSekundarna,
                     r.proizvod, r.oblikJacinaPakiranjeLijek, r.kolicina, r.doziranje, 
                     r.dostatnost, r.hitnost, r.ponovljiv, r.brojPonavljanja, r.sifraSpecijalist, 
-                    r.idPacijent, r.datumRecept, r.vrijemeRecept FROM recept r 
+                    r.idPacijent, r.datumRecept, r.vrijemeRecept, r.oznaka FROM recept r 
                     JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
-                    WHERE r.dostatnost = '$dostatnost' AND r.datumRecept = '$datumRecept' 
-                    AND r.idPacijent = '$idPacijent' AND TRIM(r.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
-                    AND r.proizvod = '$zasticenoImeLijek' AND r.oblikJacinaPakiranjeLijek = '$oblikJacinaPakiranjeLijek' 
+                    WHERE r.dostatnost = '$dostatnost' 
+                    AND r.datumRecept = '$datumRecept' 
+                    AND r.idPacijent = '$idPacijent' 
+                    AND TRIM(r.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
+                    AND r.proizvod = '$zasticenoImeLijek' 
+                    AND r.oblikJacinaPakiranjeLijek = '$oblikJacinaPakiranjeLijek' 
                     AND r.vrijemeRecept = '$vrijemeRecept'";
             $result = $conn->query($sql);
                     
@@ -115,7 +119,8 @@ class ReceptHandlerService{
 
                 //Kreiram sql upit kojim provjeravam postoji li LIJEK u DOPUNSKOJ listi lijekova
                 $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunskalistalijekova d 
-                                    WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' AND d.zasticenoImeLijek = '$imeLijek'";
+                                    WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' 
+                                    AND d.zasticenoImeLijek = '$imeLijek'";
 
                 $resultDopunskaLista = $conn->query($sqlDopunskaLista);
                 //Ako je lijek pronađen u DOPUNSKOJ LISTI LIJEKOVA
@@ -141,11 +146,14 @@ class ReceptHandlerService{
                         TRIM(d.imeDijagnoza) AS nazivPrimarna, GROUP_CONCAT(DISTINCT TRIM(r.mkbSifraSekundarna) SEPARATOR ' ') AS mkbSifraSekundarna,
                         r.proizvod, r.oblikJacinaPakiranjeLijek, r.kolicina, r.doziranje, 
                         r.dostatnost, r.hitnost, r.ponovljiv, r.brojPonavljanja, r.sifraSpecijalist, 
-                        r.idPacijent, r.datumRecept, r.vrijemeRecept FROM recept r 
+                        r.idPacijent, r.datumRecept, r.vrijemeRecept, r.oznaka FROM recept r 
                         JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
-                        WHERE r.dostatnost = '$dostatnost' AND r.datumRecept = '$datumRecept' 
-                        AND r.idPacijent = '$idPacijent' AND TRIM(r.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
-                        AND r.proizvod = '$zasticenoImeLijek' AND r.oblikJacinaPakiranjeLijek = '$oblikJacinaPakiranjeLijek' 
+                        WHERE r.dostatnost = '$dostatnost' 
+                        AND r.datumRecept = '$datumRecept' 
+                        AND r.idPacijent = '$idPacijent' 
+                        AND TRIM(r.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
+                        AND r.proizvod = '$zasticenoImeLijek' 
+                        AND r.oblikJacinaPakiranjeLijek = '$oblikJacinaPakiranjeLijek' 
                         AND r.vrijemeRecept = '$vrijemeRecept'";
                 $result = $conn->query($sql);
                         
@@ -164,10 +172,12 @@ class ReceptHandlerService{
                         TRIM(d.imeDijagnoza) AS nazivPrimarna, GROUP_CONCAT(DISTINCT TRIM(r.mkbSifraSekundarna) SEPARATOR ' ') AS mkbSifraSekundarna,
                         r.proizvod, r.oblikJacinaPakiranjeLijek, r.kolicina, r.doziranje, 
                         r.dostatnost, r.hitnost, r.ponovljiv, r.brojPonavljanja, r.sifraSpecijalist, 
-                        r.idPacijent, r.datumRecept, r.vrijemeRecept FROM recept r 
+                        r.idPacijent, r.datumRecept, r.vrijemeRecept, r.oznaka FROM recept r 
                         JOIN dijagnoze d ON d.mkbSifra = r.mkbSifraPrimarna
-                        WHERE r.dostatnost = '$dostatnost' AND r.datumRecept = '$datumRecept' 
-                        AND r.idPacijent = '$idPacijent' AND TRIM(r.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
+                        WHERE r.dostatnost = '$dostatnost' 
+                        AND r.datumRecept = '$datumRecept' 
+                        AND r.idPacijent = '$idPacijent' 
+                        AND TRIM(r.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                         AND r.proizvod = '$proizvod' 
                         AND r.vrijemeRecept = '$vrijemeRecept'";
                 $result = $conn->query($sql);

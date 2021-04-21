@@ -78,14 +78,20 @@ class CekaonicaService{
                 DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum, p.imePacijent, p.prezPacijent, p.mboPacijent, 
                 p2.mboPacijent AS mboAktivniPacijent,
                 CASE
-                    WHEN u.sifDjel IS NOT NULL THEN (SELECT ROUND(ul.iznosUsluga,2) FROM usluge_lijecnik ul 
-                                                    WHERE ul.idUputnica = u.idUputnica)
-                    WHEN u.sifDjel IS NULL THEN NULL
+                    WHEN pb.idUputnica IS NOT NULL THEN (SELECT ROUND(ul.iznosUsluga,2) FROM usluge_lijecnik ul
+                                                    WHERE ul.idUputnica IN 
+                                                    (SELECT MIN(pb2.idUputnica) FROM povijestbolesti pb2 
+                                                    WHERE pb2.oznaka = (SELECT pb3.oznaka FROM povijestbolesti pb3 
+                                                                    WHERE pb3.idUputnica = pb.idUputnica)))
+                    WHEN pb.idUputnica IS NULL THEN NULL
                 END AS iznosUputnica,
                 CASE 
-                    WHEN r.proizvod IS NOT NULL THEN (SELECT ROUND(ul.iznosUsluga,2) FROM usluge_lijecnik ul 
-                                                    WHERE ul.idRecept = r.idRecept)
-                    WHEN r.proizvod IS NULL THEN NULL
+                    WHEN pb.idRecept IS NOT NULL THEN (SELECT ROUND(ul.iznosUsluga,2) FROM usluge_lijecnik ul 
+                                                    WHERE ul.idRecept IN 
+                                                    (SELECT MIN(pb2.idRecept) FROM povijestbolesti pb2 
+                                                    WHERE pb2.oznaka = (SELECT pb3.oznaka FROM povijestbolesti pb3 
+                                                                    WHERE pb3.idRecept = pb.idRecept)))
+                    WHEN pb.idRecept IS NULL THEN NULL
                 END AS iznosRecept,
                 CASE 
                     WHEN r.oblikJacinaPakiranjeLijek IS NULL THEN r.proizvod 
@@ -125,7 +131,7 @@ class CekaonicaService{
                 LEFT JOIN obrada_lijecnik o ON o.idObrada = pb.idObradaLijecnik 
                 LEFT JOIN pacijent p2 ON p2.idPacijent = o.idPacijent
                 WHERE pb.idObradaLijecnik = '$idObrada'
-                GROUP BY pb.vrijeme 
+                GROUP BY pb.oznaka 
                 ORDER BY pb.datum DESC, pb.vrijeme DESC";
         $result = $conn->query($sql);
 
@@ -167,7 +173,7 @@ class CekaonicaService{
                 JOIN obrada_med_sestra o ON o.idObrada = pr.idObradaMedSestra 
                 JOIN pacijent p2 ON p2.idPacijent = o.idPacijent
                 WHERE pr.idObradaMedSestra = '$idObrada'
-                GROUP BY pr.vrijemePregled 
+                GROUP BY pr.oznaka 
                 ORDER BY pr.datumPregled DESC, pr.vrijemePregled DESC";
         $result = $conn->query($sql);
 
@@ -191,12 +197,29 @@ class CekaonicaService{
         //Ako je tip korisnika "lijecnik":
         if($tip == "lijecnik"){
             $sql = "SELECT p.imePacijent,p.prezPacijent, 
-                    DATE_FORMAT(o.datumDodavanja,'%d.%m.%Y') AS Datum,
-                    o.idObrada,
-                    (SELECT ROUND(SUM(ul.iznosUsluga),2) FROM usluge_lijecnik ul 
-                    WHERE ul.idObradaLijecnik = '$idObrada') AS ukupnaCijenaPregled FROM pacijent p 
-                    JOIN obrada_lijecnik o ON o.idPacijent = p.idPacijent 
-                    WHERE o.idObrada = '$idObrada'";
+                    DATE_FORMAT(ol.datumDodavanja,'%d.%m.%Y') AS Datum,
+                    ol.idObrada,
+                    CASE
+                    WHEN ul.idUputnica IS NOT NULL THEN (SELECT ROUND(SUM(ul2.iznosUsluga),2) FROM usluge_lijecnik ul2 
+                                                        WHERE ul2.idObradaLijecnik = '$idObrada' 
+                                                        AND ul2.idUputnica = ul.idUputnica 
+                                                        AND ul2.idUputnica IN 
+                                                        (SELECT pb.idUputnica FROM povijestbolesti pb 
+                                                        WHERE pb.mboPacijent IN 
+                                                        (SELECT p.mboPacijent FROM pacijent p 
+                                                        WHERE p.idPacijent = ol.idPacijent)))
+                    WHEN ul.idRecept IS NOT NULL THEN (SELECT ROUND(SUM(ul2.iznosUsluga),2) FROM usluge_lijecnik ul2 
+                                                    WHERE ul2.idObradaLijecnik = '$idObrada' 
+                                                    AND ul2.idRecept = ul.idRecept 
+                                                    AND ul2.idRecept IN 
+                                                    (SELECT pb.idRecept FROM povijestbolesti pb 
+                                                    WHERE pb.mboPacijent IN 
+                                                    (SELECT p.mboPacijent FROM pacijent p 
+                                                    WHERE p.idPacijent = ol.idPacijent)))
+                    END AS ukupnaCijenaPregled FROM usluge_lijecnik ul 
+                    JOIN obrada_lijecnik ol ON ol.idObrada = ul.idObradaLijecnik 
+                    JOIN pacijent p ON p.idPacijent = ol.idPacijent 
+                    WHERE ul.idObradaLijecnik = '$idObrada'";
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {

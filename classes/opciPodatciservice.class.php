@@ -114,6 +114,22 @@ class OpciPodatciService{
             //Postavljam je na NULL
             $mkbPrimarnaDijagnoza = NULL;
         }
+        //Označavam da slučajno generirana oznaka već postoji u bazi
+        $ispravnaOznaka = false;
+        while($ispravnaOznaka != true){
+            //Generiram slučajni oznaku po kojom grupiram
+            $oznaka = uniqid();
+            //Kreiram upit koji provjerava postoji li već ova random generirana oznaka u bazi
+            $sqlProvjeraOznaka = "SELECT p.oznaka FROM pregled p 
+                                WHERE p.oznaka = '$oznaka';";
+            //Rezultat upita spremam u varijablu $resultProvjeraOznaka
+            $resultProvjeraOznaka = mysqli_query($conn,$sqlProvjeraOznaka);
+            //Ako se novo generirana oznaka NE NALAZI u bazi
+            if(mysqli_num_rows($resultProvjeraOznaka) == 0){
+                //Izlazim iz petlje
+                $ispravnaOznaka = true;
+            } 
+        }
         //Ako su minute vremena == 0, ostavi kako jest
         if((int)(date('i',strtotime($vrijeme))) === 0){
             $vrijeme = $vrijeme;
@@ -141,7 +157,9 @@ class OpciPodatciService{
 
         //Kreiram sql upit koji će provjeriti JE LI TRENUTNO AKTIVNI PACIJENT NARUČEN U OVO VRIJEME NA OVAJ DATUM
         $sqlCountNarucen = "SELECT COUNT(*) AS BrojNarucen FROM narucivanje n 
-                            WHERE n.idPacijent = '$idPacijent' AND n.vrijemeNarucivanje = '$vrijeme' AND n.datumNarucivanje = '$datum'";
+                            WHERE n.idPacijent = '$idPacijent' 
+                            AND n.vrijemeNarucivanje = '$vrijeme' 
+                            AND n.datumNarucivanje = '$datum'";
         //Rezultat upita spremam u varijablu $resultCountPacijent
         $resultCountNarucen = mysqli_query($conn,$sqlCountNarucen);
         //Ako rezultat upita ima podataka u njemu (znači nije prazan)
@@ -208,8 +226,8 @@ class OpciPodatciService{
             $sql = "INSERT INTO pregled (nacinPlacanja, podrucniUredHZZO, podrucniUredOzljeda, 
                                         nazivPoduzeca, oznakaOsiguranika, nazivDrzave, mboPacijent, brIskDopunsko,
                                         mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, datumPregled,narucen, 
-                                        idObradaMedSestra,vrijemePregled,prosliPregled,bojaPregled) 
-                                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                        idObradaMedSestra,vrijemePregled,prosliPregled,bojaPregled,oznaka) 
+                                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             //Kreiranje prepared statementa
             $stmt = mysqli_stmt_init($conn);
             //Ako je statement neuspješan
@@ -274,9 +292,9 @@ class OpciPodatciService{
                     $nazivDrzave = NULL;
                 }
                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                mysqli_stmt_bind_param($stmt,"sssssssssssssisis",$nacinPlacanja, $sifUredHZZO, $sifUredOzljeda, $nazivPoduzeca,
+                mysqli_stmt_bind_param($stmt,"sssssssssssssisiss",$nacinPlacanja, $sifUredHZZO, $sifUredOzljeda, $nazivPoduzeca,
                                         $oznakaOsiguranika, $nazivDrzave, $mbo, $brIskDopunsko, $mkbPrimarnaDijagnoza,
-                                        $sekDijagnoza, $tipSlucaj, $datum,$narucen,$idObrada,$vrijemePregled,$prosliPregled,$boja);
+                                        $sekDijagnoza, $tipSlucaj, $datum,$narucen,$idObrada,$vrijemePregled,$prosliPregled,$boja,$oznaka);
                 //Izvršavanje statementa
                 mysqli_stmt_execute($stmt);
 
@@ -361,8 +379,8 @@ class OpciPodatciService{
                 $sql = "INSERT INTO pregled (nacinPlacanja, podrucniUredHZZO, podrucniUredOzljeda, 
                                             nazivPoduzeca, oznakaOsiguranika, nazivDrzave, mboPacijent, brIskDopunsko,
                                             mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, datumPregled,narucen, 
-                                            idObradaMedSestra,vrijemePregled,prosliPregled,bojaPregled) 
-                                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                            idObradaMedSestra,vrijemePregled,prosliPregled,bojaPregled,oznaka) 
+                                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                 //Kreiranje prepared statementa
                 $stmt = mysqli_stmt_init($conn);
                 //Ako je statement neuspješan
@@ -428,9 +446,9 @@ class OpciPodatciService{
                         $nazivDrzave = NULL;
                     }
                     //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                    mysqli_stmt_bind_param($stmt,"sssssssssssssisis",$nacinPlacanja, $sifUredHZZO, $sifUredOzljeda, $nazivPoduzeca,
+                    mysqli_stmt_bind_param($stmt,"sssssssssssssisiss",$nacinPlacanja, $sifUredHZZO, $sifUredOzljeda, $nazivPoduzeca,
                                 $oznakaOsiguranika, $nazivDrzave, $mbo, $brIskDopunsko, $mkbPrimarnaDijagnoza,
-                                $mkb, $tipSlucaj, $datum,$narucen,$idObrada,$vrijemePregled,$prosliPregled,$boja);
+                                $mkb, $tipSlucaj, $datum,$narucen,$idObrada,$vrijemePregled,$prosliPregled,$boja,$oznaka);
                     //Izvršavanje statementa
                     mysqli_stmt_execute($stmt);
 

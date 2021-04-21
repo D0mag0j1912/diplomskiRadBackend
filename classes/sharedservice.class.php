@@ -6,6 +6,28 @@ require_once BASE_PATH.'\includes\autoloader.inc.php';
 date_default_timezone_set('Europe/Zagreb');
 
 class SharedService {
+
+    //Funkcija koja dohvaća dopunsko osiguranje na osnovu ID-a pacijenta
+    function getDopunsko($mboPacijent){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+        //Kreiram upit za dohvaćanjem MBO-a pacijenta kojemu se upisiva povijest bolesti
+        $sql = "SELECT zp.brojIskazniceDopunsko FROM zdr_podatci zp 
+                WHERE zp.mboPacijent = '$mboPacijent'";
+        //Rezultat upita spremam u varijablu $resultMBO
+        $result = mysqli_query($conn,$sql);
+        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+        if(mysqli_num_rows($result) > 0){
+            //Idem redak po redak rezultata upita 
+            while($row = mysqli_fetch_assoc($result)){
+                //Vrijednost rezultata spremam u varijablu $dopunsko
+                $dopunsko = $row['brojIskazniceDopunsko'];
+            }
+        }
+        return $dopunsko;
+    }
+    
     //Funkcija koja dohvaća zadnje generirani ID obrade povijesti bolesti
     function dohvatiSlucajniIDObrada($mboPacijent){
         $baza = new Baza();

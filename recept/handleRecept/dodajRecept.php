@@ -2,6 +2,7 @@
 include('../../backend-path.php');
 //Importam potrebne klase pomoću autoloadera
 require_once BASE_PATH.'\includes\autoloader3.inc.php';
+include('../../getMBO.php');
 
 //Dohvaćam liječnički servis
 $servis = new DodajReceptService();
@@ -78,7 +79,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
                                         $osnovnaListaLijekText,$dopunskaListaLijekDropdown,$dopunskaListaLijekText,
                                         $osnovnaListaMagPripravakDropdown,$osnovnaListaMagPripravakText,$dopunskaListaMagPripravakDropdown,
                                         $dopunskaListaMagPripravakText,$kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja,
-                                        $sifraSpecijalist,$idPacijent,$idLijecnik,$poslanaPrimarna,$poslaniIDObrada,$poslaniTipSlucaj,$poslanoVrijeme);  
+                                        $sifraSpecijalist,$idPacijent,getMBO($idPacijent),$idLijecnik,$poslanaPrimarna,$poslaniIDObrada,$poslaniTipSlucaj,$poslanoVrijeme);  
         echo json_encode($response);
     }
 }

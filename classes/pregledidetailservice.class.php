@@ -460,7 +460,7 @@ class PreglediDetailService{
 
         //Ako je tip "lijecnik":
         if($tipKorisnik == "lijecnik"){
-            //Kreiram upit koji će dohvatiti sve povijesti bolesti 
+            //Kreiram upit koji će dohvatiti sve podatke za određeni ID povijesti bolesti
             $sql = "SELECT pb.idPovijestBolesti, pb.razlogDolaska, pb.anamneza, 
                     pb.statusPacijent, pb.nalaz, 
                     CONCAT(TRIM(d.imeDijagnoza),' [',TRIM(pb.mkbSifraPrimarna),']') AS primarnaDijagnoza,
@@ -496,6 +496,12 @@ class PreglediDetailService{
                                                                 WHERE pb.idPovijestBolesti = '$id'),' [',r.sifraSpecijalist,']') FROM recept r 
                                                 JOIN povijestbolesti pb ON pb.idRecept = r.idRecept 
                                                 WHERE pb.idPovijestBolesti = '$id')) AS specijalist,
+                    IF(pb.idRecept IS NULL, NULL, (SELECT ROUND(ul.iznosUsluga,2) AS iznosRecept FROM usluge_lijecnik ul
+                                                WHERE ul.idRecept IN 
+                                                (SELECT MIN(pb.idRecept) FROM povijestbolesti pb 
+                                                WHERE pb.oznaka = (SELECT pb2.oznaka FROM povijestbolesti pb2 
+                                                                    WHERE pb2.idPovijestBolesti = '$id')
+                                                GROUP BY pb.oznaka))) AS iznosRecept,
                     IF(pb.idUputnica IS NULL, NULL, (SELECT CONCAT((SELECT TRIM(zu.nazivZdrUst) FROM zdr_ustanova zu 
                                                                 JOIN uputnica u ON u.idZdrUst = zu.idZdrUst 
                                                                 JOIN povijestbolesti pb ON pb.idUputnica = u.idUputnica 
@@ -522,7 +528,13 @@ class PreglediDetailService{
                                                     WHERE pb.idPovijestBolesti = '$id')) AS molimTraziSe,
                     IF(pb.idUputnica IS NULL, NULL, (SELECT TRIM(u.napomena) FROM uputnica u 
                                                     JOIN povijestbolesti pb ON pb.idUputnica = u.idUputnica 
-                                                    WHERE pb.idPovijestBolesti = '$id')) AS napomena FROM povijestBolesti pb 
+                                                    WHERE pb.idPovijestBolesti = '$id')) AS napomena,
+                    IF(pb.idUputnica IS NULL, NULL, (SELECT ROUND(ul.iznosUsluga,2) FROM usluge_lijecnik ul
+                                                    WHERE ul.idUputnica IN 
+                                                    (SELECT MIN(pb.idUputnica) FROM povijestbolesti pb 
+                                                    WHERE pb.oznaka = (SELECT pb2.oznaka FROM povijestbolesti pb2 
+                                                                    WHERE pb2.idPovijestBolesti = '$id')
+                                                    GROUP BY pb.oznaka))) AS iznosUputnica FROM povijestBolesti pb 		
                     JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
                     JOIN ambulanta a ON a.idPovijestBolesti = pb.idPovijestBolesti 
                     JOIN lijecnik l ON l.idLijecnik = a.idLijecnik 

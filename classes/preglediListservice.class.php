@@ -441,7 +441,7 @@ class PreglediListService{
                         (SELECT MAX(pb3.idPovijestBolesti) FROM povijestBolesti pb3 
                         WHERE pb3.mboPacijent = '$mboPacijent' 
                         AND pb3.prosliPregled IS NULL 
-                        GROUP BY pb3.vrijeme)
+                        GROUP BY pb3.oznaka)
                         ORDER BY pb2.datum DESC, pb2.vrijeme DESC
                         LIMIT 7)";
                 //Rezultat upita spremam u varijablu $result
@@ -513,7 +513,7 @@ class PreglediListService{
                         OR UPPER(pb.napomena) LIKE UPPER('%{$pretraga}%') 
                         OR UPPER(DATE_FORMAT(pb.datum,'%d.%m.%Y')) LIKE UPPER('%{$pretraga}%') 
                         OR UPPER(pb.mboPacijent) LIKE UPPER('%{$pretraga}%')) 
-                        GROUP BY pb.vrijeme
+                        GROUP BY pb.oznaka
                         ORDER BY pb.datum DESC, pb.vrijeme DESC 
                         LIMIT 7";
                 $result = $conn->query($sql);
@@ -624,7 +624,7 @@ class PreglediListService{
                         (SELECT MAX(p3.idPregled) FROM pregled p3 
                         WHERE p3.mboPacijent = '$mboPacijent' 
                         AND p3.prosliPregled IS NULL 
-                        GROUP BY p3.vrijemePregled)
+                        GROUP BY p3.oznaka)
                         ORDER BY p2.datumPregled DESC, p2.vrijemePregled DESC
                         LIMIT 7)";
                 //Rezultat upita spremam u varijablu $result
@@ -696,7 +696,7 @@ class PreglediListService{
                         OR UPPER(TRIM(p.mkbSifraPrimarna)) LIKE UPPER('%{$pretraga}%') 
                         OR UPPER(TRIM(p.mkbSifraSekundarna)) LIKE UPPER('%{$pretraga}%')
                         OR UPPER(DATE_FORMAT(p.datumPregled,'%d.%m.%Y')) LIKE UPPER('%{$pretraga}%')) 
-                        GROUP BY p.vrijemePregled
+                        GROUP BY p.oznaka
                         ORDER BY p.datumPregled DESC, p.vrijemePregled DESC 
                         LIMIT 7";
                 $result = $conn->query($sql);
@@ -822,9 +822,8 @@ class PreglediListService{
                     WHERE pb3.mboPacijent = '$mboPacijent' 
                     AND pb3.datum = '$datum'
                     AND pb3.prosliPregled IS NULL 
-                    GROUP BY pb3.vrijeme)
-                    ORDER BY pb2.datum DESC, pb2.vrijeme DESC
-                    LIMIT 7)";
+                    GROUP BY pb3.oznaka)
+                    ORDER BY pb2.datum DESC, pb2.vrijeme DESC)";
             //Rezultat upita spremam u varijablu $result
             $result = mysqli_query($conn,$sql);
             //Ako rezultat upita ima podataka u njemu (znači nije prazan)
@@ -935,9 +934,8 @@ class PreglediListService{
                     WHERE p3.mboPacijent = '$mboPacijent' 
                     AND p3.datumPregled = '$datum'
                     AND p3.prosliPregled IS NULL 
-                    GROUP BY p3.vrijemePregled)
-                    ORDER BY p2.datumPregled DESC, p2.vrijemePregled DESC
-                    LIMIT 7)";
+                    GROUP BY p3.oznaka)
+                    ORDER BY p2.datumPregled DESC, p2.vrijemePregled DESC)";
             //Rezultat upita spremam u varijablu $result
             $result = mysqli_query($conn,$sql);
             //Ako rezultat upita ima podataka u njemu (znači nije prazan)
@@ -1059,7 +1057,7 @@ class PreglediListService{
                     (SELECT MAX(pb3.idPovijestBolesti) FROM povijestBolesti pb3 
                     WHERE pb3.mboPacijent = '$mboPacijent' 
                     AND pb3.prosliPregled IS NULL 
-                    GROUP BY pb3.vrijeme)
+                    GROUP BY pb3.oznaka)
                     ORDER BY pb2.datum DESC, pb2.vrijeme DESC
                     LIMIT 7)";
             //Rezultat upita spremam u varijablu $result
@@ -1168,7 +1166,7 @@ class PreglediListService{
                     (SELECT MAX(p3.idPregled) FROM pregled p3 
                     WHERE p3.mboPacijent = '$mboPacijent' 
                     AND p3.prosliPregled IS NULL 
-                    GROUP BY p3.vrijemePregled)
+                    GROUP BY p3.oznaka)
                     ORDER BY p2.datumPregled DESC, p2.vrijemePregled DESC
                     LIMIT 7)";
             //Rezultat upita spremam u varijablu $result

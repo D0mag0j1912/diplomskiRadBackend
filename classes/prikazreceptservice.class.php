@@ -15,8 +15,8 @@ class PrikazReceptService {
         //Deklariram tip specijalista
         $tipSpecijalist = "";
         //Kreiram upit koji dohvaća tip specijalista 
-        $sql = "SELECT tipSpecijalist FROM zdr_radnici 
-                WHERE sifraSpecijalist = '$sifraSpecijalist'";
+        $sql = "SELECT TRIM(tipSpecijalist) AS tipSpecijalist FROM zdr_radnici 
+                WHERE TRIM(sifraSpecijalist) = '$sifraSpecijalist'";
         $result = $conn->query($sql);
 
         if ($result->num_rows > 0) {

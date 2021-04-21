@@ -1,4 +1,5 @@
 <?php 
+
 //Funkcija koja vraća MBO pacijenta na osnovu njegovog ID-a
 function getMBO($idPacijent){
     //Dohvaćam bazu 

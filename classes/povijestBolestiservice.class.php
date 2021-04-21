@@ -36,7 +36,7 @@ class PovijestBolestiService{
     }
 
     //Kreiram funkciju koja će potvrditi povijest bolesti
-    function potvrdiPovijestBolesti($idLijecnik,$idPacijent,$razlogDolaska,$anamneza,$status,
+    function potvrdiPovijestBolesti($idLijecnik,$idPacijent,$mboPacijent,$razlogDolaska,$anamneza,$status,
                                     $nalaz,$mkbPrimarnaDijagnoza,$mkbSifre,$tipSlucaj,
                                     $terapija,$preporukaLijecnik,$napomena,$idObrada, 
                                     $prosliPregled,$proslaBoja){
@@ -57,19 +57,22 @@ class PovijestBolestiService{
         $poljeBoja = ['#006400','#C71585','#BDB76B','#40E0D0','#000000','#4B0082','#48D1CC','#D2691E','#FF0000'];
         //Varijabla koja određuje je li pacijent naručen ili nije
         $narucen = NULL;
-        //Kreiram upit za dohvaćanjem MBO-a pacijenta kojemu se upisiva povijest bolesti
-        $sqlMBO = "SELECT p.mboPacijent AS MBO FROM pacijent p 
-                WHERE p.idPacijent = '$idPacijent'";
-        //Rezultat upita spremam u varijablu $resultMBO
-        $resultMBO = mysqli_query($conn,$sqlMBO);
-        //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-        if(mysqli_num_rows($resultMBO) > 0){
-            //Idem redak po redak rezultata upita 
-            while($rowMBO = mysqli_fetch_assoc($resultMBO)){
-                //Vrijednost rezultata spremam u varijablu $mboPacijent
-                $mboPacijent = $rowMBO['MBO'];
-            }
-        } 
+        //Označavam da slučajno generirana oznaka već postoji u bazi
+        $ispravnaOznaka = false;
+        while($ispravnaOznaka != true){
+            //Generiram slučajni oznaku po kojom grupiram
+            $oznaka = uniqid();
+            //Kreiram upit koji provjerava postoji li već ova random generirana oznaka u bazi
+            $sqlProvjeraOznaka = "SELECT pb.oznaka FROM povijestBolesti pb 
+                                WHERE pb.oznaka = '$oznaka';";
+            //Rezultat upita spremam u varijablu $resultProvjeraOznaka
+            $resultProvjeraOznaka = mysqli_query($conn,$sqlProvjeraOznaka);
+            //Ako se novo generirana oznaka NE NALAZI u bazi
+            if(mysqli_num_rows($resultProvjeraOznaka) == 0){
+                //Izlazim iz petlje
+                $ispravnaOznaka = true;
+            } 
+        }
         //Ako su minute vremena == 0, ostavi kako jest
         if((int)(date('i',strtotime($vrijeme))) === 0){
             $vrijeme = $vrijeme;
@@ -96,7 +99,9 @@ class PovijestBolestiService{
         }
         //Kreiram sql upit koji će provjeriti JE LI TRENUTNO AKTIVNI PACIJENT NARUČEN U OVO VRIJEME NA OVAJ DATUM
         $sqlCountNarucen = "SELECT COUNT(*) AS BrojNarucen FROM narucivanje n 
-                            WHERE n.idPacijent = '$idPacijent' AND n.vrijemeNarucivanje = '$vrijeme' AND n.datumNarucivanje = '$datum'";
+                            WHERE n.idPacijent = '$idPacijent' 
+                            AND n.vrijemeNarucivanje = '$vrijeme' 
+                            AND n.datumNarucivanje = '$datum'";
         //Rezultat upita spremam u varijablu $resultCountPacijent
         $resultCountNarucen = mysqli_query($conn,$sqlCountNarucen);
         //Ako rezultat upita ima podataka u njemu (znači nije prazan)
@@ -165,8 +170,8 @@ class PovijestBolestiService{
             $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                     nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
                     preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik, 
-                    vrijeme,prosliPregled,bojaPregled) 
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    vrijeme,prosliPregled,bojaPregled,oznaka) 
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             //Kreiranje prepared statementa
             $stmt = mysqli_stmt_init($conn);
             //Ako je statement neuspješan
@@ -235,9 +240,9 @@ class PovijestBolestiService{
                     $napomena = NULL;
                 } 
                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                mysqli_stmt_bind_param($stmt,"sssssssssssssisis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$sekDijagnoza,
+                mysqli_stmt_bind_param($stmt,"sssssssssssssisiss",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$sekDijagnoza,
                                                 $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen,$mboPacijent,$idObrada, 
-                                                $vrijemePregled,$prosliPregled,$boja);
+                                                $vrijemePregled,$prosliPregled,$boja,$oznaka);
                 //Izvršavanje statementa
                 mysqli_stmt_execute($stmt);
 
@@ -283,8 +288,8 @@ class PovijestBolestiService{
                 $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
                                                     nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
                                                     preporukaLijecnik, napomena, datum, narucen, mboPacijent, 
-                                                    idObradaLijecnik,vrijeme,prosliPregled,bojaPregled) 
-                                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                                                    idObradaLijecnik,vrijeme,prosliPregled,bojaPregled,oznaka) 
+                                                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                 //Kreiranje prepared statementa
                 $stmt = mysqli_stmt_init($conn);
                 //Ako je statement neuspješan
@@ -353,9 +358,9 @@ class PovijestBolestiService{
                         $napomena = NULL;
                     }
                     //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                    mysqli_stmt_bind_param($stmt,"sssssssssssssisis",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
+                    mysqli_stmt_bind_param($stmt,"sssssssssssssisiss",$razlogDolaska,$anamneza,$status,$nalaz,$mkbPrimarnaDijagnoza,$mkb,
                                                                 $tipSlucaj,$terapija,$preporukaLijecnik,$napomena,$datum,$narucen, 
-                                                                $mboPacijent,$idObrada,$vrijemePregled,$prosliPregled,$boja);
+                                                                $mboPacijent,$idObrada,$vrijemePregled,$prosliPregled,$boja,$oznaka);
                     //Izvršavanje statementa
                     mysqli_stmt_execute($stmt);
 

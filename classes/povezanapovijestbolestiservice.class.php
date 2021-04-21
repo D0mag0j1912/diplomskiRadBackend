@@ -81,7 +81,7 @@ class PovezanaPovijestBolestiService{
                     (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
                     WHERE pb2.mboPacijent = '$mboPacijent' 
                     AND pb2.prosliPregled IS NULL 
-                    GROUP BY pb2.vrijeme)) AS povezanaPovijestBolesti 
+                    GROUP BY pb2.oznaka)) AS povezanaPovijestBolesti 
                     ORDER BY Datum DESC, vrijeme DESC";
             $result = $conn->query($sql);
 
@@ -111,7 +111,7 @@ class PovezanaPovijestBolestiService{
                     OR UPPER(TRIM(d.imeDijagnoza)) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(TRIM(d2.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')) 
                     AND pb.mboPacijent = '$mboPacijent' 
-                    GROUP BY pb.vrijeme
+                    GROUP BY pb.oznaka
                     ORDER BY Datum DESC, vrijeme DESC";
             $result = $conn->query($sql);
 
@@ -216,7 +216,7 @@ class PovezanaPovijestBolestiService{
                     (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
                     WHERE pb2.mboPacijent = '$mboPacijent' 
                     AND pb2.prosliPregled IS NULL 
-                    GROUP BY pb2.vrijeme)) AS povezanaPovijestBolesti 
+                    GROUP BY pb2.oznaka)) AS povezanaPovijestBolesti 
                     ORDER BY Datum DESC, vrijeme DESC";
             $result = $conn->query($sql);
 

@@ -15,7 +15,28 @@ class CijeneHandler {
         
         //Ako je tip prijavljenog korisnika "lijecnik":
         if($tipKorisnik == 'lijecnik'){
-            $sql = "SELECT ROUND(SUM(ul.iznosUsluga),2) AS ukupnaCijenaPregled FROM usluge_lijecnik ul 
+            //Kada ID uputnice ili ID recepta u vanjskoj petlji nije NULL, a sigurno će barem jedno biti !== NULL, ulazim u unutarnju petlju
+            //U unutarnjoj petlji tražim sumu naplaćenog iznosa SAMO ZA AKTIVNOG PACIJENTA u toj sesiji obrade
+            $sql = "SELECT 
+                    CASE
+                        WHEN ul.idUputnica IS NOT NULL THEN (SELECT ROUND(SUM(ul2.iznosUsluga),2) FROM usluge_lijecnik ul2 
+                                                            WHERE ul2.idObradaLijecnik = '$idObrada' 
+                                                            AND ul2.idUputnica = ul.idUputnica 
+                                                            AND ul2.idUputnica IN 
+                                                            (SELECT pb.idUputnica FROM povijestbolesti pb 
+                                                            WHERE pb.mboPacijent IN 
+                                                            (SELECT p.mboPacijent FROM pacijent p 
+                                                            WHERE p.idPacijent = ol.idPacijent)))
+                        WHEN ul.idRecept IS NOT NULL THEN (SELECT ROUND(SUM(ul2.iznosUsluga),2) FROM usluge_lijecnik ul2 
+                                                        WHERE ul2.idObradaLijecnik = '$idObrada' 
+                                                        AND ul2.idRecept = ul.idRecept 
+                                                        AND ul2.idRecept IN 
+                                                        (SELECT pb.idRecept FROM povijestbolesti pb 
+                                                        WHERE pb.mboPacijent IN 
+                                                        (SELECT p.mboPacijent FROM pacijent p 
+                                                        WHERE p.idPacijent = ol.idPacijent)))
+                    END AS ukupnaCijenaPregled FROM usluge_lijecnik ul 
+                    JOIN obrada_lijecnik ol ON ol.idObrada = ul.idObradaLijecnik
                     WHERE ul.idObradaLijecnik = '$idObrada'";
             //Rezultat upita spremam u varijablu $result
             $result = mysqli_query($conn,$sql);

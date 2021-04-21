@@ -2,7 +2,7 @@
 include('../backend-path.php');
 //Importam potrebne klase pomoću autoloadera
 require_once BASE_PATH.'\includes\autoloader2.inc.php';
-
+include('../getMBO.php');
 //Dohvaćam liječnički servis
 $servis = new PovijestBolestiService();
 
@@ -46,7 +46,7 @@ if($_SERVER["REQUEST_METHOD"] === "POST"){
         $prosliPregled = mysqli_real_escape_string($conn, trim($request->prosliPregled));
         $prosliPregled = (int)$prosliPregled;
         $proslaBoja = mysqli_real_escape_string($conn, trim($request->proslaBoja));
-        $response = $servis->potvrdiPovijestBolesti($idLijecnik,$idPacijent,$razlogDolaska,$anamneza,$status,
+        $response = $servis->potvrdiPovijestBolesti($idLijecnik,$idPacijent,getMBO($idPacijent),$razlogDolaska,$anamneza,$status,
                                                     $nalaz,$mkbPrimarnaDijagnoza,$mkbSifre,$tipSlucaj,
                                                     $terapija,$preporukaLijecnik,$napomena,$idObrada, 
                                                     $prosliPregled,$proslaBoja);

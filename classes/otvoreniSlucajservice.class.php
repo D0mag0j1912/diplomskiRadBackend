@@ -75,7 +75,7 @@ class OtvoreniSlucajService{
                     (SELECT MAX(p2.idPregled) FROM pregled p2 
                     WHERE p2.mboPacijent = '$mboPacijent' 
                     AND p2.prosliPregled IS NULL 
-                    GROUP BY p2.vrijemePregled)) AS OtvoreniSlucajevi
+                    GROUP BY p2.oznaka)) AS OtvoreniSlucajevi
                     ORDER BY Datum DESC, vrijemePregled DESC";
             $result = $conn->query($sql);
 
@@ -222,7 +222,7 @@ class OtvoreniSlucajService{
                     (SELECT MAX(p2.idPregled) FROM pregled p2 
                     WHERE p2.mboPacijent = '$mboPacijent' 
                     AND p2.prosliPregled IS NULL 
-                    GROUP BY p2.vrijemePregled)) AS OtvoreniSlucajevi
+                    GROUP BY p2.oznaka)) AS OtvoreniSlucajevi
                     ORDER BY Datum DESC, vrijemePregled DESC";
             $result = $conn->query($sql);
 
@@ -251,7 +251,7 @@ class OtvoreniSlucajService{
                     OR UPPER(TRIM(p.mkbSifraPrimarna)) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(TRIM(p.mkbSifraSekundarna)) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(p.datumPregled) LIKE UPPER('%{$pretraga}%')) 
-                    GROUP BY p.vrijemePregled
+                    GROUP BY p.oznaka
                     ORDER BY p.datumPregled DESC, p.vrijemePregled DESC";
             $result = $conn->query($sql);
 

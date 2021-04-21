@@ -71,11 +71,34 @@ if($_SERVER["REQUEST_METHOD"] === "PUT"){
         $poslaniDatum = mysqli_real_escape_string($conn, trim($request->poslaniDatum));
         $poslanoVrijeme = mysqli_real_escape_string($conn, trim($request->poslanoVrijeme));
         $poslanaMKBSifra = mysqli_real_escape_string($conn, trim($request->poslanaMKBSifra));
-        $response = $servis->azurirajRecept($idLijecnik,$mkbSifraPrimarna,$mkbSifraSekundarna,$osnovnaListaLijekDropdown,
-                                        $osnovnaListaLijekText,$dopunskaListaLijekDropdown,$dopunskaListaLijekText,
-                                        $osnovnaListaMagPripravakDropdown,$osnovnaListaMagPripravakText,$dopunskaListaMagPripravakDropdown,
-                                        $dopunskaListaMagPripravakText,$kolicina,$doziranje,$dostatnost,$hitnost,$ponovljiv,$brojPonavljanja,
-                                        $sifraSpecijalist,$idPacijent,$poslaniDatum,$poslanoVrijeme,$poslanaMKBSifra);  
+        $poslanaOznaka = mysqli_real_escape_string($conn, trim($request->poslanaOznaka));
+        $iznosRecept = mysqli_real_escape_string($conn, trim($request->iznosRecept));
+        $iznosRecept = (float)$iznosRecept;
+        $response = $servis->azurirajRecept(
+                                $idLijecnik,
+                                $mkbSifraPrimarna,
+                                $mkbSifraSekundarna,
+                                $osnovnaListaLijekDropdown,
+                                $osnovnaListaLijekText,
+                                $dopunskaListaLijekDropdown,
+                                $dopunskaListaLijekText,
+                                $osnovnaListaMagPripravakDropdown,
+                                $osnovnaListaMagPripravakText,
+                                $dopunskaListaMagPripravakDropdown,
+                                $dopunskaListaMagPripravakText,
+                                $kolicina,
+                                $doziranje,
+                                $dostatnost,
+                                $hitnost,
+                                $ponovljiv,
+                                $brojPonavljanja,
+                                $sifraSpecijalist,
+                                $idPacijent,
+                                $poslaniDatum,
+                                $poslanoVrijeme,
+                                $poslanaMKBSifra,
+                                $poslanaOznaka,
+                                $iznosRecept);  
         echo json_encode($response);
     }
 }
