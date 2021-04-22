@@ -199,8 +199,8 @@ class CekaonicaService{
             $sql = "SELECT p.imePacijent,p.prezPacijent, 
                     DATE_FORMAT(ol.datumDodavanja,'%d.%m.%Y') AS Datum,
                     ol.idObrada,
-                    CASE
-                    WHEN ul.idUputnica IS NOT NULL THEN (SELECT ROUND(SUM(ul2.iznosUsluga),2) FROM usluge_lijecnik ul2 
+                    (SELECT SUM(CASE
+                    WHEN ul.idUputnica IS NOT NULL THEN (SELECT ROUND(ul2.iznosUsluga,2) FROM usluge_lijecnik ul2 
                                                         WHERE ul2.idObradaLijecnik = '$idObrada' 
                                                         AND ul2.idUputnica = ul.idUputnica 
                                                         AND ul2.idUputnica IN 
@@ -208,7 +208,7 @@ class CekaonicaService{
                                                         WHERE pb.mboPacijent IN 
                                                         (SELECT p.mboPacijent FROM pacijent p 
                                                         WHERE p.idPacijent = ol.idPacijent)))
-                    WHEN ul.idRecept IS NOT NULL THEN (SELECT ROUND(SUM(ul2.iznosUsluga),2) FROM usluge_lijecnik ul2 
+                    WHEN ul.idRecept IS NOT NULL THEN (SELECT ROUND(ul2.iznosUsluga,2) FROM usluge_lijecnik ul2 
                                                     WHERE ul2.idObradaLijecnik = '$idObrada' 
                                                     AND ul2.idRecept = ul.idRecept 
                                                     AND ul2.idRecept IN 
@@ -216,7 +216,7 @@ class CekaonicaService{
                                                     WHERE pb.mboPacijent IN 
                                                     (SELECT p.mboPacijent FROM pacijent p 
                                                     WHERE p.idPacijent = ol.idPacijent)))
-                    END AS ukupnaCijenaPregled FROM usluge_lijecnik ul 
+                    END)) AS ukupnaCijenaPregled FROM usluge_lijecnik ul 
                     JOIN obrada_lijecnik ol ON ol.idObrada = ul.idObradaLijecnik 
                     JOIN pacijent p ON p.idPacijent = ol.idPacijent 
                     WHERE ul.idObradaLijecnik = '$idObrada'";
@@ -240,11 +240,11 @@ class CekaonicaService{
                     WHERE ums.idObradaMedSestra = '$idObrada')) AS bmi,
                     (SELECT CONCAT((SELECT ROUND(SUM(ums.iznosUsluga),2) FROM usluge_med_sestra ums 
                                     WHERE ums.idObradaMedSestra = '$idObrada'),' kn [',(SELECT CONCAT((SELECT COUNT(*) FROM tjelesna_masa tm2 
-                                                                        JOIN usluge_med_sestra ums2 ON ums2.idBMI = tm2.idBMI 
-                                                                        WHERE ums2.idObradaMedSestra = '$idObrada'),'x',ums.iznosUsluga,' kn') FROM tjelesna_masa tm 
-                                                                        JOIN usluge_med_sestra ums ON ums.idBMI = tm.idBMI 
-                                                                        WHERE ums.idObradaMedSestra = '$idObrada' 
-                                                                        LIMIT 1),']')) AS ukupnaCijenaPregled FROM pacijent p
+                                                                                        JOIN usluge_med_sestra ums2 ON ums2.idBMI = tm2.idBMI 
+                                                                                        WHERE ums2.idObradaMedSestra = '$idObrada'),'x',ums.iznosUsluga,' kn') FROM tjelesna_masa tm 
+                                                                                        JOIN usluge_med_sestra ums ON ums.idBMI = tm.idBMI 
+                                                                                        WHERE ums.idObradaMedSestra = '$idObrada' 
+                                                                                        LIMIT 1),']')) AS ukupnaCijenaPregled FROM pacijent p
                     JOIN obrada_med_sestra o ON o.idPacijent = p.idPacijent
                     WHERE o.idObrada = '$idObrada'";
             $result = $conn->query($sql);

@@ -309,9 +309,30 @@ class AzurirajReceptService{
                     mysqli_stmt_bind_param($stmtPovijestBolesti,"si",$mkbSifraPrimarna,$idRecept);
                     //Izvršavanje statementa
                     mysqli_stmt_execute($stmtPovijestBolesti);
-                    //Vraćanje uspješnog odgovora serveru
-                    $response["success"] = "true";
-                    $response["message"] = "Recept uspješno ažuriran!";
+
+                    //Ažuriram iznos naplate u tablici "usluge_lijecnik"
+                    $sqlUpdateUsluge = "UPDATE usluge_lijecnik SET iznosUsluga = ? 
+                                        WHERE idRecept = ?";
+                    //Kreiranje prepared statementa
+                    $stmtUpdateUsluge = mysqli_stmt_init($conn);
+                    //Ako je statement neuspješan
+                    if(!mysqli_stmt_prepare($stmtUpdateUsluge,$sqlUpdateUsluge)){
+                        $response["success"] = "false";
+                        $response["message"] = "Prepared statement ne valja!";
+                    } 
+                    else{
+                        //Ako je iznos recepta null
+                        if(empty($iznosRecept)){
+                            $iznosRecept = 0.00;
+                        }
+                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                        mysqli_stmt_bind_param($stmtUpdateUsluge,"di",$iznosRecept,$idRecept);
+                        //Izvršavanje statementa
+                        mysqli_stmt_execute($stmtUpdateUsluge);
+                        //Vraćanje uspješnog odgovora serveru
+                        $response["success"] = "true";
+                        $response["message"] = "Recept uspješno ažuriran!";
+                    }
                 }
             }
         }
@@ -325,7 +346,7 @@ class AzurirajReceptService{
                         AND r.vrijemeRecept = '$poslanoVrijeme'";
             $resultRecept  = $conn->query($sqlRecept);
 
-            if ($resultRecept ->num_rows > 0) {
+            if ($resultRecept->num_rows > 0) {
                 while($rowRecept  = $resultRecept->fetch_assoc()) {
                     $idRecept = $rowRecept['idRecept'];
                     //Prije nego što izbrišem redak povijesti bolesti, dohvaćam ga
@@ -506,6 +527,10 @@ class AzurirajReceptService{
                                 $response["message"] = "Prepared statement ne valja!";
                             }
                             else{
+                                //Ako je iznos recepta null
+                                if(empty($iznosRecept)){
+                                    $iznosRecept = 0.00;
+                                }
                                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
                                 mysqli_stmt_bind_param($stmtInsertUsluge,"idi",$idObradaLijecnik,$iznosRecept,$maxIDrecept);
                                 //Izvršavanje statementa
@@ -833,7 +858,7 @@ class AzurirajReceptService{
             }
             /*************************************** */
             /*OVO JE AŽURIRANJE PREMA GORE (KADA JE $brojSekundarnaBaza <= $brojacSekundarnaDijagnozaForma) */
-            //Ako je broj sek. dijagnoza u bazi manji ili jednak od broja sek. dijagnoza u formi te je broj sek. dijagnoza u formi manji ili jednak 1
+            //Ako je broj sek. dijagnoza u bazi manji ili jednak od broja sek. dijagnoza u formi
             if($brojSekundarnaBaza <= $brojacSekundarnaDijagnozaForma && $brojacSekundarnaDijagnozaForma == 1){
                 //Kreiram upit za dodavanje novog recepta u bazu
                 $sql = "UPDATE recept r SET r.mkbSifraPrimarna = ?, r.mkbSifraSekundarna = ?, r.proizvod = ?, 
@@ -891,9 +916,29 @@ class AzurirajReceptService{
                         mysqli_stmt_bind_param($stmtPovijestBolesti,"ssi",$mkbSifraPrimarna,$mkb,$idRecept);
                         //Izvršavanje statementa
                         mysqli_stmt_execute($stmtPovijestBolesti);
-                        //Vraćanje uspješnog odgovora serveru
-                        $response["success"] = "true";
-                        $response["message"] = "Recept uspješno ažuriran!";
+                        //Ažuriram iznos naplate u tablici "usluge_lijecnik"
+                        $sqlUpdateUsluge = "UPDATE usluge_lijecnik SET iznosUsluga = ? 
+                                            WHERE idRecept = ?";
+                        //Kreiranje prepared statementa
+                        $stmtUpdateUsluge = mysqli_stmt_init($conn);
+                        //Ako je statement neuspješan
+                        if(!mysqli_stmt_prepare($stmtUpdateUsluge,$sqlUpdateUsluge)){
+                            $response["success"] = "false";
+                            $response["message"] = "Prepared statement ne valja!";
+                        } 
+                        else{
+                            //Ako je iznos recepta null
+                            if(empty($iznosRecept)){
+                                $iznosRecept = 0.00;
+                            }
+                            //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                            mysqli_stmt_bind_param($stmtUpdateUsluge,"di",$iznosRecept,$idRecept);
+                            //Izvršavanje statementa
+                            mysqli_stmt_execute($stmtUpdateUsluge);
+                            //Vraćanje uspješnog odgovora serveru
+                            $response["success"] = "true";
+                            $response["message"] = "Recept uspješno ažuriran!";
+                        }
                     }
                 }
             }
@@ -978,9 +1023,29 @@ class AzurirajReceptService{
                             mysqli_stmt_bind_param($stmtPovijestBolesti,"ssi",$mkbSifraPrimarna,$mkb,$idRecept);
                             //Izvršavanje statementa
                             mysqli_stmt_execute($stmtPovijestBolesti);
-                            //Vraćanje uspješnog odgovora serveru
-                            $response["success"] = "true";
-                            $response["message"] = "Recept uspješno ažuriran!";
+                            //Ažuriram iznos naplate u tablici "usluge_lijecnik"
+                            $sqlUpdateUsluge = "UPDATE usluge_lijecnik SET iznosUsluga = ? 
+                                                WHERE idRecept = ?";
+                            //Kreiranje prepared statementa
+                            $stmtUpdateUsluge = mysqli_stmt_init($conn);
+                            //Ako je statement neuspješan
+                            if(!mysqli_stmt_prepare($stmtUpdateUsluge,$sqlUpdateUsluge)){
+                                $response["success"] = "false";
+                                $response["message"] = "Prepared statement ne valja!";
+                            }
+                            else{
+                                //Ako je iznos recepta null
+                                if(empty($iznosRecept)){
+                                    $iznosRecept = 0.00;
+                                }
+                                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                mysqli_stmt_bind_param($stmtUpdateUsluge,"di",$iznosRecept,$idRecept);
+                                //Izvršavanje statementa
+                                mysqli_stmt_execute($stmtUpdateUsluge);
+                                //Vraćanje uspješnog odgovora serveru
+                                $response["success"] = "true";
+                                $response["message"] = "Recept uspješno ažuriran!";
+                            }
                         }
                     }
                 }
@@ -1120,37 +1185,58 @@ class AzurirajReceptService{
                             mysqli_stmt_bind_param($stmtPovijestBolesti,"ssi",$mkbSifraPrimarna,$mkb,$idMinRecept);
                             //Izvršavanje statementa
                             mysqli_stmt_execute($stmtPovijestBolesti);
-                            //Vraćanje uspješnog odgovora serveru
-                            $response["success"] = "true";
-                            $response["message"] = "Recept uspješno ažuriran!";
-                            //Prije nego što izbrišem redak povijesti bolesti, dohvaćam ga
-                            $sqlSelectPov = "SELECT * FROM povijestbolesti 
-                                            WHERE idRecept = '$idMinRecept'";
-                            $resultSelectPov = $conn->query($sqlSelectPov);
-
-                            if ($resultSelectPov->num_rows > 0) {
-                                while($rowSelectPov = $resultSelectPov->fetch_assoc()) {
-                                    //Dohvaćam određene vrijednosti povijesti bolesti
-                                    $razlogDolaska = $rowSelectPov['razlogDolaska'];
-                                    $anamneza = $rowSelectPov['anamneza'];
-                                    $status = $rowSelectPov['statusPacijent'];
-                                    $nalaz = $rowSelectPov['nalaz'];
-                                    $tipSlucaj = $rowSelectPov['tipSlucaj'];
-                                    $terapija = $rowSelectPov['terapija'];
-                                    $idObradaLijecnik = $rowSelectPov['idObradaLijecnik'];
-                                    $preporukaLijecnik = $rowSelectPov['preporukaLijecnik'];
-                                    $napomena = $rowSelectPov['napomena'];
-                                    $datumPovijestiBolesti = $rowSelectPov['datum'];
-                                    $narucen = $rowSelectPov['narucen'];
-                                    $mboPacijent = $rowSelectPov['mboPacijent'];
-                                    $vrijemePovijestiBolesti = $rowSelectPov['vrijeme'];
-                                    $prosliPregled = $rowSelectPov['prosliPregled'];
-                                    $bojaPregled = $rowSelectPov['bojaPregled'];
-                                    $oznakaPov = $rowSelectPov['oznaka'];
+                            //Ažuriram iznos naplate u tablici "usluge_lijecnik"
+                            $sqlUpdateUsluge = "UPDATE usluge_lijecnik SET iznosUsluga = ? 
+                                                WHERE idRecept = ?";
+                            //Kreiranje prepared statementa
+                            $stmtUpdateUsluge = mysqli_stmt_init($conn);
+                            //Ako je statement neuspješan
+                            if(!mysqli_stmt_prepare($stmtUpdateUsluge,$sqlUpdateUsluge)){
+                                $response["success"] = "false";
+                                $response["message"] = "Prepared statement ne valja!";
+                            }
+                            else{
+                                //Ako je iznos recepta null
+                                if(empty($iznosRecept)){
+                                    $iznosRecept = 0.00;
                                 }
-                            } 
-                            //Povećavam broj obrađenih redaka za 1
-                            $brojacAzuriranihRedaka++;
+                                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                mysqli_stmt_bind_param($stmtUpdateUsluge,"di",$iznosRecept,$idMinRecept);
+                                //Izvršavanje statementa
+                                mysqli_stmt_execute($stmtUpdateUsluge);
+
+                                //Prije nego što izbrišem redak povijesti bolesti, dohvaćam ga
+                                $sqlSelectPov = "SELECT * FROM povijestbolesti 
+                                                WHERE idRecept = '$idMinRecept'";
+                                $resultSelectPov = $conn->query($sqlSelectPov);
+
+                                if ($resultSelectPov->num_rows > 0) {
+                                    while($rowSelectPov = $resultSelectPov->fetch_assoc()) {
+                                        //Dohvaćam određene vrijednosti povijesti bolesti
+                                        $razlogDolaska = $rowSelectPov['razlogDolaska'];
+                                        $anamneza = $rowSelectPov['anamneza'];
+                                        $status = $rowSelectPov['statusPacijent'];
+                                        $nalaz = $rowSelectPov['nalaz'];
+                                        $tipSlucaj = $rowSelectPov['tipSlucaj'];
+                                        $terapija = $rowSelectPov['terapija'];
+                                        $idObradaLijecnik = $rowSelectPov['idObradaLijecnik'];
+                                        $preporukaLijecnik = $rowSelectPov['preporukaLijecnik'];
+                                        $napomena = $rowSelectPov['napomena'];
+                                        $datumPovijestiBolesti = $rowSelectPov['datum'];
+                                        $narucen = $rowSelectPov['narucen'];
+                                        $mboPacijent = $rowSelectPov['mboPacijent'];
+                                        $vrijemePovijestiBolesti = $rowSelectPov['vrijeme'];
+                                        $prosliPregled = $rowSelectPov['prosliPregled'];
+                                        $bojaPregled = $rowSelectPov['bojaPregled'];
+                                        $oznakaPov = $rowSelectPov['oznaka'];
+                                    }
+                                } 
+                                //Povećavam broj obrađenih redaka za 1
+                                $brojacAzuriranihRedaka++;
+                                //Vraćanje uspješnog odgovora serveru
+                                $response["success"] = "true";
+                                $response["message"] = "Recept uspješno ažuriran!";
+                            }
                         }
                     }
                 }
@@ -1391,6 +1477,10 @@ class AzurirajReceptService{
                             return $response;
                         }
                         else{
+                            //Ako je iznos recepta null
+                            if(empty($iznosRecept)){
+                                $iznosRecept = 0.00;
+                            }
                             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
                             mysqli_stmt_bind_param($stmtInsertUsluge,"idi",$idObradaLijecnik,$iznosRecept,$minIDrecept);
                             //Izvršavanje statementa

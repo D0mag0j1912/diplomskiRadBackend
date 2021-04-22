@@ -252,8 +252,7 @@ class ReceptHandlerService{
                         FROM recept r 
                         JOIN pacijent p ON p.idPacijent = r.idPacijent
                         WHERE r.idPacijent = '$id' 
-                        ORDER BY r.datumRecept DESC,r.vrijemeRecept DESC 
-                        LIMIT 3";
+                        ORDER BY r.datumRecept DESC,r.vrijemeRecept DESC";
 
                 $result = $conn->query($sql);
                 

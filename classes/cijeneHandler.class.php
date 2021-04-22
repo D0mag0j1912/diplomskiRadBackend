@@ -17,25 +17,25 @@ class CijeneHandler {
         if($tipKorisnik == 'lijecnik'){
             //Kada ID uputnice ili ID recepta u vanjskoj petlji nije NULL, a sigurno će barem jedno biti !== NULL, ulazim u unutarnju petlju
             //U unutarnjoj petlji tražim sumu naplaćenog iznosa SAMO ZA AKTIVNOG PACIJENTA u toj sesiji obrade
-            $sql = "SELECT 
-                    CASE
-                        WHEN ul.idUputnica IS NOT NULL THEN (SELECT ROUND(SUM(ul2.iznosUsluga),2) FROM usluge_lijecnik ul2 
-                                                            WHERE ul2.idObradaLijecnik = '$idObrada' 
-                                                            AND ul2.idUputnica = ul.idUputnica 
-                                                            AND ul2.idUputnica IN 
-                                                            (SELECT pb.idUputnica FROM povijestbolesti pb 
-                                                            WHERE pb.mboPacijent IN 
-                                                            (SELECT p.mboPacijent FROM pacijent p 
-                                                            WHERE p.idPacijent = ol.idPacijent)))
-                        WHEN ul.idRecept IS NOT NULL THEN (SELECT ROUND(SUM(ul2.iznosUsluga),2) FROM usluge_lijecnik ul2 
-                                                        WHERE ul2.idObradaLijecnik = '$idObrada' 
-                                                        AND ul2.idRecept = ul.idRecept 
-                                                        AND ul2.idRecept IN 
-                                                        (SELECT pb.idRecept FROM povijestbolesti pb 
+            $sql = "SELECT SUM(CASE
+                    WHEN ul.idUputnica IS NOT NULL THEN (SELECT ROUND(ul2.iznosUsluga,2) FROM usluge_lijecnik ul2 
+                                                        WHERE ul2.idObradaLijecnik = '$idObrada'
+                                                        AND ul2.idUputnica = ul.idUputnica 
+                                                        AND ul2.idUputnica IN 
+                                                        (SELECT pb.idUputnica FROM povijestbolesti pb 
                                                         WHERE pb.mboPacijent IN 
                                                         (SELECT p.mboPacijent FROM pacijent p 
                                                         WHERE p.idPacijent = ol.idPacijent)))
-                    END AS ukupnaCijenaPregled FROM usluge_lijecnik ul 
+                    WHEN ul.idRecept IS NOT NULL THEN (SELECT ROUND(ul2.iznosUsluga,2) FROM usluge_lijecnik ul2 
+                                                    WHERE ul2.idObradaLijecnik = '$idObrada' 
+                                                    AND ul2.idRecept = ul.idRecept 
+                                                    AND ul2.idRecept IN 
+                                                    (SELECT pb.idRecept FROM povijestbolesti pb 
+                                                    WHERE pb.mboPacijent IN 
+                                                    (SELECT p.mboPacijent FROM pacijent p 
+                                                    WHERE p.idPacijent = ol.idPacijent)))
+                    END)
+                    AS ukupnaCijenaPregled FROM usluge_lijecnik ul 
                     JOIN obrada_lijecnik ol ON ol.idObrada = ul.idObradaLijecnik
                     WHERE ul.idObradaLijecnik = '$idObrada'";
             //Rezultat upita spremam u varijablu $result
@@ -85,7 +85,10 @@ class CijeneHandler {
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
-
+        //Ako je prazna nova cijena, znači da pacijent ima dopunsko 
+        if(empty($novaCijena)){
+            $novaCijena = 0.00;
+        }
         //Ako je tip korisnika "lijecnik":
         if($tipKorisnik == 'lijecnik'){
             //Prvo zbrajam do sada iznose svih naplaćenih usluga za ovu sesiju obrade
@@ -107,29 +110,26 @@ class CijeneHandler {
             else{
                 $noviIznosPregleda = $novaCijena;
             }
-            //Ako nova cijena nije null
-            if(!empty($novaCijena)){
-                //Kreiram upit koji će dodati podatke naplaćene usluge u tablicu "racun"
-                $sqlRacun = "INSERT INTO usluge_lijecnik (idObradaLijecnik,iznosUsluga,idRecept,idUputnica) VALUES (?,?,?,?)";
-                //Kreiranje prepared statementa
-                $stmtRacun = mysqli_stmt_init($conn);
-                //Ako je statement neuspješan
-                if(!mysqli_stmt_prepare($stmtRacun,$sqlRacun)){
-                    return false;
-                }
-                else{
-                    if(empty($idRecept)){
-                        $idRecept = NULL;
-                    }
-                    if(empty($idUputnica)){
-                        $idUputnica = NULL;
-                    }
-                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                    mysqli_stmt_bind_param($stmtRacun,"idii",$idObrada, $novaCijena, $idRecept, $idUputnica);
-                    //Izvršavanje statementa
-                    mysqli_stmt_execute($stmtRacun);
-                } 
+            //Kreiram upit koji će dodati podatke naplaćene usluge u tablicu "racun"
+            $sqlRacun = "INSERT INTO usluge_lijecnik (idObradaLijecnik,iznosUsluga,idRecept,idUputnica) VALUES (?,?,?,?)";
+            //Kreiranje prepared statementa
+            $stmtRacun = mysqli_stmt_init($conn);
+            //Ako je statement neuspješan
+            if(!mysqli_stmt_prepare($stmtRacun,$sqlRacun)){
+                return false;
             }
+            else{
+                if(empty($idRecept)){
+                    $idRecept = NULL;
+                }
+                if(empty($idUputnica)){
+                    $idUputnica = NULL;
+                }
+                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                mysqli_stmt_bind_param($stmtRacun,"idii",$idObrada, $novaCijena, $idRecept, $idUputnica);
+                //Izvršavanje statementa
+                mysqli_stmt_execute($stmtRacun);
+            } 
             return $noviIznosPregleda;
         }
         //Ako je tip korisnika "sestra":
