@@ -13,7 +13,7 @@ $conn = $baza->spojiSBazom();
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     //Kreiram prazno polje
     $response = [];
-    $eritrociti = mt_rand (4.34*10, 5.72*10) / 10;
+    $eritrociti = mt_rand (4.34*100, 5.72*100) / 100;
     $response['eritrociti'] = $eritrociti;
     $hemoglobin = mt_rand (138, 175);
     $response['hemoglobin'] = $hemoglobin;
