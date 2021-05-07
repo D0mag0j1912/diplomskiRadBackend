@@ -109,6 +109,22 @@ class IzdajUputnica {
                 $ispravan = true;
             } 
         }
+        //Generiranje slučajne oznake za tablicu "nalaz"
+        $ispravanNalaz = false;
+        while($ispravanNalaz != true){
+            //Generiram slučajni oznaku po kojom grupiram
+            $oznakaNalaz = uniqid();
+            //Kreiram upit koji provjerava postoji li već ova random generirana oznaka u bazi
+            $sqlProvjeraOznakaNalaz = "SELECT n.oznaka FROM nalaz n 
+                                    WHERE n.oznaka = '$oznakaNalaz';";
+            //Rezultat upita spremam u varijablu $resultProvjeraOznaka
+            $resultProvjeraOznakaNalaz = mysqli_query($conn,$sqlProvjeraOznakaNalaz);
+            //Ako se novo generirana oznaka NE NALAZI u bazi
+            if(mysqli_num_rows($resultProvjeraOznakaNalaz) == 0){
+                //Izlazim iz petlje
+                $ispravanNalaz = true;
+            } 
+        }
 
         //Gledam koliko ima sek. dijagnoza pregled u bazi gdje se dodava ID uputnice
         $sqlCountSekundarna = "SELECT COUNT(pb.mkbSifraSekundarna) AS BrojSekundarna FROM povijestBolesti pb
@@ -197,10 +213,46 @@ class IzdajUputnica {
                                                                 $poslaniIDObrada,$mboPacijent,$poslanoVrijeme,$poslaniTipSlucaj);
                         //Izvršavanje statementa
                         mysqli_stmt_execute($stmtUpdate);
-                        //Vraćanje uspješnog odgovora serveru
-                        $response["success"] = "true";
-                        $response["message"] = "Uputnica uspješno dodana!";
-                        $response["idUputnica"] = $idUputnica;
+
+                        //Spremam nalaz 
+                        $sqlNalaz = "INSERT INTO nalaz (idUputnica, idPacijent, idSpecijalist, idZdrUst, sifDjel, 
+                                                        mkbSifraPrimarna, mkbSifraSekundarna, misljenjeSpecijalist, 
+                                                        komentarUzNalaz,datumNalaz, vrijemeNalaz, oznaka) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+                        //Kreiranje prepared statementa
+                        $stmtNalaz = mysqli_stmt_init($conn);
+                        //Ako je statement neuspješan
+                        if(!mysqli_stmt_prepare($stmtNalaz,$sqlNalaz)){
+                            $response["success"] = "false";
+                            $response["message"] = "Prepared statement ne valja!";
+                            $response["idUputnica"] = null;
+                        }
+                        else{
+                            //MKB šifru sekundarne postavljam na NULL
+                            $prazna = NULL;
+                            //Generiram slučajni ID specijalista
+                            $idSpecijalist = mt_rand(1,5);
+                            //Ako je vrsta pregleda == 'Dijagnostička pretraga'
+                            if($vrstaPregled == 'Dijagnostička pretraga'){
+                                //Stavljam dummy text
+                                $komentarUzNalaz = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.';
+                                $misljenjeSpecijalist = NULL;
+                            }
+                            else{
+                                //Stavljam dummy text
+                                $misljenjeSpecijalist = "Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
+                                $komentarUzNalaz = NULL;
+                            }   
+                            //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                            mysqli_stmt_bind_param($stmtNalaz,"iiiiisssssss",$idUputnica, $idPacijent, $idSpecijalist,
+                                                                        $idZdrUst, $sifDjel, $mkbSifraPrimarna, $prazna, 
+                                                                        $misljenjeSpecijalist, $komentarUzNalaz, $datum, $vrijeme, $oznakaNalaz);
+                            //Izvršavanje statementa
+                            mysqli_stmt_execute($stmtNalaz);
+                            //Vraćanje uspješnog odgovora serveru
+                            $response["success"] = "true";
+                            $response["message"] = "Uputnica uspješno dodana!";
+                            $response["idUputnica"] = $idUputnica;
+                        }
                     } 
                 }
                 //Ako je broj sek. dijagnoza u bazi povijesti bolesti VEĆI OD 1 (npr. POVIJEST BOLESTI = A00-A01,A00-A02 UPUTNICA = A00-NULL)
@@ -341,10 +393,46 @@ class IzdajUputnica {
                                     mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
                                     //Izvršavanje statementa
                                     mysqli_stmt_execute($stmtAmbulanta);
-                                    //Vraćanje uspješnog odgovora serveru
-                                    $response["success"] = "true";
-                                    $response["message"] = "Uputnica uspješno dodana!";
-                                    $response["idUputnica"] = $idUputnica;
+                                    
+                                    //Spremam nalaz 
+                                    $sqlNalaz = "INSERT INTO nalaz (idUputnica, idPacijent, idSpecijalist, idZdrUst, sifDjel, 
+                                                                    mkbSifraPrimarna, mkbSifraSekundarna, misljenjeSpecijalist, 
+                                                                    komentarUzNalaz ,datumNalaz, vrijemeNalaz, oznaka) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+                                    //Kreiranje prepared statementa
+                                    $stmtNalaz = mysqli_stmt_init($conn);
+                                    //Ako je statement neuspješan
+                                    if(!mysqli_stmt_prepare($stmtNalaz,$sqlNalaz)){
+                                        $response["success"] = "false";
+                                        $response["message"] = "Prepared statement ne valja!";
+                                        $response["idUputnica"] = null;
+                                    }
+                                    else{
+                                        //MKB šifru sekundarne postavljam na NULL
+                                        $prazna = NULL;
+                                        //Generiram slučajni ID specijalista
+                                        $idSpecijalist = mt_rand(1,5);
+                                        //Ako je vrsta pregleda == 'Dijagnostička pretraga'
+                                        if($vrstaPregled == 'Dijagnostička pretraga'){
+                                            //Stavljam dummy text
+                                            $komentarUzNalaz = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.';
+                                            $misljenjeSpecijalist = NULL;
+                                        }
+                                        else{
+                                            //Stavljam dummy text
+                                            $misljenjeSpecijalist = "Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
+                                            $komentarUzNalaz = NULL;
+                                        }  
+                                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                        mysqli_stmt_bind_param($stmtNalaz,"iiiiisssssss",$idUputnica, $idPacijent, $idSpecijalist,
+                                                                                    $idZdrUst, $sifDjel, $mkbSifraPrimarna, $prazna, 
+                                                                                    $misljenjeSpecijalist, $komentarUzNalaz, $datum, $vrijeme, $oznakaNalaz);
+                                        //Izvršavanje statementa
+                                        mysqli_stmt_execute($stmtNalaz);
+                                        //Vraćanje uspješnog odgovora serveru
+                                        $response["success"] = "true";
+                                        $response["message"] = "Uputnica uspješno dodana!";
+                                        $response["idUputnica"] = $idUputnica;
+                                    }
                                 }
                             } 
                         }
@@ -532,10 +620,45 @@ class IzdajUputnica {
                                                                         $poslaniIDObrada,$mboPacijent,$poslaniTipSlucaj,$poslanoVrijeme);
                             //Izvršavanje statementa
                             mysqli_stmt_execute($stmtUpdate);
-                            //Vraćanje uspješnog odgovora serveru
-                            $response["success"] = "true";
-                            $response["message"] = "Uputnica uspješno dodana!";
-                            $response["idUputnica"] = $idUputnica;
+
+                            //Spremam nalaz 
+                            $sqlNalaz = "INSERT INTO nalaz (idUputnica, idPacijent, idSpecijalist, idZdrUst, sifDjel, 
+                                                            mkbSifraPrimarna, mkbSifraSekundarna, misljenjeSpecijalist, 
+                                                            komentarUzNalaz ,datumNalaz, vrijemeNalaz, oznaka) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+                            //Kreiranje prepared statementa
+                            $stmtNalaz = mysqli_stmt_init($conn);
+                            //Ako je statement neuspješan
+                            if(!mysqli_stmt_prepare($stmtNalaz,$sqlNalaz)){
+                                $response["success"] = "false";
+                                $response["message"] = "Prepared statement ne valja!";
+                                $response["idUputnica"] = null;
+                            }
+                            else{
+                                //Generiram slučajni ID specijalista
+                                $idSpecijalist = mt_rand(1,5);
+                                //Ako je vrsta pregleda == 'Dijagnostička pretraga'
+                                if($vrstaPregled == 'Dijagnostička pretraga'){
+                                    //Stavljam dummy text
+                                    $komentarUzNalaz = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.';
+                                    $misljenjeSpecijalist = NULL;
+                                }
+                                else{
+                                    //Stavljam dummy text
+                                    $misljenjeSpecijalist = "Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
+                                    $komentarUzNalaz = NULL;
+                                }  
+                                //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                mysqli_stmt_bind_param($stmtNalaz,"iiiiisssssss",$idUputnica, $idPacijent, $idSpecijalist,
+                                                                            $idZdrUst, $sifDjel, $mkbSifraPrimarna, $mkb, 
+                                                                            $misljenjeSpecijalist, $komentarUzNalaz, $datum, $vrijeme, $oznakaNalaz);
+                                //Izvršavanje statementa
+                                mysqli_stmt_execute($stmtNalaz);
+
+                                //Vraćanje uspješnog odgovora serveru
+                                $response["success"] = "true";
+                                $response["message"] = "Uputnica uspješno dodana!";
+                                $response["idUputnica"] = $idUputnica;
+                            }
                         } 
                     }
                     //npr. (BAZA = 1, FORMA = 2, BAZA = 2, FORMA = 2)
@@ -564,10 +687,45 @@ class IzdajUputnica {
                                                                             $poslaniIDObrada,$mboPacijent,$poslaniTipSlucaj,$poslanoVrijeme);
                                 //Izvršavanje statementa
                                 mysqli_stmt_execute($stmtUpdate);
-                                //Vraćanje uspješnog odgovora serveru
-                                $response["success"] = "true";
-                                $response["message"] = "Uputnica uspješno dodana!";
-                                $response["idUputnica"] = $prviIdUputnica;
+
+                                //Spremam nalaz 
+                                $sqlNalaz = "INSERT INTO nalaz (idUputnica, idPacijent, idSpecijalist, idZdrUst, sifDjel, 
+                                                                mkbSifraPrimarna, mkbSifraSekundarna, misljenjeSpecijalist, 
+                                                                komentarUzNalaz,datumNalaz, vrijemeNalaz, oznaka) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+                                //Kreiranje prepared statementa
+                                $stmtNalaz = mysqli_stmt_init($conn);
+                                //Ako je statement neuspješan
+                                if(!mysqli_stmt_prepare($stmtNalaz,$sqlNalaz)){
+                                    $response["success"] = "false";
+                                    $response["message"] = "Prepared statement ne valja!";
+                                    $response["idUputnica"] = null;
+                                }
+                                else{
+                                    //Generiram slučajni ID specijalista
+                                    $idSpecijalist = mt_rand(1,5);
+                                    //Ako je vrsta pregleda == 'Dijagnostička pretraga'
+                                    if($vrstaPregled == 'Dijagnostička pretraga'){
+                                        //Stavljam dummy text
+                                        $komentarUzNalaz = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.';
+                                        $misljenjeSpecijalist = NULL;
+                                    }
+                                    else{
+                                        //Stavljam dummy text
+                                        $misljenjeSpecijalist = "Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
+                                        $komentarUzNalaz = NULL;
+                                    }  
+                                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                    mysqli_stmt_bind_param($stmtNalaz,"iiiiisssssss",$idUputnica, $idPacijent, $idSpecijalist,
+                                                                                $idZdrUst, $sifDjel, $mkbSifraPrimarna, $mkb, 
+                                                                                $misljenjeSpecijalist, $komentarUzNalaz, $datum, $vrijeme, $oznakaNalaz);
+                                    //Izvršavanje statementa
+                                    mysqli_stmt_execute($stmtNalaz);
+
+                                    //Vraćanje uspješnog odgovora serveru
+                                    $response["success"] = "true";
+                                    $response["message"] = "Uputnica uspješno dodana!";
+                                    $response["idUputnica"] = $prviIdUputnica;
+                                }
                             } 
                         }
                         //Ako je broj sek. dijagnoza u BAZI JENDAK 0 te je n-ta iteracija (tj. n-ta dijagnoza forme)
@@ -674,10 +832,43 @@ class IzdajUputnica {
                                     mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
                                     //Izvršavanje statementa
                                     mysqli_stmt_execute($stmtAmbulanta);
-    
-                                    $response["success"] = "true";
-                                    $response["message"] = "Uputnica uspješno dodana!";
-                                    $response["idUputnica"] = $prviIdUputnica;
+
+                                    //Spremam nalaz 
+                                    $sqlNalaz = "INSERT INTO nalaz (idUputnica, idPacijent, idSpecijalist, idZdrUst, sifDjel, 
+                                                                    mkbSifraPrimarna, mkbSifraSekundarna, misljenjeSpecijalist, 
+                                                                    komentarUzNalaz,datumNalaz, vrijemeNalaz, oznaka) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+                                    //Kreiranje prepared statementa
+                                    $stmtNalaz = mysqli_stmt_init($conn);
+                                    //Ako je statement neuspješan
+                                    if(!mysqli_stmt_prepare($stmtNalaz,$sqlNalaz)){
+                                        $response["success"] = "false";
+                                        $response["message"] = "Prepared statement ne valja!";
+                                        $response["idUputnica"] = null;
+                                    }
+                                    else{
+                                        //Ako je vrsta pregleda == 'Dijagnostička pretraga'
+                                        if($vrstaPregled == 'Dijagnostička pretraga'){
+                                            //Stavljam dummy text
+                                            $komentarUzNalaz = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.';
+                                            $misljenjeSpecijalist = NULL;
+                                        }
+                                        else{
+                                            //Stavljam dummy text
+                                            $misljenjeSpecijalist = "Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
+                                            $komentarUzNalaz = NULL;
+                                        }  
+                                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                        mysqli_stmt_bind_param($stmtNalaz,"iiiiisssssss",$idUputnica, $idPacijent, $idSpecijalist,
+                                                                                    $idZdrUst, $sifDjel, $mkbSifraPrimarna, $mkb, 
+                                                                                    $misljenjeSpecijalist, $komentarUzNalaz, $datum, $vrijeme, $oznakaNalaz);
+                                        //Izvršavanje statementa
+                                        mysqli_stmt_execute($stmtNalaz);
+
+                                        //Vraćanje uspješnog odgovora serveru
+                                        $response["success"] = "true";
+                                        $response["message"] = "Uputnica uspješno dodana!";
+                                        $response["idUputnica"] = $prviIdUputnica;
+                                    }
                                 }
                             }
                         }
@@ -700,8 +891,43 @@ class IzdajUputnica {
                                 mysqli_stmt_bind_param($stmtUpdate,"issi",$idUputnica,$mkbSifraPrimarna,$mkb,$idMinPovijestBolesti);
                                 //Izvršavanje statementa
                                 mysqli_stmt_execute($stmtUpdate);
-                                //Povećavam broj ažuriranih redaka
-                                $brojacAzuriranihRedaka++;
+
+                                //Spremam nalaz 
+                                $sqlNalaz = "INSERT INTO nalaz (idUputnica, idPacijent, idSpecijalist, idZdrUst, sifDjel, 
+                                                                mkbSifraPrimarna, mkbSifraSekundarna, misljenjeSpecijalist, 
+                                                                komentarUzNalaz,datumNalaz, vrijemeNalaz, oznaka) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+                                //Kreiranje prepared statementa
+                                $stmtNalaz = mysqli_stmt_init($conn);
+                                //Ako je statement neuspješan
+                                if(!mysqli_stmt_prepare($stmtNalaz,$sqlNalaz)){
+                                    $response["success"] = "false";
+                                    $response["message"] = "Prepared statement ne valja!";
+                                    $response["idUputnica"] = null;
+                                }
+                                else{
+                                    //Generiram slučajni ID specijalista
+                                    $idSpecijalist = mt_rand(1,5);
+                                    //Ako je vrsta pregleda == 'Dijagnostička pretraga'
+                                    if($vrstaPregled == 'Dijagnostička pretraga'){
+                                        //Stavljam dummy text
+                                        $komentarUzNalaz = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.';
+                                        $misljenjeSpecijalist = NULL;
+                                    }
+                                    else{
+                                        //Stavljam dummy text
+                                        $misljenjeSpecijalist = "Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
+                                        $komentarUzNalaz = NULL;
+                                    }  
+                                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                    mysqli_stmt_bind_param($stmtNalaz,"iiiiisssssss",$idUputnica, $idPacijent, $idSpecijalist,
+                                                                                $idZdrUst, $sifDjel, $mkbSifraPrimarna, $mkb, 
+                                                                                $misljenjeSpecijalist, $komentarUzNalaz, $datum, $vrijeme, $oznakaNalaz);
+                                    //Izvršavanje statementa
+                                    mysqli_stmt_execute($stmtNalaz);
+
+                                    //Povećavam broj ažuriranih redaka
+                                    $brojacAzuriranihRedaka++;
+                                }
                             }
                         }
                         //Ako je broj obrađenih redaka manji od broja dijagnoza u bazi te NIJE prva iteracija
@@ -742,12 +968,44 @@ class IzdajUputnica {
                                 mysqli_stmt_bind_param($stmtUpdate,"issi",$idUputnica,$mkbSifraPrimarna,$mkb,$idMinPovijestBolesti);
                                 //Izvršavanje statementa
                                 mysqli_stmt_execute($stmtUpdate);
-                                //Povećavam broj ažuriranih redaka
-                                $brojacAzuriranihRedaka++;
-                                //Vraćanje uspješnog odgovora serveru
-                                $response["success"] = "true";
-                                $response["message"] = "Uputnica uspješno dodana!";
-                                $response["idUputnica"] = $prviIdUputnica;
+                                //Spremam nalaz 
+                                $sqlNalaz = "INSERT INTO nalaz (idUputnica, idPacijent, idSpecijalist, idZdrUst, sifDjel, 
+                                                                mkbSifraPrimarna, mkbSifraSekundarna, misljenjeSpecijalist, 
+                                                                komentarUzNalaz,datumNalaz, vrijemeNalaz, oznaka) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+                                //Kreiranje prepared statementa
+                                $stmtNalaz = mysqli_stmt_init($conn);
+                                //Ako je statement neuspješan
+                                if(!mysqli_stmt_prepare($stmtNalaz,$sqlNalaz)){
+                                    $response["success"] = "false";
+                                    $response["message"] = "Prepared statement ne valja!";
+                                    $response["idUputnica"] = null;
+                                }
+                                else{
+                                    //Ako je vrsta pregleda == 'Dijagnostička pretraga'
+                                    if($vrstaPregled == 'Dijagnostička pretraga'){
+                                        //Stavljam dummy text
+                                        $komentarUzNalaz = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.';
+                                        $misljenjeSpecijalist = NULL;
+                                    }
+                                    else{
+                                        //Stavljam dummy text
+                                        $misljenjeSpecijalist = "Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
+                                        $komentarUzNalaz = NULL;
+                                    }  
+                                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                    mysqli_stmt_bind_param($stmtNalaz,"iiiiisssssss",$idUputnica, $idPacijent, $idSpecijalist,
+                                                                                $idZdrUst, $sifDjel, $mkbSifraPrimarna, $mkb, 
+                                                                                $misljenjeSpecijalist, $komentarUzNalaz, $datum, $vrijeme, $oznakaNalaz);
+                                    //Izvršavanje statementa
+                                    mysqli_stmt_execute($stmtNalaz);
+
+                                    //Povećavam broj ažuriranih redaka
+                                    $brojacAzuriranihRedaka++;
+                                    //Vraćanje uspješnog odgovora serveru
+                                    $response["success"] = "true";
+                                    $response["message"] = "Uputnica uspješno dodana!";
+                                    $response["idUputnica"] = $prviIdUputnica;
+                                }
                             }
                         }
                         //Ako je broj ažuriranih redak JEDNAK broju sek. dijagnoza u bazi (npr. 2 == 2) I brojač iteracija JE VEĆI od broja sek. dijagnoza u bazi (npr. 3 > 2) 
@@ -855,10 +1113,43 @@ class IzdajUputnica {
                                     mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
                                     //Izvršavanje statementa
                                     mysqli_stmt_execute($stmtAmbulanta);
-                                    //Vraćanje uspješnog odgovora serveru
-                                    $response["success"] = "true";
-                                    $response["message"] = "Uputnica uspješno dodana!";
-                                    $response["idUputnica"] = $prviIdUputnica;
+
+                                    //Spremam nalaz 
+                                    $sqlNalaz = "INSERT INTO nalaz (idUputnica, idPacijent, idSpecijalist, idZdrUst, sifDjel, 
+                                                                    mkbSifraPrimarna, mkbSifraSekundarna, misljenjeSpecijalist, 
+                                                                    komentarUzNalaz,datumNalaz, vrijemeNalaz, oznaka) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+                                    //Kreiranje prepared statementa
+                                    $stmtNalaz = mysqli_stmt_init($conn);
+                                    //Ako je statement neuspješan
+                                    if(!mysqli_stmt_prepare($stmtNalaz,$sqlNalaz)){
+                                        $response["success"] = "false";
+                                        $response["message"] = "Prepared statement ne valja!";
+                                        $response["idUputnica"] = null;
+                                    }
+                                    else{
+                                        //Ako je vrsta pregleda == 'Dijagnostička pretraga'
+                                        if($vrstaPregled == 'Dijagnostička pretraga'){
+                                            //Stavljam dummy text
+                                            $komentarUzNalaz = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.';
+                                            $misljenjeSpecijalist = NULL;
+                                        }
+                                        else{
+                                            //Stavljam dummy text
+                                            $misljenjeSpecijalist = "Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
+                                            $komentarUzNalaz = NULL;
+                                        }  
+                                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                        mysqli_stmt_bind_param($stmtNalaz,"iiiiisssssss",$idUputnica, $idPacijent, $idSpecijalist,
+                                                                                    $idZdrUst, $sifDjel, $mkbSifraPrimarna, $mkb, 
+                                                                                    $misljenjeSpecijalist, $komentarUzNalaz,$datum, $vrijeme, $oznakaNalaz);
+                                        //Izvršavanje statementa
+                                        mysqli_stmt_execute($stmtNalaz);
+
+                                        //Vraćanje uspješnog odgovora serveru
+                                        $response["success"] = "true";
+                                        $response["message"] = "Uputnica uspješno dodana!";
+                                        $response["idUputnica"] = $prviIdUputnica;
+                                    }
                                 }
                             }
                         }
@@ -932,11 +1223,44 @@ class IzdajUputnica {
                                 mysqli_stmt_bind_param($stmtAmbulanta,"iii",$idLijecnik,$idPacijent,$idPovijestBolesti);
                                 //Izvršavanje statementa
                                 mysqli_stmt_execute($stmtAmbulanta);
-    
-                                //Vraćanje uspješnog odgovora serveru
-                                $response["success"] = "true";
-                                $response["message"] = "Uputnica uspješno dodana!";
-                                $response["idUputnica"] = $prviIdUputnica;
+                                //Spremam nalaz 
+                                $sqlNalaz = "INSERT INTO nalaz (idUputnica, idPacijent, idSpecijalist, idZdrUst, sifDjel, 
+                                                                mkbSifraPrimarna, mkbSifraSekundarna, misljenjeSpecijalist, 
+                                                                komentarUzNalaz ,datumNalaz, vrijemeNalaz, oznaka) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+                                //Kreiranje prepared statementa
+                                $stmtNalaz = mysqli_stmt_init($conn);
+                                //Ako je statement neuspješan
+                                if(!mysqli_stmt_prepare($stmtNalaz,$sqlNalaz)){
+                                    $response["success"] = "false";
+                                    $response["message"] = "Prepared statement ne valja!";
+                                    $response["idUputnica"] = null;
+                                }
+                                else{
+                                    //Generiram slučajni ID specijalista
+                                    $idSpecijalist = mt_rand(1,5);
+                                    //Ako je vrsta pregleda == 'Dijagnostička pretraga'
+                                    if($vrstaPregled == 'Dijagnostička pretraga'){
+                                        //Stavljam dummy text
+                                        $komentarUzNalaz = 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.';
+                                        $misljenjeSpecijalist = NULL;
+                                    }
+                                    else{
+                                        //Stavljam dummy text
+                                        $misljenjeSpecijalist = "Lorem Ipsum is simply dummy text of the printing and typesetting industry.";
+                                        $komentarUzNalaz = NULL;
+                                    }  
+                                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                                    mysqli_stmt_bind_param($stmtNalaz,"iiiiisssssss",$idUputnica, $idPacijent, $idSpecijalist,
+                                                                                $idZdrUst, $sifDjel, $mkbSifraPrimarna, $mkb, 
+                                                                                $misljenjeSpecijalist, $komentarUzNalaz, $datum, $vrijeme, $oznakaNalaz);
+                                    //Izvršavanje statementa
+                                    mysqli_stmt_execute($stmtNalaz);
+
+                                    //Vraćanje uspješnog odgovora serveru
+                                    $response["success"] = "true";
+                                    $response["message"] = "Uputnica uspješno dodana!";
+                                    $response["idUputnica"] = $prviIdUputnica;
+                                }
                             }
                         }
                     }

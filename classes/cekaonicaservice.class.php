@@ -216,10 +216,10 @@ class CekaonicaService{
                                                     WHERE pb.mboPacijent IN 
                                                     (SELECT p.mboPacijent FROM pacijent p 
                                                     WHERE p.idPacijent = ol.idPacijent)))
-                    END)) AS ukupnaCijenaPregled FROM usluge_lijecnik ul 
-                    JOIN obrada_lijecnik ol ON ol.idObrada = ul.idObradaLijecnik 
-                    JOIN pacijent p ON p.idPacijent = ol.idPacijent 
-                    WHERE ul.idObradaLijecnik = '$idObrada'";
+                    END)) AS ukupnaCijenaPregled FROM obrada_lijecnik ol 
+                    LEFT JOIN usluge_lijecnik ul ON ol.idObrada = ul.idObradaLijecnik 
+                    LEFT JOIN pacijent p ON p.idPacijent = ol.idPacijent 
+                    WHERE ol.idObrada = '$idObrada'";
             $result = $conn->query($sql);
 
             if ($result->num_rows > 0) {

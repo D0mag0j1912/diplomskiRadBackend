@@ -14,7 +14,7 @@ class NalaziDetailService {
 
         $sql = "SELECT n.idPacijent, n.idSpecijalist, n.idZdrUst, 
                 n.sifDjel, TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, n.misljenjeSpecijalist, 
-                n.datumNalaz, n.vrijemeNalaz 
+                n.komentarUzNalaz, n.datumNalaz, n.vrijemeNalaz 
                 FROM nalaz n 
                 WHERE n.idNalaz = '$idNalaz'";
         //Rezultat upita spremam u varijablu $result
@@ -29,32 +29,61 @@ class NalaziDetailService {
                 $sifDjel = $row['sifDjel'];
                 $mkbSifraPrimarna = $row['mkbSifraPrimarna'];
                 $misljenjeSpecijalist = $row['misljenjeSpecijalist'];
+                $komentarUzNalaz = $row['komentarUzNalaz'];
                 $datumNalaz = $row['datumNalaz'];
                 $vrijemeNalaz = $row['vrijemeNalaz'];
-
-                //Kreiram upit koji dohvaća sve sek. dijagnoze na osnovu ovih gore parametara
-                $sqlSek = "SELECT CONCAT(TRIM(d.imeDijagnoza),' [',TRIM(n.mkbSifraSekundarna),']') AS sekundarneDijagnoze 
-                        FROM nalaz n 
-                        JOIN dijagnoze d ON d.mkbSifra = n.mkbSifraSekundarna 
-                        WHERE n.idPacijent = '$idPacijent' 
-                        AND n.idSpecijalist = '$idSpecijalist' 
-                        AND n.idZdrUst = '$idZdrUst' 
-                        AND n.sifDjel = '$sifDjel' 
-                        AND TRIM(n.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
-                        AND n.misljenjeSpecijalist = '$misljenjeSpecijalist' 
-                        AND n.datumNalaz = '$datumNalaz' 
-                        AND n.vrijemeNalaz = '$vrijemeNalaz'";
-                //Rezultat upita spremam u varijablu $result
-                $resultSek = mysqli_query($conn,$sqlSek);
-                //Ako rezultat upita ima podataka u njemu (znači nije prazan)
-                if(mysqli_num_rows($resultSek) > 0){
-                    //Idem redak po redak rezultata upita 
-                    while($rowSek = mysqli_fetch_assoc($resultSek)){
-                        $response[] = $rowSek;
+                //Ako je tip uputnice SPECIJALISTIČKA DJELATNOST 
+                if(empty($komentarUzNalaz)){
+                    //Kreiram upit koji dohvaća sve sek. dijagnoze na osnovu ovih gore parametara
+                    $sqlSek = "SELECT CONCAT(TRIM(d.imeDijagnoza),' [',TRIM(n.mkbSifraSekundarna),']') AS sekundarneDijagnoze 
+                            FROM nalaz n 
+                            JOIN dijagnoze d ON d.mkbSifra = n.mkbSifraSekundarna 
+                            WHERE n.idPacijent = '$idPacijent' 
+                            AND n.idSpecijalist = '$idSpecijalist' 
+                            AND n.idZdrUst = '$idZdrUst' 
+                            AND n.sifDjel = '$sifDjel' 
+                            AND TRIM(n.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
+                            AND n.misljenjeSpecijalist = '$misljenjeSpecijalist' 
+                            AND n.datumNalaz = '$datumNalaz' 
+                            AND n.vrijemeNalaz = '$vrijemeNalaz'";
+                    //Rezultat upita spremam u varijablu $result
+                    $resultSek = mysqli_query($conn,$sqlSek);
+                    //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+                    if(mysqli_num_rows($resultSek) > 0){
+                        //Idem redak po redak rezultata upita 
+                        while($rowSek = mysqli_fetch_assoc($resultSek)){
+                            $response[] = $rowSek;
+                        }
+                    }
+                    else{
+                        return null;
                     }
                 }
-                else{
-                    return null;
+                else if(empty($misljenjeSpecijalist)){
+                    //Kreiram upit koji dohvaća sve sek. dijagnoze na osnovu ovih gore parametara
+                    $sqlSek = "SELECT CONCAT(TRIM(d.imeDijagnoza),' [',TRIM(n.mkbSifraSekundarna),']') AS sekundarneDijagnoze 
+                            FROM nalaz n 
+                            JOIN dijagnoze d ON d.mkbSifra = n.mkbSifraSekundarna 
+                            WHERE n.idPacijent = '$idPacijent' 
+                            AND n.idSpecijalist = '$idSpecijalist' 
+                            AND n.idZdrUst = '$idZdrUst' 
+                            AND n.sifDjel = '$sifDjel' 
+                            AND TRIM(n.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
+                            AND n.komentarUzNalaz = '$komentarUzNalaz' 
+                            AND n.datumNalaz = '$datumNalaz' 
+                            AND n.vrijemeNalaz = '$vrijemeNalaz'";
+                    //Rezultat upita spremam u varijablu $result
+                    $resultSek = mysqli_query($conn,$sqlSek);
+                    //Ako rezultat upita ima podataka u njemu (znači nije prazan)
+                    if(mysqli_num_rows($resultSek) > 0){
+                        //Idem redak po redak rezultata upita 
+                        while($rowSek = mysqli_fetch_assoc($resultSek)){
+                            $response[] = $rowSek;
+                        }
+                    }
+                    else{
+                        return null;
+                    }
                 }
             }
         } 
@@ -73,7 +102,8 @@ class NalaziDetailService {
                 zu.idZdrUst, TRIM(zu.nazivZdrUst) AS nazivZdrUst, TRIM(zu.adresaZdrUst) AS adresaZdrUst, zu.pbrZdrUst,
                 CONCAT(TRIM(zd.nazivDjel),' [',TRIM(zd.sifDjel),']') AS zdravstvenaDjelatnost,
                 CONCAT(TRIM(d.imeDijagnoza),' [',TRIM(d.mkbSifra),']') AS primarnaDijagnoza,
-                n.misljenjeSpecijalist, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz
+                n.misljenjeSpecijalist, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz,
+                n.komentarUzNalaz
                 FROM nalaz n 
                 JOIN specijalist s ON s.idSpecijalist = n.idSpecijalist
                 JOIN zdr_ustanova zu ON zu.idZdrUst = n.idZdrUst 

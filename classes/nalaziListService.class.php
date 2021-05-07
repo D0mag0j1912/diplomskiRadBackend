@@ -18,13 +18,14 @@ class NalaziListService {
             //Kreiram upit koji dohvaća sve nalaze za listu
             $sql = "SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, 
                     TRIM(zu.idZdrUst) AS idZdrUst, TRIM(zu.nazivZdrUst) AS nazivZdrUst, 
-                    TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, TRIM(d.imeDijagnoza) AS imeDijagnoza 
+                    TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, TRIM(d.imeDijagnoza) AS imeDijagnoza,
+                    n.misljenjeSpecijalist 
                     FROM nalaz n 
                     JOIN zdr_ustanova zu ON zu.idZdrUst = n.idZdrUst 
                     JOIN dijagnoze d ON d.mkbSifra = n.mkbSifraPrimarna 
-                    WHERE n.idPacijent = '$idPacijent' 
-                    GROUP BY n.mkbSifraPrimarna 
-                    ORDER BY n.datumNalaz DESC 
+                    WHERE n.idPacijent = '$idPacijent'
+                    GROUP BY n.oznaka 
+                    ORDER BY n.datumNalaz DESC, n.vrijemeNalaz DESC 
                     LIMIT 8";
             //Rezultat upita spremam u varijablu $result
             $result = mysqli_query($conn,$sql);
@@ -40,7 +41,8 @@ class NalaziListService {
         else{
             $sql = "SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, 
                     TRIM(zu.idZdrUst) AS idZdrUst, TRIM(zu.nazivZdrUst) AS nazivZdrUst, 
-                    TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, TRIM(d.imeDijagnoza) AS imeDijagnoza 
+                    TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, TRIM(d.imeDijagnoza) AS imeDijagnoza,
+                    n.misljenjeSpecijalist 
                     FROM nalaz n 
                     LEFT JOIN zdr_ustanova zu ON zu.idZdrUst = n.idZdrUst 
                     LEFT JOIN dijagnoze d ON d.mkbSifra = n.mkbSifraPrimarna 
@@ -56,7 +58,7 @@ class NalaziListService {
                     OR UPPER(TRIM(n.mkbSifraSekundarna)) LIKE UPPER('%{$pretraga}%')
                     OR UPPER(TRIM(d.imeDijagnoza)) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(TRIM(d2.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')) 
-                    GROUP BY n.mkbSifraPrimarna 
+                    GROUP BY n.oznaka 
                     ORDER BY n.datumNalaz DESC, n.vrijemeNalaz DESC 
                     LIMIT 8";
             $result = $conn->query($sql);
@@ -86,13 +88,14 @@ class NalaziListService {
 
         $sql = "SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, zu.idZdrUst, 
                 TRIM(zu.nazivZdrUst) AS nazivZdrUst, 
-                TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, TRIM(d.imeDijagnoza) AS imeDijagnoza 
+                TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, TRIM(d.imeDijagnoza) AS imeDijagnoza,
+                n.misljenjeSpecijalist 
                 FROM nalaz n 
                 JOIN zdr_ustanova zu ON zu.idZdrUst = n.idZdrUst 
                 JOIN dijagnoze d ON d.mkbSifra = n.mkbSifraPrimarna 
                 WHERE n.idPacijent = '$idPacijent' 
                 AND n.datumNalaz = '$datum' 
-                GROUP BY n.mkbSifraPrimarna 
+                GROUP BY n.oznaka 
                 ORDER BY n.idNalaz DESC";
         //Rezultat upita spremam u varijablu $result
         $result = mysqli_query($conn,$sql);
@@ -120,13 +123,14 @@ class NalaziListService {
         //Kreiram upit koji dohvaća sve nalaze za listu
         $sql = "SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, 
                 TRIM(zu.idZdrUst) AS idZdrUst, TRIM(zu.nazivZdrUst) AS nazivZdrUst, 
-                TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, TRIM(d.imeDijagnoza) AS imeDijagnoza 
+                TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, TRIM(d.imeDijagnoza) AS imeDijagnoza,
+                n.misljenjeSpecijalist 
                 FROM nalaz n 
                 JOIN zdr_ustanova zu ON zu.idZdrUst = n.idZdrUst 
                 JOIN dijagnoze d ON d.mkbSifra = n.mkbSifraPrimarna 
                 WHERE n.idPacijent = '$idPacijent' 
-                GROUP BY n.mkbSifraPrimarna 
-                ORDER BY n.datumNalaz DESC 
+                GROUP BY n.oznaka 
+                ORDER BY n.datumNalaz DESC, n.vrijemeNalaz DESC 
                 LIMIT 8";
         //Rezultat upita spremam u varijablu $result
         $result = mysqli_query($conn,$sql);
