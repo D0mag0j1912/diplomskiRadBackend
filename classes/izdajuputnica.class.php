@@ -93,6 +93,8 @@ class IzdajUputnica {
         $datum = date('Y-m-d');
         //Trenutno vrijeme
         $vrijeme = date('H:i:s');
+        //Spremam zdr. ustanove 
+        $zdrUstanove = [19601964,25002503,21902194,47104716,19701977,47204729,49604961,356235629,359135919,999000420,358435846,389738972,258825880];
         //Označavam da slučajno generirana oznaka već postoji u bazi
         $ispravan = false;
         while($ispravan != true){
@@ -231,6 +233,10 @@ class IzdajUputnica {
                             $prazna = NULL;
                             //Generiram slučajni ID specijalista
                             $idSpecijalist = mt_rand(1,5);
+                            //Ako je ustanova prazna
+                            if(empty($idZdrUst)){
+                                $idZdrUst = $zdrUstanove[array_rand($zdrUstanove,1)];
+                            }
                             //Ako je vrsta pregleda == 'Dijagnostička pretraga'
                             if($vrstaPregled == 'Dijagnostička pretraga'){
                                 //Stavljam dummy text
@@ -411,6 +417,10 @@ class IzdajUputnica {
                                         $prazna = NULL;
                                         //Generiram slučajni ID specijalista
                                         $idSpecijalist = mt_rand(1,5);
+                                        //Ako je ustanova prazna
+                                        if(empty($idZdrUst)){
+                                            $idZdrUst = $zdrUstanove[array_rand($zdrUstanove,1)];
+                                        }
                                         //Ako je vrsta pregleda == 'Dijagnostička pretraga'
                                         if($vrstaPregled == 'Dijagnostička pretraga'){
                                             //Stavljam dummy text
@@ -636,6 +646,10 @@ class IzdajUputnica {
                             else{
                                 //Generiram slučajni ID specijalista
                                 $idSpecijalist = mt_rand(1,5);
+                                //Ako je ustanova prazna
+                                if(empty($idZdrUst)){
+                                    $idZdrUst = $zdrUstanove[array_rand($zdrUstanove,1)];
+                                }
                                 //Ako je vrsta pregleda == 'Dijagnostička pretraga'
                                 if($vrstaPregled == 'Dijagnostička pretraga'){
                                     //Stavljam dummy text
@@ -703,6 +717,10 @@ class IzdajUputnica {
                                 else{
                                     //Generiram slučajni ID specijalista
                                     $idSpecijalist = mt_rand(1,5);
+                                    //Ako je ustanova prazna
+                                    if(empty($idZdrUst)){
+                                        $idZdrUst = $zdrUstanove[array_rand($zdrUstanove,1)];
+                                    }
                                     //Ako je vrsta pregleda == 'Dijagnostička pretraga'
                                     if($vrstaPregled == 'Dijagnostička pretraga'){
                                         //Stavljam dummy text
@@ -907,6 +925,10 @@ class IzdajUputnica {
                                 else{
                                     //Generiram slučajni ID specijalista
                                     $idSpecijalist = mt_rand(1,5);
+                                    //Ako je ustanova prazna
+                                    if(empty($idZdrUst)){
+                                        $idZdrUst = $zdrUstanove[array_rand($zdrUstanove,1)];
+                                    }
                                     //Ako je vrsta pregleda == 'Dijagnostička pretraga'
                                     if($vrstaPregled == 'Dijagnostička pretraga'){
                                         //Stavljam dummy text
@@ -1238,6 +1260,10 @@ class IzdajUputnica {
                                 else{
                                     //Generiram slučajni ID specijalista
                                     $idSpecijalist = mt_rand(1,5);
+                                    //Ako je ustanova prazna
+                                    if(empty($idZdrUst)){
+                                        $idZdrUst = $zdrUstanove[array_rand($zdrUstanove,1)];
+                                    }
                                     //Ako je vrsta pregleda == 'Dijagnostička pretraga'
                                     if($vrstaPregled == 'Dijagnostička pretraga'){
                                         //Stavljam dummy text

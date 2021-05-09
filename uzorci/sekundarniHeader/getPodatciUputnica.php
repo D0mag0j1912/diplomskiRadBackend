@@ -1,7 +1,7 @@
 <?php
-include('../backend-path.php');
+include('../../backend-path.php');
 //Importam potrebne klase pomoću autoloadera
-require_once BASE_PATH.'\includes\autoloader2.inc.php';
+require_once BASE_PATH.'\includes\autoloader3.inc.php';
 
 //Kreiram objekt tipa "Baza"
 $baza = new Baza();
@@ -12,13 +12,13 @@ $servis = new Uzorci();
 //Ako je frontend poslao GET zahtjev
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     //Ako je sa frontenda poslan ID uputnice
-    if(isset($_GET['idNalaz'])){
+    if(isset($_GET['idUputnica'])){
         //Kreiram prazno polje
         $response = [];
-        $idNalaz = mysqli_real_escape_string($conn, trim($_GET['idNalaz']));
-        $idNalaz = (int)$idNalaz;
+        $idUputnica = mysqli_real_escape_string($conn, trim($_GET['idUputnica']));
+        $idUputnica = (int)$idUputnica;
 
-        $response = $servis->dohvatiUzorciNalazi($idNalaz);
+        $response = $servis->dohvatiPodatciUputnica($idUputnica);
         
         echo json_encode($response);
     }

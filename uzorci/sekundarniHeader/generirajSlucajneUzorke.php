@@ -1,7 +1,7 @@
 <?php
-include('../backend-path.php');
+include('../../backend-path.php');
 //Importam potrebne klase pomoću autoloadera
-require_once BASE_PATH.'\includes\autoloader2.inc.php';
+require_once BASE_PATH.'\includes\autoloader3.inc.php';
 
 //Kreiram objekt tipa "Baza"
 $baza = new Baza();
@@ -13,41 +13,41 @@ $conn = $baza->spojiSBazom();
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     //Kreiram prazno polje
     $response = [];
-    $eritrociti = mt_rand (4.34*100, 5.72*100) / 100;
+    $eritrociti = mt_rand (4.34*100, 6.20*100) / 100;
     $response['eritrociti'] = $eritrociti;
-    $hemoglobin = mt_rand (138, 175);
+    $hemoglobin = mt_rand (138, 195);
     $response['hemoglobin'] = $hemoglobin;
-    $hematokrit = mt_rand (0.415*1000, 0.530*1000) / 1000;
+    $hematokrit = mt_rand (0.415*1000, 0.580*1000) / 1000;
     $response['hematokrit'] = $hematokrit;
-    $mcv = mt_rand (83.0*10, 97.2*10) / 10;
+    $mcv = mt_rand (83.0*10, 100.0*10) / 10;
     $response['mcv'] = $mcv;
-    $mch = mt_rand (27.4*10, 33.9*10) / 10;
+    $mch = mt_rand (27.4*10, 38.9*10) / 10;
     $response['mch'] = $mch;
-    $mchc = mt_rand (320, 345);
+    $mchc = mt_rand (320, 380);
     $response['mchc'] = $mchc;
-    $rdw = mt_rand (9.0, 15.0);
+    $rdw = mt_rand (9.0, 20.0);
     $response['rdw'] = $rdw;
-    $leukociti = mt_rand (3.4*10, 9.7*10) / 10;
+    $leukociti = mt_rand (3.4*10, 10.0*10) / 10;
     $response['leukociti'] = $leukociti;
-    $trombociti = mt_rand (158, 424);
+    $trombociti = mt_rand (158, 450);
     $response['trombociti'] = $trombociti;
-    $mpv = mt_rand (6.8*10, 10.4*10) / 10;
+    $mpv = mt_rand (6.8*10, 15.4*10) / 10;
     $response['mpv'] = $mpv;  
-    $trombokrit = mt_rand (0.150*1000, 0.320*1000) / 1000;
+    $trombokrit = mt_rand (0.150*1000, 0.360*1000) / 1000;
     $response['trombokrit'] = $trombokrit;  
-    $pdw = mt_rand (16, 25);
+    $pdw = mt_rand (16, 30);
     $response['pdw'] = $pdw;  
-    $neutrofilniGranulociti = mt_rand (2.06*100, 6.49*100) / 100;
+    $neutrofilniGranulociti = mt_rand (2.06*100, 8.49*100) / 100;
     $response['neutrofilniGranulociti'] = $neutrofilniGranulociti;  
-    $monociti = mt_rand (0.12*100, 0.84*100) / 100;
+    $monociti = mt_rand (0.12*100, 0.87*100) / 100;
     $response['monociti'] = $monociti;  
-    $limfociti = mt_rand (1.19*100, 3.35*100) / 100;
+    $limfociti = mt_rand (1.19*100, 3.55*100) / 100;
     $response['limfociti'] = $limfociti;  
-    $eozinofilniGranulociti = mt_rand (0.00*100, 0.43*100) / 100;
+    $eozinofilniGranulociti = mt_rand (0.00*100, 0.47*100) / 100;
     $response['eozinofilniGranulociti'] = $eozinofilniGranulociti;  
-    $bazofilniGranulociti = mt_rand (0.00*100, 0.06*100) / 100;
+    $bazofilniGranulociti = mt_rand (0.00*100, 0.08*100) / 100;
     $response['bazofilniGranulociti'] = $bazofilniGranulociti;  
-    $retikulociti = mt_rand (22, 97);
+    $retikulociti = mt_rand (22, 100);
     $response['retikulociti'] = $retikulociti;
     echo json_encode($response);
 }

@@ -7,6 +7,26 @@ date_default_timezone_set('Europe/Zagreb');
 
 class ImportService{
 
+    //Funkcija koja dohvaća sve referentne vrijednosti
+    function dohvatiReferentneVrijednosti(){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+        //Kreiram prazno polje odgovora
+        $response = []; 
+
+        $sql = "SELECT * FROM referentne_vrijednosti";
+        $result = $conn->query($sql);
+
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $response[] = $row;
+            }
+        }
+        //Vraćam odgovor baze
+        return $response;
+    }
+
     //Funkcija koja dohvaća sve zdravstvene djelatnosti
     function dohvatiZdravstveneDjelatnosti(){
         //Dohvaćam bazu 
