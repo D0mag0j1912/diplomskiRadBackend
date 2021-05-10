@@ -27,7 +27,7 @@ class DodajReceptService{
         //Generiram slučajni oznaku po kojom grupiram
         $oznaka = uniqid();
         //Kreiram upit koji provjerava postoji li već ova random generirana oznaka u bazi
-        $sqlProvjeraOznaka = "SELECT pb.oznaka FROM povijestBolesti pb 
+        $sqlProvjeraOznaka = "SELECT pb.oznaka FROM povijest_bolesti pb 
                             WHERE pb.oznaka = '$oznaka';";
         //Rezultat upita spremam u varijablu $resultProvjeraOznaka
         $resultProvjeraOznaka = mysqli_query($conn,$sqlProvjeraOznaka);
@@ -38,7 +38,7 @@ class DodajReceptService{
         } 
     }
     //Gledam koliko ima sek. dijagnoza pregled u bazi gdje se dodava ID recepta
-    $sqlCountSekundarna = "SELECT COUNT(pb.mkbSifraSekundarna) AS BrojSekundarna FROM povijestBolesti pb
+    $sqlCountSekundarna = "SELECT COUNT(pb.mkbSifraSekundarna) AS BrojSekundarna FROM povijest_bolesti pb
                         WHERE TRIM(pb.mkbSifraPrimarna) = '$poslanaMKBSifra' 
                         AND pb.idObradaLijecnik = '$poslaniIDObrada' 
                         AND pb.mboPacijent = '$mboPacijent' 
@@ -95,7 +95,7 @@ class DodajReceptService{
                     $imeLijek = implode(" ", $polje);
 
                     //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-                    $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovnalistalijekova o 
+                    $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovna_lista_lijekova o 
                                     WHERE o.oblikJacinaPakiranjeLijek = '$ojpLijek' AND o.zasticenoImeLijek = '$imeLijek'";
 
                     $resultOsnovnaLista = $conn->query($sqlOsnovnaLista);
@@ -127,7 +127,7 @@ class DodajReceptService{
                     $imeLijek = implode(" ", $polje);
 
                     //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-                    $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovnalistalijekova o 
+                    $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovna_lista_lijekova o 
                                     WHERE o.oblikJacinaPakiranjeLijek = '$ojpLijek' AND o.zasticenoImeLijek = '$imeLijek'";
 
                     $resultOsnovnaLista = $conn->query($sqlOsnovnaLista);
@@ -159,7 +159,7 @@ class DodajReceptService{
                     $imeLijek = implode(" ", $polje);
 
                     //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-                    $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunskalistalijekova d 
+                    $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunska_lista_lijekova d 
                                     WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' AND d.zasticenoImeLijek = '$imeLijek'";
 
                     $resultDopunskaLista = $conn->query($sqlDopunskaLista);
@@ -191,7 +191,7 @@ class DodajReceptService{
                     $imeLijek = implode(" ", $polje);
 
                     //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-                    $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunskalistalijekova d 
+                    $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunska_lista_lijekova d 
                                     WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' AND d.zasticenoImeLijek = '$imeLijek'";
 
                     $resultDopunskaLista = $conn->query($sqlDopunskaLista);
@@ -262,8 +262,8 @@ class DodajReceptService{
 
             //Ako je broj trenutnih sek. dijagnoza u bazi povijesti bolesti 0 ILI 1
             if(($brojSekundarnaBaza == 0 || $brojSekundarnaBaza == 1)){
-                //Kreiram upit kojim ću unijeti ID recepta u tablicu "povijestBolesti"
-                $sqlUpdate ="UPDATE povijestBolesti pb SET pb.idRecept = ?, 
+                //Kreiram upit kojim ću unijeti ID recepta u tablicu "povijest_bolesti"
+                $sqlUpdate ="UPDATE povijest_bolesti pb SET pb.idRecept = ?, 
                             pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?  
                             WHERE TRIM(pb.mkbSifraPrimarna) = ? 
                             AND pb.idObradaLijecnik = ? 
@@ -296,7 +296,7 @@ class DodajReceptService{
             else if($brojSekundarnaBaza > 1){
                 //Brišem sve retke iz tablice ambulanta za ovu povijest bolesti
                 $sqlDeleteAmbulanta = "DELETE a FROM ambulanta a
-                                    JOIN povijestbolesti pb ON pb.idPovijestBolesti = a.idPovijestBolesti 
+                                    JOIN povijest_bolesti pb ON pb.idPovijestBolesti = a.idPovijestBolesti 
                                     WHERE TRIM(pb.mkbSifraPrimarna) = ? 
                                     AND pb.idObradaLijecnik = ? 
                                     AND pb.mboPacijent = ? 
@@ -317,7 +317,7 @@ class DodajReceptService{
                     mysqli_stmt_execute($stmtDeleteAmbulanta);
 
                     //Prije nego što izbrišem redak povijesti bolesti, dohvaćam ga
-                    $sqlPovijestBolesti = "SELECT * FROM povijestbolesti 
+                    $sqlPovijestBolesti = "SELECT * FROM povijest_bolesti 
                                         WHERE TRIM(mkbSifraPrimarna) = '$poslanaMKBSifra' 
                                         AND idObradaLijecnik = '$poslaniIDObrada' 
                                         AND mboPacijent = '$mboPacijent' 
@@ -346,7 +346,7 @@ class DodajReceptService{
                         }
                     } 
                     //Brišem sve retke iz tablice povijesti bolesti
-                    $sqlDelete = "DELETE FROM povijestBolesti 
+                    $sqlDelete = "DELETE FROM povijest_bolesti 
                                 WHERE TRIM(mkbSifraPrimarna) = ? 
                                 AND idObradaLijecnik = ? 
                                 AND mboPacijent = ? 
@@ -366,7 +366,7 @@ class DodajReceptService{
                         //Izvršavanje statementa
                         mysqli_stmt_execute($stmtDelete);  
                         //Kreiram upit za dodavanje novog recepta u bazu
-                        $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
+                        $sql = "INSERT INTO povijest_bolesti (razlogDolaska, anamneza, statusPacijent, 
                                 nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
                                 preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik, 
                                 vrijeme,idRecept,prosliPregled, bojaPregled,oznaka) 
@@ -408,7 +408,7 @@ class DodajReceptService{
                             mysqli_stmt_execute($stmt);
 
                             //Dohvaćam ID povijesti bolesti kojega sam upravo unio
-                            $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
+                            $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijest_bolesti pb");
                             //Ulazim u polje rezultata i idem redak po redak
                             while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
                                 //Dohvaćam željeni ID povijesti bolesti
@@ -444,14 +444,14 @@ class DodajReceptService{
     //Ako IMA MKB šifri sek. dijagnoza
     else{
         //Kreiram upit koji dohvaća MINIMALNI ID povijesti bolesti za određenog pacijenta i određenu sesiju obrade
-        $sqlMin = "SELECT pb.idPovijestBolesti FROM povijestbolesti pb 
+        $sqlMin = "SELECT pb.idPovijestBolesti FROM povijest_bolesti pb 
                 WHERE TRIM(pb.mkbSifraPrimarna) = '$poslanaMKBSifra' 
                 AND pb.idObradaLijecnik = '$poslaniIDObrada' 
                 AND pb.mboPacijent = '$mboPacijent' 
                 AND pb.tipSlucaj = '$poslaniTipSlucaj' 
                 AND pb.vrijeme = '$poslanoVrijeme'
                 AND pb.idPovijestBolesti = 
-                (SELECT MIN(pb2.idPovijestBolesti) FROM povijestbolesti pb2  
+                (SELECT MIN(pb2.idPovijestBolesti) FROM povijest_bolesti pb2  
                 WHERE TRIM(pb2.mkbSifraPrimarna) = '$poslanaMKBSifra' 
                 AND pb2.idObradaLijecnik = '$poslaniIDObrada' 
                 AND pb2.mboPacijent = '$mboPacijent' 
@@ -480,7 +480,7 @@ class DodajReceptService{
             $brisanje = true;
             //Brišem sve retke iz tablice ambulanta za ovu povijest bolesti
             $sqlDeleteAmbulanta = "DELETE a FROM ambulanta a
-                                JOIN povijestbolesti pb ON pb.idPovijestBolesti = a.idPovijestBolesti 
+                                JOIN povijest_bolesti pb ON pb.idPovijestBolesti = a.idPovijestBolesti 
                                 WHERE TRIM(pb.mkbSifraPrimarna) = ? 
                                 AND pb.idObradaLijecnik = ? 
                                 AND pb.mboPacijent = ? 
@@ -500,7 +500,7 @@ class DodajReceptService{
                 //Izvršavanje statementa
                 mysqli_stmt_execute($stmtDeleteAmbulanta);
                 //Prije nego što ubacim novi redak povijesti bolesti, dohvaćam redak koji sam ažurirao u prethodnom if uvjetu 
-                $sqlPovijestBolesti = "SELECT * FROM povijestbolesti 
+                $sqlPovijestBolesti = "SELECT * FROM povijest_bolesti 
                                     WHERE TRIM(mkbSifraPrimarna) = '$poslanaMKBSifra' 
                                     AND idObradaLijecnik = '$poslaniIDObrada' 
                                     AND mboPacijent = '$mboPacijent' 
@@ -529,7 +529,7 @@ class DodajReceptService{
                     }
                 } 
                 //Brišem sve retke iz tablice povijesti bolesti
-                $sqlDelete = "DELETE FROM povijestBolesti 
+                $sqlDelete = "DELETE FROM povijest_bolesti 
                             WHERE TRIM(mkbSifraPrimarna) = ? 
                             AND idObradaLijecnik = ? 
                             AND mboPacijent = ? 
@@ -592,7 +592,7 @@ class DodajReceptService{
                         $imeLijek = implode(" ", $polje);
 
                         //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-                        $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovnalistalijekova o 
+                        $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovna_lista_lijekova o 
                                 WHERE o.oblikJacinaPakiranjeLijek = '$ojpLijek' AND o.zasticenoImeLijek = '$imeLijek'";
 
                         $resultOsnovnaLista = $conn->query($sqlOsnovnaLista);
@@ -624,7 +624,7 @@ class DodajReceptService{
                         $imeLijek = implode(" ", $polje);
 
                         //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-                        $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovnalistalijekova o 
+                        $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovna_lista_lijekova o 
                                 WHERE o.oblikJacinaPakiranjeLijek = '$ojpLijek' AND o.zasticenoImeLijek = '$imeLijek'";
 
                         $resultOsnovnaLista = $conn->query($sqlOsnovnaLista);
@@ -656,7 +656,7 @@ class DodajReceptService{
                         $imeLijek = implode(" ", $polje);
 
                         //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-                        $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunskalistalijekova d 
+                        $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunska_lista_lijekova d 
                                 WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' AND d.zasticenoImeLijek = '$imeLijek'";
 
                         $resultDopunskaLista = $conn->query($sqlDopunskaLista);
@@ -688,7 +688,7 @@ class DodajReceptService{
                         $imeLijek = implode(" ", $polje);
 
                         //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-                        $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunskalistalijekova d 
+                        $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunska_lista_lijekova d 
                                 WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' AND d.zasticenoImeLijek = '$imeLijek'";
 
                         $resultDopunskaLista = $conn->query($sqlDopunskaLista);
@@ -762,8 +762,8 @@ class DodajReceptService{
                 } 
                 //(BAZA = 0, FORMA = 1) ILI (BAZA = 1, FORMA = 1)
                 if($brojSekundarnaBaza <= $brojacSekundarnaForma && $brojacSekundarnaForma == 1){
-                    //Kreiram upit kojim ću unijeti ID recepta u tablicu "povijestBolesti"
-                    $sqlUpdate ="UPDATE povijestBolesti pb SET pb.idRecept = ?,pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ? 
+                    //Kreiram upit kojim ću unijeti ID recepta u tablicu "povijest_bolesti"
+                    $sqlUpdate ="UPDATE povijest_bolesti pb SET pb.idRecept = ?,pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ? 
                                 WHERE TRIM(pb.mkbSifraPrimarna) = ? 
                                 AND pb.idObradaLijecnik = ? 
                                 AND pb.mboPacijent = ? 
@@ -794,8 +794,8 @@ class DodajReceptService{
                 else if($brojSekundarnaBaza <= $brojacSekundarnaForma && $brojacSekundarnaForma > 1){
                     //Ako je broj sek. dijagnoza u bazi JEDNAK 0 te je prva iteracija (tj. prva dijagnoza forme)
                     if($brojSekundarnaBaza == 0 && $brojacIteracija == 1){
-                        //Kreiram upit kojim ću unijeti ID recepta u tablicu "povijestBolesti"
-                        $sqlUpdate ="UPDATE povijestBolesti pb SET pb.idRecept = ?,pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ? 
+                        //Kreiram upit kojim ću unijeti ID recepta u tablicu "povijest_bolesti"
+                        $sqlUpdate ="UPDATE povijest_bolesti pb SET pb.idRecept = ?,pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ? 
                                     WHERE TRIM(pb.mkbSifraPrimarna) = ? 
                                     AND pb.idObradaLijecnik = ? 
                                     AND pb.mboPacijent = ? 
@@ -825,14 +825,14 @@ class DodajReceptService{
                     //Ako je broj sek. dijagnoza u BAZI JENDAK 0 te je n-ta iteracija (tj. n-ta dijagnoza forme)
                     else if($brojSekundarnaBaza == 0 && $brojacIteracija > 1){
                         //Prije nego što ubacim novi redak povijesti bolesti, dohvaćam redak koji sam ažurirao u prethodnom if uvjetu 
-                        $sqlPovijestBolesti = "SELECT * FROM povijestbolesti pb
+                        $sqlPovijestBolesti = "SELECT * FROM povijest_bolesti pb
                                             WHERE pb.idObradaLijecnik = '$poslaniIDObrada' 
                                             AND pb.mboPacijent = '$mboPacijent' 
                                             AND TRIM(pb.mkbSifraPrimarna) = '$poslanaMKBSifra' 
                                             AND pb.tipSlucaj = '$poslaniTipSlucaj' 
                                             AND pb.vrijeme = '$poslanoVrijeme'
                                             AND pb.idPovijestBolesti = 
-                                            (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
+                                            (SELECT MAX(pb2.idPovijestBolesti) FROM povijest_bolesti pb2 
                                             WHERE pb2.mboPacijent = '$mboPacijent' 
                                             AND pb2.idObradaLijecnik = '$poslaniIDObrada' 
                                             AND TRIM(pb2.mkbSifraPrimarna) = '$poslanaMKBSifra' 
@@ -861,7 +861,7 @@ class DodajReceptService{
                             }
                         } 
                         //Kreiram upit za spremanje prvog dijela podataka u bazu
-                        $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
+                        $sql = "INSERT INTO povijest_bolesti (razlogDolaska, anamneza, statusPacijent, 
                                 nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
                                 preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik, 
                                 vrijeme,idRecept,prosliPregled,bojaPregled,oznaka) 
@@ -903,7 +903,7 @@ class DodajReceptService{
                             mysqli_stmt_execute($stmt);
 
                             //Dohvaćam ID povijesti bolesti kojega sam upravo unio
-                            $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
+                            $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijest_bolesti pb");
                             //Ulazim u polje rezultata i idem redak po redak
                             while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
                                 //Dohvaćam željeni ID povijesti bolesti
@@ -935,8 +935,8 @@ class DodajReceptService{
                     }
                     //Ako je broj obrađenih redaka manji od broja dijagnoza u bazi te je prva iteracija (koristim PRVI MINIMALNI ID povijesti bolesti)
                     if($brojacAzuriranihRedaka < $brojSekundarnaBaza && $brojacIteracija == 1){
-                        //Kreiram upit kojim ću unijeti ID recepta u tablicu "povijestBolesti"
-                        $sqlUpdate ="UPDATE povijestBolesti pb SET pb.idRecept = ?,pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ? 
+                        //Kreiram upit kojim ću unijeti ID recepta u tablicu "povijest_bolesti"
+                        $sqlUpdate ="UPDATE povijest_bolesti pb SET pb.idRecept = ?,pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ? 
                                     WHERE idPovijestBolesti = ?";
                         //Kreiranje prepared statementa
                         $stmtUpdate = mysqli_stmt_init($conn);
@@ -960,7 +960,7 @@ class DodajReceptService{
                     else if($brojacAzuriranihRedaka < $brojSekundarnaBaza && $brojacIteracija > 1){
                         
                         //Kreiram upit koji dohvaća SLJEDEĆI MINIMALNI ID povijesti bolesti za ovog pacijenta za ovu sesiju obrade
-                        $sqlSljedeciMin = "SELECT pb.idPovijestBolesti FROM povijestbolesti pb 
+                        $sqlSljedeciMin = "SELECT pb.idPovijestBolesti FROM povijest_bolesti pb 
                                         WHERE TRIM(pb.mkbSifraPrimarna) = '$poslanaMKBSifra' 
                                         AND pb.mboPacijent = '$mboPacijent' 
                                         AND pb.idObradaLijecnik = '$poslaniIDObrada' 
@@ -977,8 +977,8 @@ class DodajReceptService{
                                 $idMinPovijestBolesti = $rowSljedeciMin['idPovijestBolesti'];
                             }
                         }
-                        //Kreiram upit kojim ću unijeti ID recepta u tablicu "povijestBolesti"
-                        $sqlUpdate ="UPDATE povijestBolesti pb SET pb.idRecept = ?,pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ? 
+                        //Kreiram upit kojim ću unijeti ID recepta u tablicu "povijest_bolesti"
+                        $sqlUpdate ="UPDATE povijest_bolesti pb SET pb.idRecept = ?,pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ? 
                                     WHERE pb.idPovijestBolesti = ?";
                         //Kreiranje prepared statementa
                         $stmtUpdate = mysqli_stmt_init($conn);
@@ -1006,14 +1006,14 @@ class DodajReceptService{
                     //te da je broj sek. dijagnoza u BAZI VEĆI OD 0
                     if($brojacAzuriranihRedaka == $brojSekundarnaBaza && $brojacIteracija > $brojSekundarnaBaza && $brojSekundarnaBaza > 0){
                         //Prije nego što ubacim novi redak povijesti bolesti, dohvaćam redak koji sam ažurirao u prethodnom if uvjetu 
-                        $sqlPovijestBolesti = "SELECT * FROM povijestbolesti pb
+                        $sqlPovijestBolesti = "SELECT * FROM povijest_bolesti pb
                                             WHERE pb.idObradaLijecnik = '$poslaniIDObrada' 
                                             AND pb.mboPacijent = '$mboPacijent' 
                                             AND TRIM(pb.mkbSifraPrimarna) = '$poslanaMKBSifra' 
                                             AND pb.tipSlucaj = '$poslaniTipSlucaj' 
                                             AND pb.vrijeme = '$poslanoVrijeme'
                                             AND pb.idPovijestBolesti = 
-                                            (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
+                                            (SELECT MAX(pb2.idPovijestBolesti) FROM povijest_bolesti pb2 
                                             WHERE pb2.mboPacijent = '$mboPacijent' 
                                             AND pb2.idObradaLijecnik = '$poslaniIDObrada' 
                                             AND TRIM(pb2.mkbSifraPrimarna) = '$poslanaMKBSifra' 
@@ -1042,7 +1042,7 @@ class DodajReceptService{
                             }
                         } 
                         //Kreiram upit za spremanje prvog dijela podataka u bazu
-                        $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
+                        $sql = "INSERT INTO povijest_bolesti (razlogDolaska, anamneza, statusPacijent, 
                                 nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
                                 preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik, 
                                 vrijeme,idRecept,prosliPregled,bojaPregled,oznaka) 
@@ -1084,7 +1084,7 @@ class DodajReceptService{
                             mysqli_stmt_execute($stmt);
 
                             //Dohvaćam ID povijesti bolesti kojega sam upravo unio
-                            $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
+                            $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijest_bolesti pb");
                             //Ulazim u polje rezultata i idem redak po redak
                             while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
                                 //Dohvaćam željeni ID povijesti bolesti
@@ -1119,7 +1119,7 @@ class DodajReceptService{
                 //Ako su retci izbrisani, treba nadodati nove dijagnoze iz forme
                 else if($brisanje == true){
                     //Kreiram upit za spremanje prvog dijela podataka u bazu
-                    $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
+                    $sql = "INSERT INTO povijest_bolesti (razlogDolaska, anamneza, statusPacijent, 
                             nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
                             preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik, 
                             vrijeme,idRecept,prosliPregled,bojaPregled,oznaka) 
@@ -1161,7 +1161,7 @@ class DodajReceptService{
                         mysqli_stmt_execute($stmt);
 
                         //Dohvaćam ID povijesti bolesti kojega sam upravo unio
-                        $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
+                        $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijest_bolesti pb");
                         //Ulazim u polje rezultata i idem redak po redak
                         while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
                             //Dohvaćam željeni ID povijesti bolesti

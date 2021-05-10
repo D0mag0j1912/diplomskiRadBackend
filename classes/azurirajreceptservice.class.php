@@ -100,7 +100,7 @@ class AzurirajReceptService{
                 $imeLijek = implode(" ", $polje);
 
                 //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-                $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovnalistalijekova o 
+                $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovna_lista_lijekova o 
                                 WHERE o.oblikJacinaPakiranjeLijek = '$ojpLijek' AND o.zasticenoImeLijek = '$imeLijek'";
 
                 $resultOsnovnaLista = $conn->query($sqlOsnovnaLista);
@@ -132,7 +132,7 @@ class AzurirajReceptService{
                 $imeLijek = implode(" ", $polje);
 
                 //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-                $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovnalistalijekova o 
+                $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovna_lista_lijekova o 
                                 WHERE o.oblikJacinaPakiranjeLijek = '$ojpLijek' AND o.zasticenoImeLijek = '$imeLijek'";
 
                 $resultOsnovnaLista = $conn->query($sqlOsnovnaLista);
@@ -164,7 +164,7 @@ class AzurirajReceptService{
                 $imeLijek = implode(" ", $polje);
 
                 //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-                $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunskalistalijekova d 
+                $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunska_lista_lijekova d 
                                 WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' AND d.zasticenoImeLijek = '$imeLijek'";
 
                 $resultDopunskaLista = $conn->query($sqlDopunskaLista);
@@ -196,7 +196,7 @@ class AzurirajReceptService{
                 $imeLijek = implode(" ", $polje);
 
                 //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-                $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunskalistalijekova d 
+                $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunska_lista_lijekova d 
                                 WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' AND d.zasticenoImeLijek = '$imeLijek'";
 
                 $resultDopunskaLista = $conn->query($sqlDopunskaLista);
@@ -295,7 +295,7 @@ class AzurirajReceptService{
                 }
 
                 //Kreiram upit za ažuriranje povijesti bolesti
-                $sqlPovijestBolesti = "UPDATE povijestBolesti pb SET pb.mkbSifraPrimarna = ?
+                $sqlPovijestBolesti = "UPDATE povijest_bolesti pb SET pb.mkbSifraPrimarna = ?
                                     WHERE pb.idRecept = ?";
                 //Kreiranje prepared statementa
                 $stmtPovijestBolesti = mysqli_stmt_init($conn);
@@ -350,7 +350,7 @@ class AzurirajReceptService{
                 while($rowRecept  = $resultRecept->fetch_assoc()) {
                     $idRecept = $rowRecept['idRecept'];
                     //Prije nego što izbrišem redak povijesti bolesti, dohvaćam ga
-                    $sqlSelectPov = "SELECT * FROM povijestbolesti 
+                    $sqlSelectPov = "SELECT * FROM povijest_bolesti 
                                     WHERE idRecept = '$idRecept'";
                     $resultSelectPov  = $conn->query($sqlSelectPov);
 
@@ -376,7 +376,7 @@ class AzurirajReceptService{
                         }
                     } 
                     //Kreiram upit koji briše sve retke iz povijesti bolesti
-                    $sqlDeletePov = "DELETE FROM povijestBolesti 
+                    $sqlDeletePov = "DELETE FROM povijest_bolesti 
                                     WHERE idRecept = ?"; 
                     //Kreiranje prepared statementa
                     $stmtDeletePov = mysqli_stmt_init($conn);
@@ -455,7 +455,7 @@ class AzurirajReceptService{
                         $maxIDrecept = $rowMaxIDrecept['ID'];
                     } 
                     //Kreiram upit za dodavanje novog recepta u bazu
-                    $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
+                    $sql = "INSERT INTO povijest_bolesti (razlogDolaska, anamneza, statusPacijent, 
                                                         nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
                                                         preporukaLijecnik, napomena, datum, narucen, mboPacijent, 
                                                         idObradaLijecnik,vrijeme,idRecept,prosliPregled,bojaPregled,oznaka) 
@@ -496,7 +496,7 @@ class AzurirajReceptService{
                         mysqli_stmt_execute($stmt);
 
                         //Dohvaćam ID povijesti bolesti kojega sam upravo unio
-                        $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
+                        $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijest_bolesti pb");
                         //Ulazim u polje rezultata i idem redak po redak
                         while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
                             //Dohvaćam željeni ID povijesti bolesti
@@ -589,7 +589,7 @@ class AzurirajReceptService{
                 while($rowRecept  = $resultRecept->fetch_assoc()) {
                     $idRecept = $rowRecept['idRecept'];
                     //Prije nego što izbrišem redak povijesti bolesti, dohvaćam ga
-                    $sqlSelectPov = "SELECT * FROM povijestbolesti 
+                    $sqlSelectPov = "SELECT * FROM povijest_bolesti 
                                     WHERE idRecept = '$idRecept'";
                     $resultSelectPov = $conn->query($sqlSelectPov);
 
@@ -615,7 +615,7 @@ class AzurirajReceptService{
                         }
                     } 
                     //Kreiram upit koji briše sve retke iz povijesti bolesti
-                    $sqlDeletePov = "DELETE FROM povijestBolesti 
+                    $sqlDeletePov = "DELETE FROM povijest_bolesti 
                                     WHERE idRecept = ?"; 
                     //Kreiranje prepared statementa
                     $stmtDeletePov = mysqli_stmt_init($conn);
@@ -706,7 +706,7 @@ class AzurirajReceptService{
                     $imeLijek = implode(" ", $polje);
 
                     //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-                    $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovnalistalijekova o 
+                    $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovna_lista_lijekova o 
                             WHERE o.oblikJacinaPakiranjeLijek = '$ojpLijek' AND o.zasticenoImeLijek = '$imeLijek'";
 
                     $resultOsnovnaLista = $conn->query($sqlOsnovnaLista);
@@ -738,7 +738,7 @@ class AzurirajReceptService{
                     $imeLijek = implode(" ", $polje);
 
                     //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-                    $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovnalistalijekova o 
+                    $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovna_lista_lijekova o 
                             WHERE o.oblikJacinaPakiranjeLijek = '$ojpLijek' AND o.zasticenoImeLijek = '$imeLijek'";
 
                     $resultOsnovnaLista = $conn->query($sqlOsnovnaLista);
@@ -770,7 +770,7 @@ class AzurirajReceptService{
                     $imeLijek = implode(" ", $polje);
 
                     //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-                    $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunskalistalijekova d 
+                    $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunska_lista_lijekova d 
                             WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' AND d.zasticenoImeLijek = '$imeLijek'";
 
                     $resultDopunskaLista = $conn->query($sqlDopunskaLista);
@@ -802,7 +802,7 @@ class AzurirajReceptService{
                     $imeLijek = implode(" ", $polje);
 
                     //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-                    $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunskalistalijekova d 
+                    $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunska_lista_lijekova d 
                                         WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' AND d.zasticenoImeLijek = '$imeLijek'";
 
                     $resultDopunskaLista = $conn->query($sqlDopunskaLista);
@@ -902,7 +902,7 @@ class AzurirajReceptService{
                     }
 
                     //Kreiram upit za ažuriranje povijesti bolesti
-                    $sqlPovijestBolesti = "UPDATE povijestBolesti pb SET pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?
+                    $sqlPovijestBolesti = "UPDATE povijest_bolesti pb SET pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?
                                         WHERE pb.idRecept = ?";
                     //Kreiranje prepared statementa
                     $stmtPovijestBolesti = mysqli_stmt_init($conn);
@@ -983,7 +983,7 @@ class AzurirajReceptService{
                             }
                         }
                         //Prije nego što izbrišem redak povijesti bolesti, dohvaćam ga
-                        $sqlSelectPov = "SELECT * FROM povijestbolesti 
+                        $sqlSelectPov = "SELECT * FROM povijest_bolesti 
                                         WHERE idRecept = '$idRecept'";
                         $resultSelectPov = $conn->query($sqlSelectPov);
 
@@ -1009,7 +1009,7 @@ class AzurirajReceptService{
                             }
                         } 
                         //Kreiram upit za ažuriranje povijesti bolesti
-                        $sqlPovijestBolesti = "UPDATE povijestBolesti pb SET pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?
+                        $sqlPovijestBolesti = "UPDATE povijest_bolesti pb SET pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?
                                             WHERE pb.idRecept = ?";
                         //Kreiranje prepared statementa
                         $stmtPovijestBolesti = mysqli_stmt_init($conn);
@@ -1078,7 +1078,7 @@ class AzurirajReceptService{
                             $maxIDrecept = $rowMaxIDrecept['ID'];
                         } 
                         //Kreiram upit za dodavanje novog recepta u bazu
-                        $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
+                        $sql = "INSERT INTO povijest_bolesti (razlogDolaska, anamneza, statusPacijent, 
                                                     nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
                                                     preporukaLijecnik, napomena, datum, narucen, mboPacijent, 
                                                     idObradaLijecnik,vrijeme,idRecept,prosliPregled,bojaPregled,oznaka) 
@@ -1118,7 +1118,7 @@ class AzurirajReceptService{
                             mysqli_stmt_execute($stmt);
 
                             //Dohvaćam ID povijesti bolesti kojega sam upravo unio
-                            $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
+                            $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijest_bolesti pb");
                             //Ulazim u polje rezultata i idem redak po redak
                             while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
                                 //Dohvaćam željeni ID povijesti bolesti
@@ -1171,7 +1171,7 @@ class AzurirajReceptService{
                         mysqli_stmt_execute($stmt);
 
                         //Kreiram upit za ažuriranje povijesti bolesti
-                        $sqlPovijestBolesti = "UPDATE povijestBolesti pb SET pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ? 
+                        $sqlPovijestBolesti = "UPDATE povijest_bolesti pb SET pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ? 
                                             WHERE pb.idRecept = ?";
                         //Kreiranje prepared statementa
                         $stmtPovijestBolesti = mysqli_stmt_init($conn);
@@ -1206,7 +1206,7 @@ class AzurirajReceptService{
                                 mysqli_stmt_execute($stmtUpdateUsluge);
 
                                 //Prije nego što izbrišem redak povijesti bolesti, dohvaćam ga
-                                $sqlSelectPov = "SELECT * FROM povijestbolesti 
+                                $sqlSelectPov = "SELECT * FROM povijest_bolesti
                                                 WHERE idRecept = '$idMinRecept'";
                                 $resultSelectPov = $conn->query($sqlSelectPov);
 
@@ -1285,7 +1285,7 @@ class AzurirajReceptService{
                         //Izvršavanje statementa
                         mysqli_stmt_execute($stmtUpdate);
                         //Kreiram upit za ažuriranje povijesti bolesti
-                        $sqlPovijestBolesti = "UPDATE povijestBolesti pb SET pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?
+                        $sqlPovijestBolesti = "UPDATE povijest_bolesti pb SET pb.mkbSifraPrimarna = ?, pb.mkbSifraSekundarna = ?
                                             WHERE pb.idRecept = ?";
                         //Kreiranje prepared statementa
                         $stmtPovijestBolesti = mysqli_stmt_init($conn);
@@ -1303,7 +1303,7 @@ class AzurirajReceptService{
                             $response["success"] = "true";
                             $response["message"] = "Recept uspješno ažuriran!";
                             //Prije nego što izbrišem redak povijesti bolesti, dohvaćam ga
-                            $sqlSelectPov = "SELECT * FROM povijestbolesti 
+                            $sqlSelectPov = "SELECT * FROM povijest_bolesti 
                                             WHERE idRecept = '$idMinRecept'";
                             $resultSelectPov = $conn->query($sqlSelectPov);
 
@@ -1363,7 +1363,7 @@ class AzurirajReceptService{
                             $maxIDrecept = $rowMaxIDrecept['ID'];
                         } 
                         //Kreiram upit za dodavanje novog recepta u bazu
-                        $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
+                        $sql = "INSERT INTO povijest_bolesti (razlogDolaska, anamneza, statusPacijent, 
                                                     nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
                                                     preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik, 
                                                     vrijeme,idRecept,prosliPregled,bojaPregled,oznaka) 
@@ -1403,7 +1403,7 @@ class AzurirajReceptService{
                             mysqli_stmt_execute($stmt);
 
                             //Dohvaćam ID povijesti bolesti kojega sam upravo unio
-                            $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
+                            $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijest_bolesti pb");
                             //Ulazim u polje rezultata i idem redak po redak
                             while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
                                 //Dohvaćam željeni ID povijesti bolesti
@@ -1488,7 +1488,7 @@ class AzurirajReceptService{
                         }
                     }
                     //Kreiram upit za dodavanje novog recepta u bazu
-                    $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
+                    $sql = "INSERT INTO povijest_bolesti (razlogDolaska, anamneza, statusPacijent, 
                                                 nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
                                                 preporukaLijecnik, napomena, datum, narucen, mboPacijent, 
                                                 idObradaLijecnik,vrijeme,idRecept,prosliPregled,bojaPregled,oznaka) 
@@ -1528,7 +1528,7 @@ class AzurirajReceptService{
                         mysqli_stmt_execute($stmt);
 
                         //Dohvaćam ID povijesti bolesti kojega sam upravo unio
-                        $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
+                        $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijest_bolesti pb");
                         //Ulazim u polje rezultata i idem redak po redak
                         while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
                             //Dohvaćam željeni ID povijesti bolesti

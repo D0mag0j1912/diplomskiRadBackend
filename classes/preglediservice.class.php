@@ -16,10 +16,10 @@ class PreglediService{
         //Ako je tip korisnika "lijecnik":
         if($tipKorisnik == "lijecnik"){
             //Kreiram upit koji dohvaća najnoviji datum povijesti bolesti
-            $sql = "SELECT pb.datum FROM povijestBolesti pb 
+            $sql = "SELECT pb.datum FROM povijest_bolesti pb 
                     WHERE pb.mboPacijent = '$mboPacijent' 
                     AND pb.idPovijestBolesti = 
-                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
+                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijest_bolesti pb2 
                     WHERE pb2.mboPacijent = '$mboPacijent')"; 
             //Rezultat upita spremam u varijablu $result
             $result = mysqli_query($conn,$sql);

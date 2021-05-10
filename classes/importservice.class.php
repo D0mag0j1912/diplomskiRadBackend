@@ -141,7 +141,7 @@ class ImportService{
 
         //Kreiram prazno polje odgovora
         $response = []; 
-        $sql = "SELECT DISTINCT(nazivMagPripravak) AS nazivMagPripravak FROM dopunskaListaMagistralnihPripravaka";
+        $sql = "SELECT DISTINCT(nazivMagPripravak) AS nazivMagPripravak FROM dopunska_lista_magistralnih_pripravaka";
 
         $result = $conn->query($sql);
 
@@ -162,7 +162,7 @@ class ImportService{
 
         //Kreiram prazno polje odgovora
         $response = []; 
-        $sql = "SELECT * FROM osnovnaListaMagistralnihPripravaka 
+        $sql = "SELECT * FROM osnovna_lista_magistralnih_pripravaka 
                 WHERE oznakaMagPripravak IS NOT NULL";
 
         $result = $conn->query($sql);
@@ -184,7 +184,7 @@ class ImportService{
 
         //Kreiram prazno polje odgovora
         $response = []; 
-        $sql = "SELECT * FROM dopunskaListaLijekova 
+        $sql = "SELECT * FROM dopunska_lista_lijekova 
                 WHERE zasticenoImeLijek IS NOT NULL 
                 AND oblikJacinaPakiranjeLijek IS NOT NULL 
                 AND dddLijek IS NOT NULL 
@@ -209,7 +209,7 @@ class ImportService{
 
         //Kreiram prazno polje odgovora
         $response = []; 
-        $sql = "SELECT * FROM osnovnaListaLijekova 
+        $sql = "SELECT * FROM osnovna_lista_lijekova 
                 WHERE zasticenoImeLijek IS NOT NULL 
                 AND oblikJacinaPakiranjeLijek IS NOT NULL 
                 AND dddLijek IS NOT NULL 

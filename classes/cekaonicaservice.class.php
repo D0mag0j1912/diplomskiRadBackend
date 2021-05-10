@@ -18,7 +18,7 @@ class CekaonicaService{
         $sql = "SELECT IF(pb.mkbSifraSekundarna IS NULL, NULL, 
                 CONCAT((SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
                         WHERE d.mkbSifra = pb.mkbSifraSekundarna),' [',TRIM(pb.mkbSifraSekundarna),']')) AS sekundarneDijagnoze, 
-                DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,pb.vrijeme,pb.tipSlucaj FROM povijestbolesti pb 
+                DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,pb.vrijeme,pb.tipSlucaj FROM povijest_bolesti pb 
                 WHERE pb.datum = '$datum' 
                 AND pb.vrijeme = '$vrijeme' 
                 AND pb.tipSlucaj = '$tipSlucaj' 
@@ -80,16 +80,16 @@ class CekaonicaService{
                 CASE
                     WHEN pb.idUputnica IS NOT NULL THEN (SELECT ROUND(ul.iznosUsluga,2) FROM usluge_lijecnik ul
                                                     WHERE ul.idUputnica IN 
-                                                    (SELECT MIN(pb2.idUputnica) FROM povijestbolesti pb2 
-                                                    WHERE pb2.oznaka = (SELECT pb3.oznaka FROM povijestbolesti pb3 
+                                                    (SELECT MIN(pb2.idUputnica) FROM povijest_bolesti pb2 
+                                                    WHERE pb2.oznaka = (SELECT pb3.oznaka FROM povijest_bolesti pb3 
                                                                     WHERE pb3.idUputnica = pb.idUputnica)))
                     WHEN pb.idUputnica IS NULL THEN NULL
                 END AS iznosUputnica,
                 CASE 
                     WHEN pb.idRecept IS NOT NULL THEN (SELECT ROUND(ul.iznosUsluga,2) FROM usluge_lijecnik ul 
                                                     WHERE ul.idRecept IN 
-                                                    (SELECT MIN(pb2.idRecept) FROM povijestbolesti pb2 
-                                                    WHERE pb2.oznaka = (SELECT pb3.oznaka FROM povijestbolesti pb3 
+                                                    (SELECT MIN(pb2.idRecept) FROM povijest_bolesti pb2 
+                                                    WHERE pb2.oznaka = (SELECT pb3.oznaka FROM povijest_bolesti pb3 
                                                                     WHERE pb3.idRecept = pb.idRecept)))
                     WHEN pb.idRecept IS NULL THEN NULL
                 END AS iznosRecept,
@@ -123,7 +123,7 @@ class CekaonicaService{
                     WHEN u.napomena IS NOT NULL THEN u.napomena
                     WHEN u.napomena IS NULL THEN NULL
                 END AS napomena
-                FROM povijestbolesti pb 
+                FROM povijest_bolesti pb 
                 LEFT JOIN recept r ON r.idRecept = pb.idRecept 
                 LEFT JOIN uputnica u ON u.idUputnica = pb.idUputnica
                 LEFT JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
@@ -204,7 +204,7 @@ class CekaonicaService{
                                                         WHERE ul2.idObradaLijecnik = '$idObrada' 
                                                         AND ul2.idUputnica = ul.idUputnica 
                                                         AND ul2.idUputnica IN 
-                                                        (SELECT pb.idUputnica FROM povijestbolesti pb 
+                                                        (SELECT pb.idUputnica FROM povijest_bolesti pb 
                                                         WHERE pb.mboPacijent IN 
                                                         (SELECT p.mboPacijent FROM pacijent p 
                                                         WHERE p.idPacijent = ol.idPacijent)))
@@ -212,7 +212,7 @@ class CekaonicaService{
                                                     WHERE ul2.idObradaLijecnik = '$idObrada' 
                                                     AND ul2.idRecept = ul.idRecept 
                                                     AND ul2.idRecept IN 
-                                                    (SELECT pb.idRecept FROM povijestbolesti pb 
+                                                    (SELECT pb.idRecept FROM povijest_bolesti pb 
                                                     WHERE pb.mboPacijent IN 
                                                     (SELECT p.mboPacijent FROM pacijent p 
                                                     WHERE p.idPacijent = ol.idPacijent)))

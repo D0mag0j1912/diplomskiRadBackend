@@ -16,7 +16,7 @@ class PreglediListService{
         //Ako je tip korisnika "lijecnik":
         if($tipKorisnik == "lijecnik"){
             foreach($ids as $idPregled){
-                $sql = "SELECT * FROM povijestBolesti pb 
+                $sql = "SELECT * FROM povijest_bolesti pb 
                         WHERE pb.idPovijestBolesti = '$idPregled'";
                 //Rezultat upita spremam u varijablu $result
                 $result = mysqli_query($conn,$sql);
@@ -31,7 +31,7 @@ class PreglediListService{
                         $mboPacijent = $row['mboPacijent'];
                         $tipSlucaj = $row['tipSlucaj'];
                         //Kreiram upit koji dohvaća sve ID-ove pregleda koji se nalaze u grupaciji trenutnog ID-a pregleda, ne uključujući njega npr. [505] ako je 504 trenutni ID
-                        $sqlIDS = "SELECT pb.idPovijestBolesti FROM povijestBolesti pb 
+                        $sqlIDS = "SELECT pb.idPovijestBolesti FROM povijest_bolesti pb 
                                     WHERE TRIM(pb.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                     AND pb.idObradaLijecnik = '$idObradaLijecnik'
                                     AND pb.datum = '$datum' 
@@ -46,7 +46,7 @@ class PreglediListService{
                             //Idem redak po redak rezultata upita 
                             while($rowIDS = mysqli_fetch_assoc($resultIDS)){
                                 //Kreiram upit koji dohvaća MAX ID pregleda grupacije pregleda koji se trenutno gleda
-                                $sqlMAX = "SELECT pb.idPovijestBolesti FROM povijestBolesti pb 
+                                $sqlMAX = "SELECT pb.idPovijestBolesti FROM povijest_bolesti pb 
                                         WHERE TRIM(pb.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                         AND pb.idObradaLijecnik = '$idObradaLijecnik'
                                         AND pb.datum = '$datum' 
@@ -54,7 +54,7 @@ class PreglediListService{
                                         AND pb.mboPacijent = '$mboPacijent' 
                                         AND pb.tipSlucaj = '$tipSlucaj' 
                                         AND pb.idPovijestBolesti = 
-                                        (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
+                                        (SELECT MAX(pb2.idPovijestBolesti) FROM povijest_bolesti pb2 
                                         WHERE TRIM(pb2.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                                         AND pb2.idObradaLijecnik = '$idObradaLijecnik'
                                         AND pb2.datum = '$datum' 
@@ -164,77 +164,77 @@ class PreglediListService{
             $sql = "(SELECT pb.idPovijestBolesti, DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum, 
                     pb.tipSlucaj, pb.vrijeme, pb.bojaPregled, 
                     CASE 
-                        WHEN pb.tipSlucaj = '$noviSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                        WHEN pb.tipSlucaj = '$noviSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                             WHERE pb2.idPovijestBolesti IN 
-                                                            (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                            (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                             WHERE pb3.prosliPregled = pb.idPovijestBolesti 
                                                             GROUP BY pb3.prosliPregled)
                                                             LIMIT 1) 
-                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                         WHERE pb2.idPovijestBolesti IN 
-                                                        (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                        (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                         WHERE pb3.prosliPregled = pb.idPovijestBolesti 
                                                         GROUP BY pb3.prosliPregled)
                                                         LIMIT 1)
                     END AS sljedeciPregled,
                     CASE 
-                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                                 WHERE pb2.tipSlucaj = '$noviSlucaj' 
                                                                 AND pb2.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                                 WHERE pb3.tipSlucaj = '$noviSlucaj' 
                                                                 AND pb3.idPovijestBolesti = pb.prosliPregled 
                                                                 GROUP BY pb3.prosliPregled)
                                                                 LIMIT 1)
                     END AS prethodniNoviSlucaj,
                     CASE 
-                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                                 WHERE pb2.tipSlucaj = '$povezanSlucaj' 
                                                                 AND pb2.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                                 WHERE pb3.tipSlucaj = '$povezanSlucaj' 
                                                                 AND pb3.idPovijestBolesti = pb.prosliPregled 
                                                                 GROUP BY pb3.prosliPregled)
                                                                 LIMIT 1)
-                    END AS prethodniPovezanSlucaj FROM povijestBolesti pb 
+                    END AS prethodniPovezanSlucaj FROM povijest_bolesti pb 
                     WHERE pb.idPovijestBolesti = '$idPregled') 
                     UNION 
                     (SELECT pb2.idPovijestBolesti, DATE_FORMAT(pb2.datum,'%d.%m.%Y') AS Datum, 
                     pb2.tipSlucaj, pb2.vrijeme, pb2.bojaPregled, 
                     CASE 
-                        WHEN pb2.tipSlucaj = '$noviSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijestbolesti pb3 
+                        WHEN pb2.tipSlucaj = '$noviSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijest_bolesti pb3 
                                                             WHERE pb3.idPovijestBolesti IN 
-                                                            (SELECT MAX(pb4.idPovijestBolesti) FROM povijestbolesti pb4 
+                                                            (SELECT MAX(pb4.idPovijestBolesti) FROM povijest_bolesti pb4 
                                                             WHERE pb4.prosliPregled = pb2.idPovijestBolesti 
                                                             GROUP BY pb4.prosliPregled)
                                                             LIMIT 1)
-                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijestbolesti pb3 
+                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijest_bolesti pb3 
                                                                 WHERE pb3.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijestbolesti pb4 
+                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijest_bolesti pb4 
                                                                 WHERE pb4.prosliPregled = pb2.idPovijestBolesti 
                                                                 GROUP BY pb4.prosliPregled) 
                                                                 LIMIT 1)
                     END AS sljedeciPregled,
                     CASE 
-                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijestbolesti pb3 
+                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijest_bolesti pb3 
                                                                 WHERE pb3.tipSlucaj = '$noviSlucaj' 
                                                                 AND pb3.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijestbolesti pb4 
+                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijest_bolesti pb4 
                                                                 WHERE pb4.tipSlucaj = '$noviSlucaj' 
                                                                 AND pb4.idPovijestBolesti = pb2.prosliPregled 
                                                                 GROUP BY pb4.prosliPregled)
                                                                 LIMIT 1)
                     END AS prethodniNoviSlucaj,
                     CASE 
-                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijestbolesti pb3 
+                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijest_bolesti pb3 
                                                                 WHERE pb3.tipSlucaj = '$povezanSlucaj' 
                                                                 AND pb3.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijestbolesti pb4 
+                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijest_bolesti pb4 
                                                                 WHERE pb4.tipSlucaj = '$povezanSlucaj' 
                                                                 AND pb4.idPovijestBolesti = pb2.prosliPregled 
                                                                 GROUP BY pb4.prosliPregled)
                                                                 LIMIT 1)
-                    END AS prethodniPovezanSlucaj FROM povijestBolesti pb2 
+                    END AS prethodniPovezanSlucaj FROM povijest_bolesti pb2 
                     WHERE pb2.idPovijestBolesti = '$idPregled')";
             //Rezultat upita spremam u varijablu $result
             $result = mysqli_query($conn,$sql);
@@ -356,43 +356,43 @@ class PreglediListService{
                 $sql = "(SELECT pb.idPovijestBolesti, DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum, 
                         pb.tipSlucaj, pb.vrijeme, pb.bojaPregled, 
                         CASE 
-                            WHEN pb.tipSlucaj = '$noviSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                            WHEN pb.tipSlucaj = '$noviSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                                 WHERE pb2.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                                 WHERE pb3.prosliPregled = pb.idPovijestBolesti 
                                                                 GROUP BY pb3.prosliPregled)
                                                                 LIMIT 1) 
-                            WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                            WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                                     WHERE pb2.idPovijestBolesti IN 
-                                                                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                                     WHERE pb3.prosliPregled = pb.idPovijestBolesti 
                                                                     GROUP BY pb3.prosliPregled)
                                                                     LIMIT 1)
                         END AS sljedeciPregled,
                         CASE 
-                            WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                            WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                                     WHERE pb2.tipSlucaj = '$noviSlucaj' 
                                                                     AND pb2.idPovijestBolesti IN 
-                                                                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                                     WHERE pb3.tipSlucaj = '$noviSlucaj' 
                                                                     AND pb3.idPovijestBolesti = pb.prosliPregled 
                                                                     GROUP BY pb3.prosliPregled)
                                                                     LIMIT 1)
                         END AS prethodniNoviSlucaj,
                         CASE 
-                            WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                            WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                                     WHERE pb2.tipSlucaj = '$povezanSlucaj' 
                                                                     AND pb2.idPovijestBolesti IN 
-                                                                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                                     WHERE pb3.tipSlucaj = '$povezanSlucaj' 
                                                                     AND pb3.idPovijestBolesti = pb.prosliPregled 
                                                                     GROUP BY pb3.prosliPregled)
                                                                     LIMIT 1)
-                        END AS prethodniPovezanSlucaj FROM povijestBolesti pb 
+                        END AS prethodniPovezanSlucaj FROM povijest_bolesti pb 
                         WHERE pb.mboPacijent = '$mboPacijent' 
                         AND pb.prosliPregled IS NOT NULL
                         AND pb.idPovijestBolesti IN 
-                        (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
+                        (SELECT MAX(pb2.idPovijestBolesti) FROM povijest_bolesti pb2 
                         WHERE pb2.mboPacijent = '$mboPacijent' 
                         AND pb2.prosliPregled IS NOT NULL 
                         GROUP BY pb2.prosliPregled)
@@ -402,43 +402,43 @@ class PreglediListService{
                         (SELECT pb2.idPovijestBolesti, DATE_FORMAT(pb2.datum,'%d.%m.%Y') AS Datum, 
                         pb2.tipSlucaj, pb2.vrijeme, pb2.bojaPregled, 
                         CASE 
-                            WHEN pb2.tipSlucaj = '$noviSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijestbolesti pb3 
+                            WHEN pb2.tipSlucaj = '$noviSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijest_bolesti pb3 
                                                                 WHERE pb3.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijestbolesti pb4 
+                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijest_bolesti pb4 
                                                                 WHERE pb4.prosliPregled = pb2.idPovijestBolesti 
                                                                 GROUP BY pb4.prosliPregled)
                                                                 LIMIT 1)
-                            WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijestbolesti pb3 
+                            WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijest_bolesti pb3 
                                                                     WHERE pb3.idPovijestBolesti IN 
-                                                                    (SELECT MAX(pb4.idPovijestBolesti) FROM povijestbolesti pb4 
+                                                                    (SELECT MAX(pb4.idPovijestBolesti) FROM povijest_bolesti pb4 
                                                                     WHERE pb4.prosliPregled = pb2.idPovijestBolesti 
                                                                     GROUP BY pb4.prosliPregled) 
                                                                     LIMIT 1)
                         END AS sljedeciPregled,
                         CASE 
-                            WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijestbolesti pb3 
+                            WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijest_bolesti pb3 
                                                                     WHERE pb3.tipSlucaj = '$noviSlucaj' 
                                                                     AND pb3.idPovijestBolesti IN 
-                                                                    (SELECT MAX(pb4.idPovijestBolesti) FROM povijestbolesti pb4 
+                                                                    (SELECT MAX(pb4.idPovijestBolesti) FROM povijest_bolesti pb4 
                                                                     WHERE pb4.tipSlucaj = '$noviSlucaj' 
                                                                     AND pb4.idPovijestBolesti = pb2.prosliPregled 
                                                                     GROUP BY pb4.prosliPregled)
                                                                     LIMIT 1)
                         END AS prethodniNoviSlucaj,
                         CASE 
-                            WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijestbolesti pb3 
+                            WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijest_bolesti pb3 
                                                                     WHERE pb3.tipSlucaj = '$povezanSlucaj' 
                                                                     AND pb3.idPovijestBolesti IN 
-                                                                    (SELECT MAX(pb4.idPovijestBolesti) FROM povijestbolesti pb4 
+                                                                    (SELECT MAX(pb4.idPovijestBolesti) FROM povijest_bolesti pb4 
                                                                     WHERE pb4.tipSlucaj = '$povezanSlucaj' 
                                                                     AND pb4.idPovijestBolesti = pb2.prosliPregled 
                                                                     GROUP BY pb4.prosliPregled)
                                                                     LIMIT 1)
-                        END AS prethodniPovezanSlucaj FROM povijestBolesti pb2 
+                        END AS prethodniPovezanSlucaj FROM povijest_bolesti pb2 
                         WHERE pb2.mboPacijent = '$mboPacijent' 
                         AND pb2.prosliPregled IS NULL 
                         AND pb2.idPovijestBolesti IN 
-                        (SELECT MAX(pb3.idPovijestBolesti) FROM povijestBolesti pb3 
+                        (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                         WHERE pb3.mboPacijent = '$mboPacijent' 
                         AND pb3.prosliPregled IS NULL 
                         GROUP BY pb3.oznaka)
@@ -464,39 +464,39 @@ class PreglediListService{
                 $sql = "SELECT pb.idPovijestBolesti, DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum, 
                         pb.tipSlucaj, pb.vrijeme, pb.bojaPregled, 
                         CASE 
-                            WHEN pb.tipSlucaj = '$noviSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                            WHEN pb.tipSlucaj = '$noviSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                                 WHERE pb2.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                                 WHERE pb3.prosliPregled = pb.idPovijestBolesti 
                                                                 GROUP BY pb3.prosliPregled) 
                                                                 LIMIT 1) 
-                            WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                            WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                                     WHERE pb2.idPovijestBolesti IN 
-                                                                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                                     WHERE pb3.prosliPregled = pb.idPovijestBolesti 
                                                                     GROUP BY pb3.prosliPregled) 
                                                                     LIMIT 1)
                         END AS sljedeciPregled,
                         CASE 
-                            WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                            WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                                     WHERE pb2.tipSlucaj = '$noviSlucaj' 
                                                                     AND pb2.idPovijestBolesti IN 
-                                                                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                                     WHERE pb3.tipSlucaj = '$noviSlucaj' 
                                                                     AND pb3.idPovijestBolesti = pb.prosliPregled 
                                                                     GROUP BY pb3.prosliPregled)
                                                                     LIMIT 1)
                         END AS prethodniNoviSlucaj,
                         CASE 
-                            WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                            WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                                     WHERE pb2.tipSlucaj = '$povezanSlucaj' 
                                                                     AND pb2.idPovijestBolesti IN 
-                                                                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                                     WHERE pb3.tipSlucaj = '$povezanSlucaj' 
                                                                     AND pb3.idPovijestBolesti = pb.prosliPregled 
                                                                     GROUP BY pb3.prosliPregled)
                                                                     LIMIT 1)
-                        END AS prethodniPovezanSlucaj FROM povijestBolesti pb 
+                        END AS prethodniPovezanSlucaj FROM povijest_bolesti pb 
                         LEFT JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                         LEFT JOIN dijagnoze d2 ON d2.mkbSifra = pb.mkbSifraSekundarna
                         WHERE pb.mboPacijent = '$mboPacijent'
@@ -733,44 +733,44 @@ class PreglediListService{
             $sql = "(SELECT pb.idPovijestBolesti, DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum, 
                     pb.tipSlucaj, pb.vrijeme, pb.bojaPregled, 
                     CASE 
-                        WHEN pb.tipSlucaj = '$noviSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                        WHEN pb.tipSlucaj = '$noviSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                             WHERE pb2.idPovijestBolesti IN 
-                                                            (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                            (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                             WHERE pb3.prosliPregled = pb.idPovijestBolesti 
                                                             GROUP BY pb3.prosliPregled)
                                                             LIMIT 1) 
-                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                                 WHERE pb2.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                                 WHERE pb3.prosliPregled = pb.idPovijestBolesti 
                                                                 GROUP BY pb3.prosliPregled)
                                                                 LIMIT 1)
                     END AS sljedeciPregled,
                     CASE 
-                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                                 WHERE pb2.tipSlucaj = '$noviSlucaj' 
                                                                 AND pb2.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                                 WHERE pb3.tipSlucaj = '$noviSlucaj' 
                                                                 AND pb3.idPovijestBolesti = pb.prosliPregled 
                                                                 GROUP BY pb3.prosliPregled)
                                                                 LIMIT 1)
                     END AS prethodniNoviSlucaj,
                     CASE 
-                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                                 WHERE pb2.tipSlucaj = '$povezanSlucaj' 
                                                                 AND pb2.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                                 WHERE pb3.tipSlucaj = '$povezanSlucaj' 
                                                                 AND pb3.idPovijestBolesti = pb.prosliPregled 
                                                                 GROUP BY pb3.prosliPregled)
                                                                 LIMIT 1)
-                    END AS prethodniPovezanSlucaj FROM povijestBolesti pb 
+                    END AS prethodniPovezanSlucaj FROM povijest_bolesti pb 
                     WHERE pb.mboPacijent = '$mboPacijent' 
                     AND pb.datum = '$datum'
                     AND pb.prosliPregled IS NOT NULL
                     AND pb.idPovijestBolesti IN 
-                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
+                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijest_bolesti pb2 
                     WHERE pb2.mboPacijent = '$mboPacijent' 
                     AND pb2.datum = '$datum'
                     AND pb2.prosliPregled IS NOT NULL 
@@ -781,44 +781,44 @@ class PreglediListService{
                     (SELECT pb2.idPovijestBolesti, DATE_FORMAT(pb2.datum,'%d.%m.%Y') AS Datum, 
                     pb2.tipSlucaj, pb2.vrijeme, pb2.bojaPregled, 
                     CASE 
-                        WHEN pb2.tipSlucaj = '$noviSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijestbolesti pb3 
+                        WHEN pb2.tipSlucaj = '$noviSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijest_bolesti pb3 
                                                             WHERE pb3.idPovijestBolesti IN 
-                                                            (SELECT MAX(pb4.idPovijestBolesti) FROM povijestbolesti pb4 
+                                                            (SELECT MAX(pb4.idPovijestBolesti) FROM povijest_bolesti pb4 
                                                             WHERE pb4.prosliPregled = pb2.idPovijestBolesti 
                                                             GROUP BY pb4.prosliPregled)
                                                             LIMIT 1)
-                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijestbolesti pb3 
+                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijest_bolesti pb3 
                                                                 WHERE pb3.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijestbolesti pb4 
+                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijest_bolesti pb4 
                                                                 WHERE pb4.prosliPregled = pb2.idPovijestBolesti 
                                                                 GROUP BY pb4.prosliPregled) 
                                                                 LIMIT 1)
                     END AS sljedeciPregled,
                     CASE 
-                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijestbolesti pb3 
+                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijest_bolesti pb3 
                                                                 WHERE pb3.tipSlucaj = '$noviSlucaj' 
                                                                 AND pb3.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijestbolesti pb4 
+                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijest_bolesti pb4 
                                                                 WHERE pb4.tipSlucaj = '$noviSlucaj' 
                                                                 AND pb4.idPovijestBolesti = pb2.prosliPregled 
                                                                 GROUP BY pb4.prosliPregled)
                                                                 LIMIT 1)
                     END AS prethodniNoviSlucaj,
                     CASE 
-                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijestbolesti pb3 
+                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijest_bolesti pb3 
                                                                 WHERE pb3.tipSlucaj = '$povezanSlucaj' 
                                                                 AND pb3.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijestbolesti pb4 
+                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijest_bolesti pb4 
                                                                 WHERE pb4.tipSlucaj = '$povezanSlucaj' 
                                                                 AND pb4.idPovijestBolesti = pb2.prosliPregled 
                                                                 GROUP BY pb4.prosliPregled)
                                                                 LIMIT 1)
-                    END AS prethodniPovezanSlucaj FROM povijestBolesti pb2 
+                    END AS prethodniPovezanSlucaj FROM povijest_bolesti pb2 
                     WHERE pb2.mboPacijent = '$mboPacijent' 
                     AND pb2.datum = '$datum'
                     AND pb2.prosliPregled IS NULL 
                     AND pb2.idPovijestBolesti IN 
-                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijestBolesti pb3 
+                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                     WHERE pb3.mboPacijent = '$mboPacijent' 
                     AND pb3.datum = '$datum'
                     AND pb3.prosliPregled IS NULL 
@@ -972,43 +972,43 @@ class PreglediListService{
             $sql = "(SELECT pb.idPovijestBolesti, DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum, 
                     pb.tipSlucaj, pb.vrijeme, pb.bojaPregled, 
                     CASE 
-                        WHEN pb.tipSlucaj = '$noviSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                        WHEN pb.tipSlucaj = '$noviSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                             WHERE pb2.idPovijestBolesti IN 
-                                                            (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                            (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                             WHERE pb3.prosliPregled = pb.idPovijestBolesti 
                                                             GROUP BY pb3.prosliPregled)
                                                             LIMIT 1) 
-                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                                 WHERE pb2.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                                 WHERE pb3.prosliPregled = pb.idPovijestBolesti 
                                                                 GROUP BY pb3.prosliPregled)
                                                                 LIMIT 1)
                     END AS sljedeciPregled,
                     CASE 
-                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                                 WHERE pb2.tipSlucaj = '$noviSlucaj' 
                                                                 AND pb2.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                                 WHERE pb3.tipSlucaj = '$noviSlucaj' 
                                                                 AND pb3.idPovijestBolesti = pb.prosliPregled 
                                                                 GROUP BY pb3.prosliPregled)
                                                                 LIMIT 1)
                     END AS prethodniNoviSlucaj,
                     CASE 
-                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijestbolesti pb2 
+                        WHEN pb.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb2.idPovijestBolesti FROM povijest_bolesti pb2 
                                                                 WHERE pb2.tipSlucaj = '$povezanSlucaj' 
                                                                 AND pb2.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijestbolesti pb3 
+                                                                (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                                                                 WHERE pb3.tipSlucaj = '$povezanSlucaj' 
                                                                 AND pb3.idPovijestBolesti = pb.prosliPregled 
                                                                 GROUP BY pb3.prosliPregled)
                                                                 LIMIT 1)
-                    END AS prethodniPovezanSlucaj FROM povijestBolesti pb 
+                    END AS prethodniPovezanSlucaj FROM povijest_bolesti pb 
                     WHERE pb.mboPacijent = '$mboPacijent' 
                     AND pb.prosliPregled IS NOT NULL
                     AND pb.idPovijestBolesti IN 
-                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
+                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijest_bolesti pb2 
                     WHERE pb2.mboPacijent = '$mboPacijent' 
                     AND pb2.prosliPregled IS NOT NULL 
                     GROUP BY pb2.prosliPregled)
@@ -1018,43 +1018,43 @@ class PreglediListService{
                     (SELECT pb2.idPovijestBolesti, DATE_FORMAT(pb2.datum,'%d.%m.%Y') AS Datum, 
                     pb2.tipSlucaj, pb2.vrijeme, pb2.bojaPregled, 
                     CASE 
-                        WHEN pb2.tipSlucaj = '$noviSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijestbolesti pb3 
+                        WHEN pb2.tipSlucaj = '$noviSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijest_bolesti pb3 
                                                             WHERE pb3.idPovijestBolesti IN 
-                                                            (SELECT MAX(pb4.idPovijestBolesti) FROM povijestbolesti pb4 
+                                                            (SELECT MAX(pb4.idPovijestBolesti) FROM povijest_bolesti pb4 
                                                             WHERE pb4.prosliPregled = pb2.idPovijestBolesti 
                                                             GROUP BY pb4.prosliPregled)
                                                             LIMIT 1)
-                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijestbolesti pb3 
+                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijest_bolesti pb3 
                                                                 WHERE pb3.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijestbolesti pb4 
+                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijest_bolesti pb4 
                                                                 WHERE pb4.prosliPregled = pb2.idPovijestBolesti 
                                                                 GROUP BY pb4.prosliPregled) 
                                                                 LIMIT 1)
                     END AS sljedeciPregled,
                     CASE 
-                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijestbolesti pb3 
+                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijest_bolesti pb3 
                                                                 WHERE pb3.tipSlucaj = '$noviSlucaj' 
                                                                 AND pb3.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijestbolesti pb4 
+                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijest_bolesti pb4 
                                                                 WHERE pb4.tipSlucaj = '$noviSlucaj' 
                                                                 AND pb4.idPovijestBolesti = pb2.prosliPregled 
                                                                 GROUP BY pb4.prosliPregled)
                                                                 LIMIT 1)
                     END AS prethodniNoviSlucaj,
                     CASE 
-                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijestbolesti pb3 
+                        WHEN pb2.tipSlucaj = '$povezanSlucaj' THEN (SELECT pb3.idPovijestBolesti FROM povijest_bolesti pb3 
                                                                 WHERE pb3.tipSlucaj = '$povezanSlucaj' 
                                                                 AND pb3.idPovijestBolesti IN 
-                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijestbolesti pb4 
+                                                                (SELECT MAX(pb4.idPovijestBolesti) FROM povijest_bolesti pb4 
                                                                 WHERE pb4.tipSlucaj = '$povezanSlucaj' 
                                                                 AND pb4.idPovijestBolesti = pb2.prosliPregled 
                                                                 GROUP BY pb4.prosliPregled)
                                                                 LIMIT 1)
-                    END AS prethodniPovezanSlucaj FROM povijestBolesti pb2 
+                    END AS prethodniPovezanSlucaj FROM povijest_bolesti pb2 
                     WHERE pb2.mboPacijent = '$mboPacijent' 
                     AND pb2.prosliPregled IS NULL 
                     AND pb2.idPovijestBolesti IN 
-                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijestBolesti pb3 
+                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                     WHERE pb3.mboPacijent = '$mboPacijent' 
                     AND pb3.prosliPregled IS NULL 
                     GROUP BY pb3.oznaka)

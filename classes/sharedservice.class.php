@@ -34,10 +34,10 @@ class SharedService {
         $conn = $baza->spojiSBazom();
         $response = [];
 
-        $sql = "SELECT pb.idObradaLijecnik FROM povijestBolesti pb 
+        $sql = "SELECT pb.idObradaLijecnik FROM povijest_bolesti pb 
                 WHERE pb.mboPacijent = '$mboPacijent'
                 AND pb.idPovijestBolesti = 
-                (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
+                (SELECT MAX(pb2.idPovijestBolesti) FROM povijest_bolesti pb2 
                 WHERE pb2.mboPacijent = '$mboPacijent')";
         $result = $conn->query($sql);
 

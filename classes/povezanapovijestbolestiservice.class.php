@@ -20,7 +20,7 @@ class PovezanaPovijestBolestiService{
         $sql = "SELECT DISTINCT(TRIM(d.imeDijagnoza)) AS NazivPrimarna, 
                 IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT TRIM(d2.imeDijagnoza) FROM dijagnoze d2 
                                                         WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna
-                ,pb.* FROM povijestBolesti pb 
+                ,pb.* FROM povijest_bolesti pb 
                 JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
                 WHERE pb.datum = '$datum' 
                 AND pb.razlogDolaska = '$razlogDolaska' 
@@ -57,13 +57,13 @@ class PovezanaPovijestBolestiService{
                     pb.razlogDolaska,
                     CONCAT(TRIM(d.imeDijagnoza),' | ',TRIM(pb.mkbSifraPrimarna)) AS primarnaDijagnoza, 
                     pb.tipSlucaj,pb.vrijeme,pb.anamneza,
-                    (SELECT COUNT(*) FROM povijestbolesti pb2 
-                    WHERE pb2.prosliPregled = pb.idPovijestBolesti) AS prosliPregled FROM povijestbolesti pb 
+                    (SELECT COUNT(*) FROM povijest_bolesti pb2 
+                    WHERE pb2.prosliPregled = pb.idPovijestBolesti) AS prosliPregled FROM povijest_bolesti pb 
                     JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                     WHERE pb.mboPacijent = '$mboPacijent' 
                     AND pb.prosliPregled IS NOT NULL 
                     AND pb.idPovijestBolesti IN 
-                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
+                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijest_bolesti pb2 
                     WHERE pb2.mboPacijent = '$mboPacijent' 
                     AND pb2.prosliPregled IS NOT NULL 
                     GROUP BY pb2.prosliPregled)
@@ -72,13 +72,13 @@ class PovezanaPovijestBolestiService{
                     pb.razlogDolaska,
                     CONCAT(TRIM(d.imeDijagnoza),' | ',TRIM(pb.mkbSifraPrimarna)) AS primarnaDijagnoza, 
                     pb.tipSlucaj,pb.vrijeme,pb.anamneza, 
-                    (SELECT COUNT(*) FROM povijestbolesti pb2 
-                    WHERE pb2.prosliPregled = pb.idPovijestBolesti) AS prosliPregled FROM povijestbolesti pb 
+                    (SELECT COUNT(*) FROM povijest_bolesti pb2 
+                    WHERE pb2.prosliPregled = pb.idPovijestBolesti) AS prosliPregled FROM povijest_bolesti pb 
                     JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                     WHERE pb.mboPacijent = '$mboPacijent' 
                     AND pb.prosliPregled IS NULL 
                     AND pb.idPovijestBolesti IN 
-                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
+                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijest_bolesti pb2 
                     WHERE pb2.mboPacijent = '$mboPacijent' 
                     AND pb2.prosliPregled IS NULL 
                     GROUP BY pb2.oznaka)) AS povezanaPovijestBolesti 
@@ -97,11 +97,11 @@ class PovezanaPovijestBolestiService{
                     pb.razlogDolaska,
                     CONCAT(TRIM(d.imeDijagnoza),' | ',TRIM(pb.mkbSifraPrimarna)) AS primarnaDijagnoza,
                     pb.tipSlucaj,pb.vrijeme,pb.anamneza,
-                    (SELECT COUNT(*) FROM povijestBolesti pb2 
+                    (SELECT COUNT(*) FROM povijest_bolesti pb2 
                     WHERE pb2.prosliPregled = 
-                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijestBolesti pb3 
+                    (SELECT MAX(pb3.idPovijestBolesti) FROM povijest_bolesti pb3 
                     WHERE pb3.vrijeme = pb.vrijeme 
-                    AND pb3.datum = pb.datum)) AS prosliPregled FROM povijestbolesti pb 
+                    AND pb3.datum = pb.datum)) AS prosliPregled FROM povijest_bolesti pb 
                     LEFT JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                     LEFT JOIN dijagnoze d2 ON d2.mkbSifra = pb.mkbSifraSekundarna
                     WHERE (UPPER(pb.datum) LIKE UPPER('%{$pretraga}%') 
@@ -141,7 +141,7 @@ class PovezanaPovijestBolestiService{
         $sql = "SELECT IF(pb.mkbSifraSekundarna IS NULL, NULL, 
                 CONCAT((SELECT TRIM(d.imeDijagnoza) FROM dijagnoze d 
                         WHERE d.mkbSifra = pb.mkbSifraSekundarna),' | ',TRIM(pb.mkbSifraSekundarna))) AS sekundarneDijagnoze, 
-                DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,pb.vrijeme,pb.tipSlucaj FROM povijestbolesti pb 
+                DATE_FORMAT(pb.datum,'%d.%m.%Y') AS Datum,pb.vrijeme,pb.tipSlucaj FROM povijest_bolesti pb 
                 WHERE pb.datum = '$datum' 
                 AND pb.vrijeme = '$vrijeme' 
                 AND pb.tipSlucaj = '$tipSlucaj' 
@@ -166,7 +166,7 @@ class PovezanaPovijestBolestiService{
         //Kreiram prazno polje odgovora
         $response = [];
 
-        $sqlCount = "SELECT COUNT(*) AS BrojPovijestBolesti FROM povijestbolesti pb 
+        $sqlCount = "SELECT COUNT(*) AS BrojPovijestBolesti FROM povijest_bolesti pb 
                     WHERE pb.mboPacijent = '$mboPacijent';";
         //Rezultat upita spremam u varijablu $resultCount
         $resultCount= mysqli_query($conn,$sqlCount);
@@ -192,13 +192,13 @@ class PovezanaPovijestBolestiService{
                     pb.razlogDolaska,
                     CONCAT(TRIM(d.imeDijagnoza),' | ',TRIM(pb.mkbSifraPrimarna)) AS primarnaDijagnoza, 
                     pb.tipSlucaj,pb.vrijeme,pb.anamneza,
-                    (SELECT COUNT(*) FROM povijestbolesti pb2 
-                    WHERE pb2.prosliPregled = pb.idPovijestBolesti) AS prosliPregled FROM povijestbolesti pb 
+                    (SELECT COUNT(*) FROM povijest_bolesti pb2 
+                    WHERE pb2.prosliPregled = pb.idPovijestBolesti) AS prosliPregled FROM povijest_bolesti pb 
                     JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                     WHERE pb.mboPacijent = '$mboPacijent' 
                     AND pb.prosliPregled IS NOT NULL 
                     AND pb.idPovijestBolesti IN 
-                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
+                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijest_bolesti pb2 
                     WHERE pb2.mboPacijent = '$mboPacijent' 
                     AND pb2.prosliPregled IS NOT NULL 
                     GROUP BY pb2.prosliPregled)
@@ -207,13 +207,13 @@ class PovezanaPovijestBolestiService{
                     pb.razlogDolaska,
                     CONCAT(TRIM(d.imeDijagnoza),' | ',TRIM(pb.mkbSifraPrimarna)) AS primarnaDijagnoza, 
                     pb.tipSlucaj,pb.vrijeme,pb.anamneza, 
-                    (SELECT COUNT(*) FROM povijestbolesti pb2 
-                    WHERE pb2.prosliPregled = pb.idPovijestBolesti) AS prosliPregled FROM povijestbolesti pb 
+                    (SELECT COUNT(*) FROM povijest_bolesti pb2 
+                    WHERE pb2.prosliPregled = pb.idPovijestBolesti) AS prosliPregled FROM povijest_bolesti pb 
                     JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna 
                     WHERE pb.mboPacijent = '$mboPacijent' 
                     AND pb.prosliPregled IS NULL 
                     AND pb.idPovijestBolesti IN 
-                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
+                    (SELECT MAX(pb2.idPovijestBolesti) FROM povijest_bolesti pb2 
                     WHERE pb2.mboPacijent = '$mboPacijent' 
                     AND pb2.prosliPregled IS NULL 
                     GROUP BY pb2.oznaka)) AS povezanaPovijestBolesti 

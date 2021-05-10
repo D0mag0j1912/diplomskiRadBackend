@@ -52,35 +52,35 @@ class NarucivanjeService{
                                             JOIN narucivanje n ON n.idPacijent = p.idPacijent 
                                             JOIN vremena v2 ON v2.vrijeme = n.vrijemeNarucivanje 
                                             JOIN datumi d ON d.datum = n.datumNarucivanje
-                                            JOIN vrstaPregled vp ON vp.idVrstaPregled = n.idVrstaPregled
+                                            JOIN vrsta_pregled vp ON vp.idVrstaPregled = n.idVrstaPregled
                                             WHERE v2.vrijeme = v.vrijeme AND d.nazivDana = 'Monday' AND 
                                             YEARWEEK(d.datum,1) = YEARWEEK('$datum',1)) AS Ponedjeljak,  
                 (SELECT CONCAT(p.imePacijent,' ',p.prezPacijent,' ',p.mboPacijent,' ',n.idNarucivanje,' ',vp.bojaPregled) FROM pacijent p 
                                             JOIN narucivanje n ON n.idPacijent = p.idPacijent 
                                             JOIN vremena v2 ON v2.vrijeme = n.vrijemeNarucivanje 
                                             JOIN datumi d ON d.datum = n.datumNarucivanje
-                                            JOIN vrstaPregled vp ON vp.idVrstaPregled = n.idVrstaPregled
+                                            JOIN vrsta_pregled vp ON vp.idVrstaPregled = n.idVrstaPregled
                                             WHERE v2.vrijeme = v.vrijeme AND d.nazivDana = 'Tuesday' AND 
                                             YEARWEEK(d.datum,1) = YEARWEEK('$datum',1)) AS Utorak, 
                 (SELECT CONCAT(p.imePacijent,' ',p.prezPacijent,' ',p.mboPacijent,' ',n.idNarucivanje,' ',vp.bojaPregled) FROM pacijent p 
                                             JOIN narucivanje n ON n.idPacijent = p.idPacijent 
                                             JOIN vremena v2 ON v2.vrijeme = n.vrijemeNarucivanje 
                                             JOIN datumi d ON d.datum = n.datumNarucivanje
-                                            JOIN vrstaPregled vp ON vp.idVrstaPregled = n.idVrstaPregled
+                                            JOIN vrsta_pregled vp ON vp.idVrstaPregled = n.idVrstaPregled
                                             WHERE v2.vrijeme = v.vrijeme AND d.nazivDana = 'Wednesday' AND 
                                             YEARWEEK(d.datum,1) = YEARWEEK('$datum',1)) AS Srijeda,
                 (SELECT CONCAT(p.imePacijent,' ',p.prezPacijent,' ',p.mboPacijent,' ',n.idNarucivanje,' ',vp.bojaPregled) FROM pacijent p 
                                             JOIN narucivanje n ON n.idPacijent = p.idPacijent 
                                             JOIN vremena v2 ON v2.vrijeme = n.vrijemeNarucivanje 
                                             JOIN datumi d ON d.datum = n.datumNarucivanje
-                                            JOIN vrstaPregled vp ON vp.idVrstaPregled = n.idVrstaPregled
+                                            JOIN vrsta_pregled vp ON vp.idVrstaPregled = n.idVrstaPregled
                                             WHERE v2.vrijeme = v.vrijeme AND d.nazivDana = 'Thursday' AND 
                                             YEARWEEK(d.datum,1) = YEARWEEK('$datum',1)) AS Četvrtak,
                 (SELECT CONCAT(p.imePacijent,' ',p.prezPacijent,' ',p.mboPacijent,' ',n.idNarucivanje,' ',vp.bojaPregled) FROM pacijent p 
                                             JOIN narucivanje n ON n.idPacijent = p.idPacijent 
                                             JOIN vremena v2 ON v2.vrijeme = n.vrijemeNarucivanje 
                                             JOIN datumi d ON d.datum = n.datumNarucivanje
-                                            JOIN vrstaPregled vp ON vp.idVrstaPregled = n.idVrstaPregled
+                                            JOIN vrsta_pregled vp ON vp.idVrstaPregled = n.idVrstaPregled
                                             WHERE v2.vrijeme = v.vrijeme AND d.nazivDana = 'Friday' AND 
                                             YEARWEEK(d.datum,1) = YEARWEEK('$datum',1)) AS Petak
                 FROM vremena v 
@@ -146,35 +146,35 @@ class NarucivanjeService{
                                             JOIN narucivanje n ON n.idPacijent = p.idPacijent 
                                             JOIN vremena v2 ON v2.vrijeme = n.vrijemeNarucivanje 
                                             JOIN datumi d ON d.datum = n.datumNarucivanje
-                                            JOIN vrstaPregled vp ON vp.idVrstaPregled = n.idVrstaPregled
+                                            JOIN vrsta_pregled vp ON vp.idVrstaPregled = n.idVrstaPregled
                                             WHERE v2.vrijeme = v.vrijeme AND d.nazivDana = 'Monday' AND 
                                             YEARWEEK(d.datum,1) = YEARWEEK(CURDATE(),1)) AS Ponedjeljak,  
                 (SELECT CONCAT(p.imePacijent,' ',p.prezPacijent,' ',p.mboPacijent,' ',n.idNarucivanje,' ',vp.bojaPregled) FROM pacijent p 
                                             JOIN narucivanje n ON n.idPacijent = p.idPacijent 
                                             JOIN vremena v2 ON v2.vrijeme = n.vrijemeNarucivanje 
                                             JOIN datumi d ON d.datum = n.datumNarucivanje
-                                            JOIN vrstaPregled vp ON vp.idVrstaPregled = n.idVrstaPregled
+                                            JOIN vrsta_pregled vp ON vp.idVrstaPregled = n.idVrstaPregled
                                             WHERE v2.vrijeme = v.vrijeme AND d.nazivDana = 'Tuesday' AND 
                                             YEARWEEK(d.datum,1) = YEARWEEK(CURDATE(),1)) AS Utorak, 
                 (SELECT CONCAT(p.imePacijent,' ',p.prezPacijent,' ',p.mboPacijent,' ',n.idNarucivanje,' ',vp.bojaPregled) FROM pacijent p 
                                             JOIN narucivanje n ON n.idPacijent = p.idPacijent 
                                             JOIN vremena v2 ON v2.vrijeme = n.vrijemeNarucivanje 
                                             JOIN datumi d ON d.datum = n.datumNarucivanje
-                                            JOIN vrstaPregled vp ON vp.idVrstaPregled = n.idVrstaPregled
+                                            JOIN vrsta_pregled vp ON vp.idVrstaPregled = n.idVrstaPregled
                                             WHERE v2.vrijeme = v.vrijeme AND d.nazivDana = 'Wednesday' AND 
                                             YEARWEEK(d.datum,1) = YEARWEEK(CURDATE(),1)) AS Srijeda,
                 (SELECT CONCAT(p.imePacijent,' ',p.prezPacijent,' ',p.mboPacijent,' ',n.idNarucivanje,' ',vp.bojaPregled) FROM pacijent p 
                                             JOIN narucivanje n ON n.idPacijent = p.idPacijent 
                                             JOIN vremena v2 ON v2.vrijeme = n.vrijemeNarucivanje 
                                             JOIN datumi d ON d.datum = n.datumNarucivanje
-                                            JOIN vrstaPregled vp ON vp.idVrstaPregled = n.idVrstaPregled
+                                            JOIN vrsta_pregled vp ON vp.idVrstaPregled = n.idVrstaPregled
                                             WHERE v2.vrijeme = v.vrijeme AND d.nazivDana = 'Thursday' AND 
                                             YEARWEEK(d.datum,1) = YEARWEEK(CURDATE(),1)) AS Četvrtak,
                 (SELECT CONCAT(p.imePacijent,' ',p.prezPacijent,' ',p.mboPacijent,' ',n.idNarucivanje,' ',vp.bojaPregled) FROM pacijent p 
                                             JOIN narucivanje n ON n.idPacijent = p.idPacijent 
                                             JOIN vremena v2 ON v2.vrijeme = n.vrijemeNarucivanje 
                                             JOIN datumi d ON d.datum = n.datumNarucivanje
-                                            JOIN vrstaPregled vp ON vp.idVrstaPregled = n.idVrstaPregled
+                                            JOIN vrsta_pregled vp ON vp.idVrstaPregled = n.idVrstaPregled
                                             WHERE v2.vrijeme = v.vrijeme AND d.nazivDana = 'Friday' AND 
                                             YEARWEEK(d.datum,1) = YEARWEEK(CURDATE(),1)) AS Petak
                 FROM vremena v 
@@ -225,7 +225,7 @@ class NarucivanjeService{
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
 
-        $sql = "SELECT vp.*,CONCAT(p.imePacijent,' ',p.prezPacijent,' ',p.mboPacijent) AS Pacijent,n.datumNarucivanje,n.vrijemeNarucivanje FROM vrstaPregled vp 
+        $sql = "SELECT vp.*,CONCAT(p.imePacijent,' ',p.prezPacijent,' ',p.mboPacijent) AS Pacijent,n.datumNarucivanje,n.vrijemeNarucivanje FROM vrsta_pregled vp 
                 JOIN narucivanje n ON n.idVrstaPregled = vp.idVrstaPregled 
                 JOIN pacijent p ON p.idPacijent = n.idPacijent;";
 
@@ -248,7 +248,7 @@ class NarucivanjeService{
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
 
-        $sql = "SELECT DISTINCT(nazivVrstaPregled) FROM vrstaPregled;";
+        $sql = "SELECT DISTINCT(nazivVrstaPregled) FROM vrsta_pregled;";
 
         $result = $conn->query($sql);
 
@@ -328,7 +328,7 @@ class NarucivanjeService{
             } 
 
             //Dohvaćam ID vrste pregleda
-            $resultVrstaPregled = mysqli_query($conn,"SELECT vp.idVrstaPregled AS ID FROM vrstaPregled vp WHERE vp.nazivVrstaPregled = '" . mysqli_real_escape_string($conn, $vrstaPregleda) . "'");
+            $resultVrstaPregled = mysqli_query($conn,"SELECT vp.idVrstaPregled AS ID FROM vrsta_pregled vp WHERE vp.nazivVrstaPregled = '" . mysqli_real_escape_string($conn, $vrstaPregleda) . "'");
             //Ulazim u polje rezultata i idem redak po redak
             while($rowVrstaPregled = mysqli_fetch_array($resultVrstaPregled)){
                 //Dohvaćam željeni ID vrste pregleda
@@ -426,7 +426,7 @@ class NarucivanjeService{
             } 
 
             //Dohvaćam ID vrste pregleda
-            $resultVrstaPregled = mysqli_query($conn,"SELECT vp.idVrstaPregled AS ID FROM vrstaPregled vp WHERE vp.nazivVrstaPregled = '" . mysqli_real_escape_string($conn, $vrstaPregleda) . "'");
+            $resultVrstaPregled = mysqli_query($conn,"SELECT vp.idVrstaPregled AS ID FROM vrsta_pregled vp WHERE vp.nazivVrstaPregled = '" . mysqli_real_escape_string($conn, $vrstaPregleda) . "'");
             //Ulazim u polje rezultata i idem redak po redak
             while($rowVrstaPregled = mysqli_fetch_array($resultVrstaPregled)){
                 //Dohvaćam željeni ID pregleda

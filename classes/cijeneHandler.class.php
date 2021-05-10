@@ -22,7 +22,7 @@ class CijeneHandler {
                                                         WHERE ul2.idObradaLijecnik = '$idObrada'
                                                         AND ul2.idUputnica = ul.idUputnica 
                                                         AND ul2.idUputnica IN 
-                                                        (SELECT pb.idUputnica FROM povijestbolesti pb 
+                                                        (SELECT pb.idUputnica FROM povijest_bolesti pb 
                                                         WHERE pb.mboPacijent IN 
                                                         (SELECT p.mboPacijent FROM pacijent p 
                                                         WHERE p.idPacijent = ol.idPacijent)))
@@ -30,7 +30,7 @@ class CijeneHandler {
                                                     WHERE ul2.idObradaLijecnik = '$idObrada' 
                                                     AND ul2.idRecept = ul.idRecept 
                                                     AND ul2.idRecept IN 
-                                                    (SELECT pb.idRecept FROM povijestbolesti pb 
+                                                    (SELECT pb.idRecept FROM povijest_bolesti pb 
                                                     WHERE pb.mboPacijent IN 
                                                     (SELECT p.mboPacijent FROM pacijent p 
                                                     WHERE p.idPacijent = ol.idPacijent)))

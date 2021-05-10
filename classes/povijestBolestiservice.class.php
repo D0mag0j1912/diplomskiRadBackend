@@ -14,12 +14,12 @@ class PovijestBolestiService{
         $conn = $baza->spojiSBazom();
         $response = [];
           
-        $sql = "SELECT pb.idPovijestBolesti,pb.bojaPregled FROM povijestBolesti pb 
+        $sql = "SELECT pb.idPovijestBolesti,pb.bojaPregled FROM povijest_bolesti pb 
             WHERE pb.mboPacijent = '$mboPacijent' 
             AND pb.idObradaLijecnik = '$idObrada' 
             AND TRIM(pb.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
             AND pb.idPovijestBolesti = 
-            (SELECT MAX(pb2.idPovijestBolesti) FROM povijestBolesti pb2 
+            (SELECT MAX(pb2.idPovijestBolesti) FROM povijest_bolesti pb2 
             WHERE pb2.mboPacijent = '$mboPacijent' 
             AND pb2.idObradaLijecnik = '$idObrada' 
             AND TRIM(pb2.mkbSifraPrimarna) = '$mkbSifraPrimarna')";
@@ -63,7 +63,7 @@ class PovijestBolestiService{
             //Generiram slučajni oznaku po kojom grupiram
             $oznaka = uniqid();
             //Kreiram upit koji provjerava postoji li već ova random generirana oznaka u bazi
-            $sqlProvjeraOznaka = "SELECT pb.oznaka FROM povijestBolesti pb 
+            $sqlProvjeraOznaka = "SELECT pb.oznaka FROM povijest_bolesti pb 
                                 WHERE pb.oznaka = '$oznaka';";
             //Rezultat upita spremam u varijablu $resultProvjeraOznaka
             $resultProvjeraOznaka = mysqli_query($conn,$sqlProvjeraOznaka);
@@ -129,7 +129,7 @@ class PovijestBolestiService{
                 //Generiram random broj
                 $idObrada = rand(1000,10000);
                 //Kreiram upit koji provjerava postoji li već ovaj random generirani broj u bazi za ovog pacijenta
-                $sqlProvjeraObrada = "SELECT pb.idObradaLijecnik FROM povijestBolesti pb 
+                $sqlProvjeraObrada = "SELECT pb.idObradaLijecnik FROM povijest_bolesti pb 
                                     WHERE pb.idObradaLijecnik = '$idObrada'";
                 //Rezultat upita spremam u varijablu $resultProvjeraObrada
                 $resultProvjeraObrada = mysqli_query($conn,$sqlProvjeraObrada);
@@ -144,7 +144,7 @@ class PovijestBolestiService{
         if($tipSlucaj == "noviSlucaj"){
             /******************************** */
             //Provjera je li postoji već ova primarna dijagnoza u bazi
-            $sqlProvjera = "SELECT TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna FROM povijestBolesti pb 
+            $sqlProvjera = "SELECT TRIM(pb.mkbSifraPrimarna) AS mkbSifraPrimarna FROM povijest_bolesti pb 
                             WHERE pb.idObradaLijecnik = '$idObrada' 
                             AND pb.mboPacijent IN 
                             (SELECT pacijent.mboPacijent FROM pacijent 
@@ -167,7 +167,7 @@ class PovijestBolestiService{
         //Ako je polje sekundarnih dijagnoza prazno
         if(empty($mkbSifre)){
             //Kreiram upit za spremanje podataka u bazu
-            $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
+            $sql = "INSERT INTO povijest_bolesti (razlogDolaska, anamneza, statusPacijent, 
                     nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
                     preporukaLijecnik, napomena, datum, narucen, mboPacijent,idObradaLijecnik, 
                     vrijeme,prosliPregled,bojaPregled,oznaka) 
@@ -192,7 +192,7 @@ class PovijestBolestiService{
                     //Generiram random boju
                     $boja = $poljeBoja[array_rand($poljeBoja)];
                     //Tražim je li se novo generirana boja nalazi u bazi
-                    $sql = "SELECT COUNT(*) AS brojBoja FROM povijestBolesti pb 
+                    $sql = "SELECT COUNT(*) AS brojBoja FROM povijest_bolesti pb 
                             WHERE pb.idObradaLijecnik = '$idObrada' AND pb.bojaPregled = '$boja'";
                     $result = $conn->query($sql);
                     //Ako ima pronađenih rezultata za navedenu pretragu
@@ -206,7 +206,7 @@ class PovijestBolestiService{
                         //Generiraj ponovno boju
                         $boja = $poljeBoja[array_rand($poljeBoja)];
                         //Ponovno traži
-                        $sql = "SELECT COUNT(*) AS brojBoja FROM povijestBolesti pb 
+                        $sql = "SELECT COUNT(*) AS brojBoja FROM povijest_bolesti pb 
                                 WHERE pb.idObradaLijecnik = '$idObrada' AND pb.bojaPregled = '$boja'";
                         $result = $conn->query($sql);
                         //Ako ima pronađenih rezultata za navedenu pretragu
@@ -247,7 +247,7 @@ class PovijestBolestiService{
                 mysqli_stmt_execute($stmt);
 
                 //Dohvaćam ID povijesti bolesti kojega sam upravo unio
-                $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
+                $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijest_bolesti pb");
                     //Ulazim u polje rezultata i idem redak po redak
                     while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
                         //Dohvaćam željeni ID povijesti bolesti
@@ -285,7 +285,7 @@ class PovijestBolestiService{
                 //Poveaćam brojač za 1
                 $brojac++;
                 //Kreiram upit za spremanje prvog dijela podataka u bazu
-                $sql = "INSERT INTO povijestBolesti (razlogDolaska, anamneza, statusPacijent, 
+                $sql = "INSERT INTO povijest_bolesti (razlogDolaska, anamneza, statusPacijent, 
                                                     nalaz, mkbSifraPrimarna, mkbSifraSekundarna, tipSlucaj, terapija,
                                                     preporukaLijecnik, napomena, datum, narucen, mboPacijent, 
                                                     idObradaLijecnik,vrijeme,prosliPregled,bojaPregled,oznaka) 
@@ -312,7 +312,7 @@ class PovijestBolestiService{
                             //Generiram random boju
                             $boja = $poljeBoja[array_rand($poljeBoja)];
                             //Tražim je li se novo generirana boja nalazi u bazi
-                            $sql = "SELECT COUNT(*) AS brojBoja FROM povijestBolesti pb 
+                            $sql = "SELECT COUNT(*) AS brojBoja FROM povijest_bolesti pb 
                                     WHERE pb.idObradaLijecnik = '$idObrada' AND pb.bojaPregled = '$boja'";
                             $result = $conn->query($sql);
                             //Ako ima pronađenih rezultata za navedenu pretragu
@@ -326,7 +326,7 @@ class PovijestBolestiService{
                                 //Generiraj ponovno boju
                                 $boja = $poljeBoja[array_rand($poljeBoja)];
                                 //Ponovno traži
-                                $sql = "SELECT COUNT(*) AS brojBoja FROM povijestBolesti pb 
+                                $sql = "SELECT COUNT(*) AS brojBoja FROM povijest_bolesti pb 
                                         WHERE pb.idObradaLijecnik = '$idObrada' AND pb.bojaPregled = '$boja'";
                                 $result = $conn->query($sql);
                                 //Ako ima pronađenih rezultata za navedenu pretragu
@@ -365,7 +365,7 @@ class PovijestBolestiService{
                     mysqli_stmt_execute($stmt);
 
                     //Dohvaćam ID povijesti bolesti kojega sam upravo unio
-                    $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijestBolesti pb");
+                    $resultPovijestBolesti = mysqli_query($conn,"SELECT MAX(pb.idPovijestBolesti) AS ID FROM povijest_bolesti pb");
                     //Ulazim u polje rezultata i idem redak po redak
                     while($rowPovijestBolesti = mysqli_fetch_array($resultPovijestBolesti)){
                         //Dohvaćam željeni ID povijesti bolesti

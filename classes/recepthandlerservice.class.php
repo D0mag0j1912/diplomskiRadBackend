@@ -13,7 +13,7 @@ class ReceptHandlerService{
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
         //Kreiram upit koji provjerava postoji li unesena povijest bolesti 
-        $sql = "SELECT COUNT(*) AS BrojPovijestBolesti FROM povijestbolesti pb 
+        $sql = "SELECT COUNT(*) AS BrojPovijestBolesti FROM povijest_bolesti pb 
                 WHERE pb.idObradaLijecnik = '$idObrada' 
                 AND pb.mboPacijent = '$mboPacijent'
                 AND pb.idRecept IS NULL";
@@ -57,7 +57,7 @@ class ReceptHandlerService{
             $imeLijek = implode(" ", $polje);
 
             //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-            $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovnalistalijekova o 
+            $sqlOsnovnaLista = "SELECT o.zasticenoImeLijek,o.oblikJacinaPakiranjeLijek FROM osnovna_lista_lijekova o 
                                 WHERE o.oblikJacinaPakiranjeLijek = '$ojpLijek' 
                                 AND o.zasticenoImeLijek = '$imeLijek'";
 
@@ -118,7 +118,7 @@ class ReceptHandlerService{
                 $imeLijek = implode(" ", $polje);
 
                 //Kreiram sql upit kojim provjeravam postoji li LIJEK u DOPUNSKOJ listi lijekova
-                $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunskalistalijekova d 
+                $sqlDopunskaLista = "SELECT d.zasticenoImeLijek,d.oblikJacinaPakiranjeLijek FROM dopunska_lista_lijekova d 
                                     WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' 
                                     AND d.zasticenoImeLijek = '$imeLijek'";
 

@@ -28,7 +28,7 @@ class ReceptService{
             $imeLijek = implode(" ", $polje);
 
             //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-            $sqlOsnovnaLista = "SELECT o.oblikJacinaPakiranjeLijek,o.dddLijek FROM osnovnalistalijekova o 
+            $sqlOsnovnaLista = "SELECT o.oblikJacinaPakiranjeLijek,o.dddLijek FROM osnovna_lista_lijekova o 
                             WHERE o.oblikJacinaPakiranjeLijek = '$ojpLijek' AND o.zasticenoImeLijek = '$imeLijek'";
 
             $resultOsnovnaLista = $conn->query($sqlOsnovnaLista);
@@ -211,7 +211,7 @@ class ReceptService{
             //Ako lijek NIJE PRONAĐEN u osnovnoj listi, tražim ga u dopunskoj
             else{
                 //Kreiram sql upit kojim provjeravam postoji li LIJEK u DOPUNSKOJ LISTI lijekova
-                $sqlDopunskaLista = "SELECT d.oblikJacinaPakiranjeLijek,d.dddLijek FROM dopunskalistalijekova d 
+                $sqlDopunskaLista = "SELECT d.oblikJacinaPakiranjeLijek,d.dddLijek FROM dopunska_lista_lijekova d 
                                 WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' AND d.zasticenoImeLijek = '$imeLijek'";
 
                 $resultDopunskaLista = $conn->query($sqlDopunskaLista);
@@ -407,12 +407,12 @@ class ReceptService{
         $response = [];
 
         //Kreiram upit koji dohvaća sporedne podatke povijest bolesti ZADNJEG RETKA (jer ako ovo ne napravim, vraćati će mi samo zadnju sek. dijagnozu)
-        $sqlZadnjiRedak = "SELECT * FROM povijestBolesti pb
+        $sqlZadnjiRedak = "SELECT * FROM povijest_bolesti pb
                         WHERE pb.idRecept IS NULL 
                         AND pb.mboPacijent = '$mboPacijent' 
                         AND pb.idObradaLijecnik = '$idObrada'
                         AND pb.idPovijestBolesti = 
-                        (SELECT MAX(pb2.idPovijestBolesti) FROM povijestbolesti pb2 
+                        (SELECT MAX(pb2.idPovijestBolesti) FROM povijest_bolesti pb2 
                         WHERE pb2.idRecept IS NULL 
                         AND pb2.mboPacijent = '$mboPacijent' 
                         AND pb2.idObradaLijecnik = '$idObrada')";
@@ -431,7 +431,7 @@ class ReceptService{
         //Dohvaćam primarnu i sve sekundarne dijagnoze 
         $sql = "SELECT DISTINCT(TRIM(d.imeDijagnoza)) AS NazivPrimarna, 
                 IF(pb.mkbSifraSekundarna = NULL, NULL, (SELECT TRIM(d2.imeDijagnoza) FROM dijagnoze d2 WHERE d2.mkbSifra = pb.mkbSifraSekundarna)) AS NazivSekundarna 
-                ,pb.idObradaLijecnik,pb.tipSlucaj,pb.vrijeme,pb.datum FROM povijestBolesti pb 
+                ,pb.idObradaLijecnik,pb.tipSlucaj,pb.vrijeme,pb.datum FROM povijest_bolesti pb 
                 JOIN dijagnoze d ON d.mkbSifra = pb.mkbSifraPrimarna
                 WHERE TRIM(pb.mkbSifraPrimarna) = '$mkbSifraPrimarna' 
                 AND pb.tipSlucaj = '$tipSlucaj' 
@@ -470,7 +470,7 @@ class ReceptService{
             $imeLijek = implode(" ", $polje);
 
             //Kreiram sql upit kojim provjeravam postoji li LIJEK u osnovnoj listi lijekova
-            $sqlOsnovnaLista = "SELECT o.oblikJacinaPakiranjeLijek FROM osnovnalistalijekova o 
+            $sqlOsnovnaLista = "SELECT o.oblikJacinaPakiranjeLijek FROM osnovna_lista_lijekova o 
                             WHERE o.oblikJacinaPakiranjeLijek = '$ojpLijek' AND o.zasticenoImeLijek = '$imeLijek'";
 
             $resultOsnovnaLista = $conn->query($sqlOsnovnaLista);
@@ -555,7 +555,7 @@ class ReceptService{
             //Ako lijek NIJE PRONAĐEN u osnovnoj listi, tražim ga u dopunskoj
             else{
                 //Kreiram sql upit kojim provjeravam postoji li LIJEK u DOPUNSKOJ LISTI lijekova
-                $sqlDopunskaLista = "SELECT d.oblikJacinaPakiranjeLijek FROM dopunskalistalijekova d 
+                $sqlDopunskaLista = "SELECT d.oblikJacinaPakiranjeLijek FROM dopunska_lista_lijekova d 
                                 WHERE d.oblikJacinaPakiranjeLijek = '$ojpLijek' AND d.zasticenoImeLijek = '$imeLijek'";
 
                 $resultDopunskaLista = $conn->query($sqlDopunskaLista);
@@ -663,7 +663,7 @@ class ReceptService{
         $oznaka = "RS";
 
         //Provjeravam postoji li izabrani lijek u OSNOVNOJ LISTI magistralnih pripravaka
-        $sqlCountOsnovnaLista = "SELECT COUNT(*) AS BrojOsnovnaLista FROM osnovnalistamagistralnihpripravaka 
+        $sqlCountOsnovnaLista = "SELECT COUNT(*) AS BrojOsnovnaLista FROM osnovna_lista_magistralnih_pripravaka 
                                 WHERE nazivMagPripravak = '$magPripravak'";
         //Rezultat upita spremam u varijablu $resultCountOsnovnaLista
         $resultCountOsnovnaLista = mysqli_query($conn,$sqlCountOsnovnaLista);
@@ -678,7 +678,7 @@ class ReceptService{
         //Ako JE PRONAĐEN izabrani mag. pripravak u OSNOVNOJ LISTI
         if($brojOsnovnaLista > 0){
             //Kreiram upit koji će provjeriti je li izabrani MAGISTRALNI PRIPRAVAK ima oznaku RS
-            $sqlCount = "SELECT COUNT(*) AS BrojRS FROM osnovnalistamagistralnihpripravaka
+            $sqlCount = "SELECT COUNT(*) AS BrojRS FROM osnovna_lista_magistralnih_pripravaka
                         WHERE nazivMagPripravak = '$magPripravak' 
                         AND oznakaMagPripravak = '$oznaka'";
             //Rezultat upita spremam u varijablu $resultCount
@@ -705,7 +705,7 @@ class ReceptService{
         //Ako NIJE PRONAĐEN izabrani mag. pripravak u OSNOVNOJ LISTI
         else{
             //Počinjem tražiti u DOPUNSKOJ LISTI
-            $sqlCount = "SELECT COUNT(*) AS BrojRS FROM dopunskalistamagistralnihpripravaka
+            $sqlCount = "SELECT COUNT(*) AS BrojRS FROM dopunska_lista_magistralnih_pripravaka
                         WHERE nazivMagPripravak = '$magPripravak' 
                         AND oznakaMagPripravak = '$oznaka'";
             //Rezultat upita spremam u varijablu $resultCount
@@ -750,7 +750,7 @@ class ReceptService{
             //Dohvaćam ime lijeka
             $imeLijek = implode(" ", $polje);
             //Provjeravam postoji li izabrani lijek u OSNOVNOJ LISTI lijekova
-            $sqlCountOsnovnaLista = "SELECT COUNT(*) AS BrojOsnovnaLista FROM osnovnalistalijekova 
+            $sqlCountOsnovnaLista = "SELECT COUNT(*) AS BrojOsnovnaLista FROM osnovna_lista_lijekova 
                     WHERE zasticenoImeLijek = '$imeLijek' 
                     AND oblikJacinaPakiranjeLijek = '$ojpLijek';";
             //Rezultat upita spremam u varijablu $resultCountOsnovnaLista
@@ -768,7 +768,7 @@ class ReceptService{
                 //Završi petlju
                 $pronasao = TRUE;
                 //Kreiram upit koji će provjeriti je li izabrani LIJEK ima oznaku RS
-                $sqlCount = "SELECT COUNT(*) AS BrojRS FROM osnovnalistalijekova 
+                $sqlCount = "SELECT COUNT(*) AS BrojRS FROM osnovna_lista_lijekova 
                             WHERE zasticenoImeLijek = '$imeLijek' 
                             AND oblikJacinaPakiranjeLijek = '$ojpLijek' 
                             AND oznakaOsnovniLijek = '$oznaka'";
@@ -794,7 +794,7 @@ class ReceptService{
                 }
             }
             //Provjeravam postoji li izabrani lijek u DOPUNSKOJ LISTI lijekova 
-            $sqlCountDopunskaLista = "SELECT COUNT(*) AS BrojDopunskaLista FROM dopunskalistalijekova 
+            $sqlCountDopunskaLista = "SELECT COUNT(*) AS BrojDopunskaLista FROM dopunska_lista_lijekova 
                     WHERE zasticenoImeLijek = '$imeLijek' 
                     AND oblikJacinaPakiranjeLijek = '$ojpLijek';";
             //Rezultat upita spremam u varijablu $resultCountDopunskaLista
@@ -811,7 +811,7 @@ class ReceptService{
                 //Završi petlju
                 $pronasao = TRUE;
                 //Kreiram upit koji će provjeriti je li izabrani LIJEK ima oznaku RS
-                $sqlCount = "SELECT COUNT(*) AS BrojRS FROM dopunskalistalijekova 
+                $sqlCount = "SELECT COUNT(*) AS BrojRS FROM dopunska_lista_lijekova 
                             WHERE zasticenoImeLijek = '$imeLijek' 
                             AND oblikJacinaPakiranjeLijek = '$ojpLijek' 
                             AND oznakaDopunskiLijek = '$oznaka'";
@@ -850,7 +850,7 @@ class ReceptService{
         //Kreiram prazno polje odgovora
         $response = [];
 
-        $sql = "SELECT d.cijenaMagPripravak,d.cijenaZavod,d.doplataMagPripravak FROM dopunskalistamagistralnihpripravaka d 
+        $sql = "SELECT d.cijenaMagPripravak,d.cijenaZavod,d.doplataMagPripravak FROM dopunska_lista_magistralnih_pripravaka d 
                 WHERE d.nazivMagPripravak = '$magPripravak'";
         $result = $conn->query($sql);
 
@@ -882,7 +882,7 @@ class ReceptService{
             $ojpLijek = array_pop($polje);
             //Dohvaćam ime lijeka
             $imeLijek = implode(" ", $polje);
-            $sql = "SELECT d.cijenaLijek,d.cijenaZavod,d.doplataLijek FROM dopunskalistalijekova d 
+            $sql = "SELECT d.cijenaLijek,d.cijenaZavod,d.doplataLijek FROM dopunska_lista_lijekova d 
                     WHERE d.zasticenoImeLijek = '$imeLijek' 
                     AND d.oblikJacinaPakiranjeLijek = '$ojpLijek'";
             $result = $conn->query($sql);
@@ -910,7 +910,7 @@ class ReceptService{
         //Kreiram prazno polje odgovora
         $response = [];
 
-        $sql = "SELECT DISTINCT(m.nazivMagPripravak) AS nazivMagPripravak FROM dopunskalistamagistralnihpripravaka m  
+        $sql = "SELECT DISTINCT(m.nazivMagPripravak) AS nazivMagPripravak FROM dopunska_lista_magistralnih_pripravaka m  
                 WHERE UPPER(m.nazivMagPripravak) LIKE UPPER('%{$pretraga}%')
                 LIMIT 7";
         $result = $conn->query($sql);
@@ -939,7 +939,7 @@ class ReceptService{
         //Kreiram prazno polje odgovora
         $response = [];
 
-        $sql = "SELECT m.nazivMagPripravak FROM osnovnalistamagistralnihpripravaka m  
+        $sql = "SELECT m.nazivMagPripravak FROM osnovna_lista_magistralnih_pripravaka m  
                 WHERE UPPER(m.nazivMagPripravak) LIKE UPPER('%{$pretraga}%') 
                 AND m.oznakaMagPripravak IS NOT NULL
                 LIMIT 7";
@@ -969,7 +969,7 @@ class ReceptService{
         //Kreiram prazno polje odgovora
         $response = [];
 
-        $sql = "SELECT CONCAT(l.zasticenoImeLijek,' ',l.oblikJacinaPakiranjeLijek) AS zasticenoImeLijek,l.proizvodacLijek FROM dopunskalistalijekova l 
+        $sql = "SELECT CONCAT(l.zasticenoImeLijek,' ',l.oblikJacinaPakiranjeLijek) AS zasticenoImeLijek,l.proizvodacLijek FROM dopunska_lista_lijekova l 
                 WHERE CONCAT(l.zasticenoImeLijek,' ',l.oblikJacinaPakiranjeLijek) LIKE UPPER('%{$pretraga}%') 
                 AND l.zasticenoImeLijek IS NOT NULL 
                 AND l.oblikJacinaPakiranjeLijek IS NOT NULL 
@@ -1002,7 +1002,7 @@ class ReceptService{
         //Kreiram prazno polje odgovora
         $response = [];
 
-        $sql = "SELECT CONCAT(l.zasticenoImeLijek,' ',l.oblikJacinaPakiranjeLijek) AS zasticenoImeLijek,l.proizvodacLijek FROM osnovnalistalijekova l 
+        $sql = "SELECT CONCAT(l.zasticenoImeLijek,' ',l.oblikJacinaPakiranjeLijek) AS zasticenoImeLijek,l.proizvodacLijek FROM osnovna_lista_lijekova l 
                 WHERE CONCAT(l.zasticenoImeLijek,' ',l.oblikJacinaPakiranjeLijek) LIKE UPPER('%{$pretraga}%') 
                 AND l.zasticenoImeLijek IS NOT NULL 
                 AND l.oblikJacinaPakiranjeLijek IS NOT NULL 

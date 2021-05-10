@@ -47,7 +47,7 @@ class ObradaService{
         $response = [];
 
         //Kreiram upit koji će provjeriti je li pacijent obrađen od strane liječnika (je li napisana povijest bolesti za njega)
-        $sql = "SELECT DATE_FORMAT(MAX(pb.vrijeme),'%H:%i') AS Vrijeme FROM povijestbolesti pb 
+        $sql = "SELECT DATE_FORMAT(MAX(pb.vrijeme),'%H:%i') AS Vrijeme FROM povijest_bolesti pb 
                 WHERE pb.mboPacijent IN 
                 (SELECT p.mboPacijent FROM pacijent p 
                 WHERE p.idPacijent = '$idPacijent') 
