@@ -41,7 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
                 $tipKorisnik,
                 $usluge->idRecept,
                 $usluge->idUputnica,
-                $usluge->idBMI
+                $usluge->idBMI,
+                $usluge->idUzorak
         ); 
         //Vraćam odgovor frontendu
         echo json_encode($response);

@@ -239,12 +239,7 @@ class CekaonicaService{
                     JOIN usluge_med_sestra ums ON ums.idBMI = tm2.idBMI 
                     WHERE ums.idObradaMedSestra = '$idObrada')) AS bmi,
                     (SELECT CONCAT((SELECT ROUND(SUM(ums.iznosUsluga),2) FROM usluge_med_sestra ums 
-                                    WHERE ums.idObradaMedSestra = '$idObrada'),' kn [',(SELECT CONCAT((SELECT COUNT(*) FROM tjelesna_masa tm2 
-                                                                                        JOIN usluge_med_sestra ums2 ON ums2.idBMI = tm2.idBMI 
-                                                                                        WHERE ums2.idObradaMedSestra = '$idObrada'),'x',ums.iznosUsluga,' kn') FROM tjelesna_masa tm 
-                                                                                        JOIN usluge_med_sestra ums ON ums.idBMI = tm.idBMI 
-                                                                                        WHERE ums.idObradaMedSestra = '$idObrada' 
-                                                                                        LIMIT 1),']')) AS ukupnaCijenaPregled FROM pacijent p
+                                    WHERE ums.idObradaMedSestra = '$idObrada'),' kn')) AS ukupnaCijenaPregled FROM pacijent p
                     JOIN obrada_med_sestra o ON o.idPacijent = p.idPacijent
                     WHERE o.idObrada = '$idObrada'";
             $result = $conn->query($sql);

@@ -142,9 +142,18 @@ class Uzorci {
                                                             $retikulociti);
             //Izvršavanje statementa
             mysqli_stmt_execute($stmt);
+
+            //Dohvaćam ZADNJE UNESENI ID uzorka
+            $resultUzorak = mysqli_query($conn,"SELECT MAX(u.idUzorak) AS ID FROM uzorci u");
+            //Ulazim u polje rezultata i idem redak po redak
+            while($rowUzorak = mysqli_fetch_array($resultUzorak)){
+                //Dohvaćam željeni ID uzorka
+                $idUzorak = $rowUzorak['ID'];
+            } 
             //Vraćam uspješan odgovor
             $response["success"] = "true";
             $response["message"] = "Uzorci uspješno poslani!";
+            $response["idUzorak"] = $idUzorak;
         }
         return $response;
     }

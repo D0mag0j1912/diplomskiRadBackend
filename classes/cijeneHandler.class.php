@@ -81,7 +81,8 @@ class CijeneHandler {
         $tipKorisnik,
         $idRecept,
         $idUputnica,
-        $idBMI){
+        $idBMI,
+        $idUzorak){
         //Dohvaćam bazu 
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
@@ -156,8 +157,8 @@ class CijeneHandler {
             }
             //Ako nova cijena nije null
             if(!empty($novaCijena)){
-                //Kreiram upit koji će dodati podatke naplaćene usluge u tablicu "racun"
-                $sqlRacun = "INSERT INTO usluge_med_sestra (idObradaMedSestra,iznosUsluga,idBMI) VALUES (?,?,?)";
+                //Kreiram upit koji će dodati podatke naplaćene usluge u tablicu "usluge_med_sestra"
+                $sqlRacun = "INSERT INTO usluge_med_sestra (idObradaMedSestra,iznosUsluga,idBMI,idUzorak) VALUES (?,?,?,?)";
                 //Kreiranje prepared statementa
                 $stmtRacun = mysqli_stmt_init($conn);
                 //Ako je statement neuspješan
@@ -165,8 +166,14 @@ class CijeneHandler {
                     return false;
                 }
                 else{
+                    if(empty($idBMI)){
+                        $idBMI = NULL;
+                    }
+                    if(empty($idUzorak)){
+                        $idUzorak = NULL;
+                    }
                     //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                    mysqli_stmt_bind_param($stmtRacun,"iii",$idObrada, $novaCijena, $idBMI);
+                    mysqli_stmt_bind_param($stmtRacun,"iiii",$idObrada, $novaCijena, $idBMI, $idUzorak);
                     //Izvršavanje statementa
                     mysqli_stmt_execute($stmtRacun);
                 } 

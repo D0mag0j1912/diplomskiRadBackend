@@ -30,7 +30,7 @@ class ObradaService{
             $resultBMI = mysqli_query($conn,"SELECT MAX(tm.idBMI) AS ID FROM tjelesna_masa tm");
             //Ulazim u polje rezultata i idem redak po redak
             while($rowBMI = mysqli_fetch_array($resultBMI)){
-                //Dohvaćam željeni ID recepta
+                //Dohvaćam željeni ID BMI-a
                 $idBMI = $rowBMI['ID'];
             } 
             return $idBMI;
