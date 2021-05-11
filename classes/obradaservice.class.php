@@ -123,10 +123,11 @@ class ObradaService{
             }
             //Ako JE trenutno aktivni pacijent naručen na današnji datum
             else{
-                $sql = "SELECT DATE_FORMAT(n.vrijemeNarucivanje,'%H:%i') AS Vrijeme FROM narucivanje n 
+                $sql = "SELECT CONCAT(DATE_FORMAT(n.vrijemeNarucivanje,'%H:%i'),' (',v.nazivVrstaPregled,')') AS Vrijeme FROM narucivanje n 
+                        JOIN vrsta_pregled v ON v.idVrstaPregled = n.idVrstaPregled
                         WHERE n.datumNarucivanje = CURDATE() AND n.idPacijent IN 
                         (SELECT o.idPacijent FROM obrada_lijecnik o 
-                        WHERE o.statusObrada = '$status');";
+                        WHERE o.statusObrada = '$status')";
                 $result = $conn->query($sql);
 
                 if ($result->num_rows > 0) {
@@ -162,7 +163,8 @@ class ObradaService{
             }
             //Ako JE trenutno aktivni pacijent naručen na današnji datum
             else{
-                $sql = "SELECT DATE_FORMAT(n.vrijemeNarucivanje,'%H:%i') AS Vrijeme FROM narucivanje n 
+                $sql = "SELECT CONCAT(DATE_FORMAT(n.vrijemeNarucivanje,'%H:%i'),' (',v.nazivVrstaPregled,')') AS Vrijeme FROM narucivanje n 
+                        JOIN vrsta_pregled v ON v.idVrstaPregled = n.idVrstaPregled
                         WHERE n.datumNarucivanje = CURDATE() AND n.idPacijent IN 
                         (SELECT o.idPacijent FROM obrada_med_sestra o 
                         WHERE o.statusObrada = '$status');";
