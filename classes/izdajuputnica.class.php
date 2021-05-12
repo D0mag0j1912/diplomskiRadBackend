@@ -99,7 +99,7 @@ class IzdajUputnica {
         $ispravan = false;
         while($ispravan != true){
             //Generiram slučajni oznaku po kojom grupiram
-            $oznaka = uniqid();
+            $oznaka = sha1(uniqid());
             //Kreiram upit koji provjerava postoji li već ova random generirana oznaka u bazi
             $sqlProvjeraOznaka = "SELECT u.oznaka FROM uputnica u 
                                 WHERE u.oznaka = '$oznaka';";
@@ -115,7 +115,7 @@ class IzdajUputnica {
         $ispravanNalaz = false;
         while($ispravanNalaz != true){
             //Generiram slučajni oznaku po kojom grupiram
-            $oznakaNalaz = uniqid();
+            $oznakaNalaz = sha1(uniqid());
             //Kreiram upit koji provjerava postoji li već ova random generirana oznaka u bazi
             $sqlProvjeraOznakaNalaz = "SELECT n.oznaka FROM nalaz n 
                                     WHERE n.oznaka = '$oznakaNalaz';";

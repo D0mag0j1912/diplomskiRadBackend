@@ -152,17 +152,21 @@ class CekaonicaService{
 
         //Kreiram prazno polje odgovora
         $response = []; 
+        $hzzo = 'hzzo';
+        $ozljeda = 'ozljeda';
+        $poduzece = 'poduzece';
+        $osobno = 'osobno';
         
         $sql = "SELECT
                 CASE 
-                    WHEN pr.nacinPlacanja = 'hzzo' THEN (SELECT CONCAT('HZZO (',pu.nazivSluzbe,' [',p2.podrucniUredHZZO,'])') FROM pregled p2 
+                    WHEN pr.nacinPlacanja = '$hzzo' THEN (SELECT CONCAT('HZZO (',pu.nazivSluzbe,' [',p2.podrucniUredHZZO,'])') FROM pregled p2 
                                                         JOIN podrucni_ured pu ON pu.sifUred = p2.podrucniUredHZZO 
                                                         WHERE p2.idPregled = pr.idPregled)
-                    WHEN pr.nacinPlacanja = 'ozljeda' THEN (SELECT CONCAT('Ozljeda (',pu.nazivSluzbe,' [',p2.podrucniUredOzljeda,'])') FROM pregled p2 
+                    WHEN pr.nacinPlacanja = '$ozljeda' THEN (SELECT CONCAT('Ozljeda (',pu.nazivSluzbe,' [',p2.podrucniUredOzljeda,'])') FROM pregled p2 
                                                             JOIN podrucni_ured pu ON pu.sifUred = p2.podrucniUredOzljeda 
                                                             WHERE p2.idPregled = pr.idPregled)
-                    WHEN pr.nacinPlacanja = 'poduzece' THEN CONCAT('Naziv poduzeća: ',pr.nazivPoduzeca)
-                    WHEN pr.nacinPlacanja = 'osobno' THEN pr.nacinPlacanja
+                    WHEN pr.nacinPlacanja = '$poduzece' THEN CONCAT('Naziv poduzeća: ',pr.nazivPoduzeca)
+                    WHEN pr.nacinPlacanja = '$osobno' THEN pr.nacinPlacanja
                 END AS nacinPlacanja,
                 TRIM(pr.mkbSifraPrimarna) AS mkbSifraPrimarna, 
                 TRIM(d.imeDijagnoza) AS NazivPrimarna, pr.vrijemePregled, pr.tipSlucaj,

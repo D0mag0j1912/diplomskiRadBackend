@@ -61,7 +61,7 @@ class PovijestBolestiService{
         $ispravnaOznaka = false;
         while($ispravnaOznaka != true){
             //Generiram slučajni oznaku po kojom grupiram
-            $oznaka = uniqid();
+            $oznaka = sha1(uniqid());
             //Kreiram upit koji provjerava postoji li već ova random generirana oznaka u bazi
             $sqlProvjeraOznaka = "SELECT pb.oznaka FROM povijest_bolesti pb 
                                 WHERE pb.oznaka = '$oznaka';";
