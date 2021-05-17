@@ -172,10 +172,10 @@ class CekaonicaService{
                 TRIM(d.imeDijagnoza) AS NazivPrimarna, pr.vrijemePregled, pr.tipSlucaj,
                 DATE_FORMAT(pr.datumPregled,'%d.%m.%Y') AS Datum, p.imePacijent, p.prezPacijent, p.mboPacijent,
                 p2.mboPacijent AS mboAktivniPacijent FROM pregled pr
-                JOIN dijagnoze d ON d.mkbSifra = pr.mkbSifraPrimarna 
-                JOIN pacijent p ON p.mboPacijent = pr.mboPacijent 
-                JOIN obrada_med_sestra o ON o.idObrada = pr.idObradaMedSestra 
-                JOIN pacijent p2 ON p2.idPacijent = o.idPacijent
+                LEFT JOIN dijagnoze d ON d.mkbSifra = pr.mkbSifraPrimarna 
+                LEFT JOIN pacijent p ON p.mboPacijent = pr.mboPacijent 
+                LEFT JOIN obrada_med_sestra o ON o.idObrada = pr.idObradaMedSestra 
+                LEFT JOIN pacijent p2 ON p2.idPacijent = o.idPacijent
                 WHERE pr.idObradaMedSestra = '$idObrada'
                 GROUP BY pr.oznaka 
                 ORDER BY pr.datumPregled DESC, pr.vrijemePregled DESC";
@@ -203,7 +203,7 @@ class CekaonicaService{
             $sql = "SELECT p.imePacijent,p.prezPacijent, 
                     DATE_FORMAT(ol.datumDodavanja,'%d.%m.%Y') AS Datum,
                     ol.idObrada,
-                    (SELECT SUM(CASE
+                    (SELECT CONCAT(SUM(CASE
                     WHEN ul.idUputnica IS NOT NULL THEN (SELECT ROUND(ul2.iznosUsluga,2) FROM usluge_lijecnik ul2 
                                                         WHERE ul2.idObradaLijecnik = '$idObrada' 
                                                         AND ul2.idUputnica = ul.idUputnica 
@@ -220,7 +220,7 @@ class CekaonicaService{
                                                     WHERE pb.mboPacijent IN 
                                                     (SELECT p.mboPacijent FROM pacijent p 
                                                     WHERE p.idPacijent = ol.idPacijent)))
-                    END)) AS ukupnaCijenaPregled FROM obrada_lijecnik ol 
+                    END),' kn')) AS ukupnaCijenaPregled FROM obrada_lijecnik ol 
                     LEFT JOIN usluge_lijecnik ul ON ol.idObrada = ul.idObradaLijecnik 
                     LEFT JOIN pacijent p ON p.idPacijent = ol.idPacijent 
                     WHERE ol.idObrada = '$idObrada'";
