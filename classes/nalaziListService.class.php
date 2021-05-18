@@ -16,17 +16,35 @@ class NalaziListService {
         //Ako je pretraga prazna
         if(empty($pretraga)){
             //Kreiram upit koji dohvaća sve nalaze za listu
-            $sql = "SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, 
-                    TRIM(zu.idZdrUst) AS idZdrUst, TRIM(zu.nazivZdrUst) AS nazivZdrUst, 
+            $sql = "(SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, 
+                    TRIM(zu.idZdrUst) AS idZdrUst, TRIM(zu.nazivZdrUst) AS nazivZdrUst,
                     TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, TRIM(d.imeDijagnoza) AS imeDijagnoza,
                     n.misljenjeSpecijalist 
                     FROM nalaz n 
                     JOIN zdr_ustanova zu ON zu.idZdrUst = n.idZdrUst 
                     JOIN dijagnoze d ON d.mkbSifra = n.mkbSifraPrimarna 
-                    WHERE n.idPacijent = '$idPacijent'
+                    WHERE n.idPacijent = '$idPacijent' 
+                    AND n.misljenjeSpecijalist IS NOT NULL
                     GROUP BY n.oznaka 
-                    ORDER BY n.datumNalaz DESC, n.vrijemeNalaz DESC 
-                    LIMIT 8";
+                    ORDER BY n.datumNalaz DESC, n.vrijemeNalaz DESC)
+                    UNION
+                    (SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, 
+                    TRIM(zu.idZdrUst) AS idZdrUst, TRIM(zu.nazivZdrUst) AS nazivZdrUst,
+                    TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, TRIM(d.imeDijagnoza) AS imeDijagnoza,
+                    n.misljenjeSpecijalist 
+                    FROM nalaz n 
+                    JOIN zdr_ustanova zu ON zu.idZdrUst = n.idZdrUst 
+                    JOIN dijagnoze d ON d.mkbSifra = n.mkbSifraPrimarna 
+                    JOIN uputnica u ON u.idUputnica = n.idUputnica
+                    WHERE n.idPacijent = '$idPacijent' 
+                    AND n.komentarUzNalaz IS NOT NULL 
+                    AND n.idUputnica IN 
+                    (SELECT uz.idUputnica FROM uzorci uz) 
+                    AND n.idUputnica IN 
+                    (SELECT MIN(u2.idUputnica) FROM uputnica u2 
+                    WHERE u.oznaka = u2.oznaka)
+                    GROUP BY n.oznaka 
+                    ORDER BY n.datumNalaz DESC, n.vrijemeNalaz DESC)";
             //Rezultat upita spremam u varijablu $result
             $result = mysqli_query($conn,$sql);
             //Ako rezultat upita ima podataka u njemu (znači nije prazan)
@@ -39,7 +57,7 @@ class NalaziListService {
         }
         //Ako pretraga nije prazna
         else{
-            $sql = "SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, 
+            $sql = "(SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, 
                     TRIM(zu.idZdrUst) AS idZdrUst, TRIM(zu.nazivZdrUst) AS nazivZdrUst, 
                     TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, TRIM(d.imeDijagnoza) AS imeDijagnoza,
                     n.misljenjeSpecijalist 
@@ -50,6 +68,7 @@ class NalaziListService {
                     LEFT JOIN zdr_djel zd ON zd.sifDjel = n.sifDjel 
                     LEFT JOIN dijagnoze d2 ON d2.mkbSifra = n.mkbSifraSekundarna
                     WHERE n.idPacijent = '$idPacijent' 
+                    AND n.misljenjeSpecijalist IS NOT NULL
                     AND (UPPER(s.imeSpecijalist) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(s.prezSpecijalist) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(zu.nazivZdrUst) LIKE UPPER('%{$pretraga}%') 
@@ -59,8 +78,36 @@ class NalaziListService {
                     OR UPPER(TRIM(d.imeDijagnoza)) LIKE UPPER('%{$pretraga}%') 
                     OR UPPER(TRIM(d2.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')) 
                     GROUP BY n.oznaka 
-                    ORDER BY n.datumNalaz DESC, n.vrijemeNalaz DESC 
-                    LIMIT 8";
+                    ORDER BY n.datumNalaz DESC, n.vrijemeNalaz DESC)
+                    UNION 
+                    (SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, 
+                    TRIM(zu.idZdrUst) AS idZdrUst, TRIM(zu.nazivZdrUst) AS nazivZdrUst, 
+                    TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, TRIM(d.imeDijagnoza) AS imeDijagnoza,
+                    n.misljenjeSpecijalist 
+                    FROM nalaz n 
+                    LEFT JOIN zdr_ustanova zu ON zu.idZdrUst = n.idZdrUst 
+                    LEFT JOIN dijagnoze d ON d.mkbSifra = n.mkbSifraPrimarna 
+                    LEFT JOIN specijalist s ON s.idSpecijalist = n.idSpecijalist 
+                    LEFT JOIN zdr_djel zd ON zd.sifDjel = n.sifDjel 
+                    LEFT JOIN dijagnoze d2 ON d2.mkbSifra = n.mkbSifraSekundarna 
+                    LEFT JOIN uputnica u ON u.idUputnica = n.idUputnica
+                    WHERE n.idPacijent = '$idPacijent' 
+                    AND n.komentarUzNalaz IS NOT NULL 
+                    AND n.idUputnica IN 
+                    (SELECT uz.idUputnica FROM uzorci uz) 
+                    AND n.idUputnica IN 
+                    (SELECT MIN(u2.idUputnica) FROM uputnica u2 
+                    WHERE u.oznaka = u2.oznaka)
+                    AND (UPPER(s.imeSpecijalist) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(s.prezSpecijalist) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(zu.nazivZdrUst) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(zd.nazivDjel) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(TRIM(n.mkbSifraPrimarna)) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(TRIM(n.mkbSifraSekundarna)) LIKE UPPER('%{$pretraga}%')
+                    OR UPPER(TRIM(d.imeDijagnoza)) LIKE UPPER('%{$pretraga}%') 
+                    OR UPPER(TRIM(d2.imeDijagnoza)) LIKE UPPER('%{$pretraga}%')) 
+                    GROUP BY n.oznaka 
+                    ORDER BY n.datumNalaz DESC, n.vrijemeNalaz DESC)";
             $result = $conn->query($sql);
 
             //Ako ima pronađenih rezultata za navedenu pretragu
@@ -86,17 +133,37 @@ class NalaziListService {
         $conn = $baza->spojiSBazom();
         $response = [];
 
-        $sql = "SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, zu.idZdrUst, 
-                TRIM(zu.nazivZdrUst) AS nazivZdrUst, 
+        $sql = "(SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, 
+                TRIM(zu.idZdrUst) AS idZdrUst, TRIM(zu.nazivZdrUst) AS nazivZdrUst,
                 TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, TRIM(d.imeDijagnoza) AS imeDijagnoza,
                 n.misljenjeSpecijalist 
                 FROM nalaz n 
                 JOIN zdr_ustanova zu ON zu.idZdrUst = n.idZdrUst 
                 JOIN dijagnoze d ON d.mkbSifra = n.mkbSifraPrimarna 
                 WHERE n.idPacijent = '$idPacijent' 
-                AND n.datumNalaz = '$datum' 
+                AND n.datumNalaz = '$datum'
+                AND n.misljenjeSpecijalist IS NOT NULL
                 GROUP BY n.oznaka 
-                ORDER BY n.idNalaz DESC";
+                ORDER BY n.datumNalaz DESC, n.vrijemeNalaz DESC)
+                UNION
+                (SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, 
+                TRIM(zu.idZdrUst) AS idZdrUst, TRIM(zu.nazivZdrUst) AS nazivZdrUst,
+                TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, TRIM(d.imeDijagnoza) AS imeDijagnoza,
+                n.misljenjeSpecijalist 
+                FROM nalaz n 
+                JOIN zdr_ustanova zu ON zu.idZdrUst = n.idZdrUst 
+                JOIN dijagnoze d ON d.mkbSifra = n.mkbSifraPrimarna 
+                JOIN uputnica u ON u.idUputnica = n.idUputnica
+                WHERE n.idPacijent = '$idPacijent' 
+                AND n.datumNalaz = '$datum'
+                AND n.komentarUzNalaz IS NOT NULL 
+                AND n.idUputnica IN 
+                (SELECT uz.idUputnica FROM uzorci uz) 
+                AND n.idUputnica IN 
+                (SELECT MIN(u2.idUputnica) FROM uputnica u2 
+                WHERE u.oznaka = u2.oznaka)
+                GROUP BY n.oznaka 
+                ORDER BY n.datumNalaz DESC, n.vrijemeNalaz DESC)";
         //Rezultat upita spremam u varijablu $result
         $result = mysqli_query($conn,$sql);
         //Ako rezultat upita ima podataka u njemu (znači nije prazan)
@@ -121,17 +188,35 @@ class NalaziListService {
         $response = [];
 
         //Kreiram upit koji dohvaća sve nalaze za listu
-        $sql = "SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, 
-                TRIM(zu.idZdrUst) AS idZdrUst, TRIM(zu.nazivZdrUst) AS nazivZdrUst, 
+        $sql = "(SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, 
+                TRIM(zu.idZdrUst) AS idZdrUst, TRIM(zu.nazivZdrUst) AS nazivZdrUst,
                 TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, TRIM(d.imeDijagnoza) AS imeDijagnoza,
                 n.misljenjeSpecijalist 
                 FROM nalaz n 
                 JOIN zdr_ustanova zu ON zu.idZdrUst = n.idZdrUst 
                 JOIN dijagnoze d ON d.mkbSifra = n.mkbSifraPrimarna 
                 WHERE n.idPacijent = '$idPacijent' 
+                AND n.misljenjeSpecijalist IS NOT NULL
                 GROUP BY n.oznaka 
-                ORDER BY n.datumNalaz DESC, n.vrijemeNalaz DESC 
-                LIMIT 8";
+                ORDER BY n.datumNalaz DESC, n.vrijemeNalaz DESC)
+                UNION
+                (SELECT n.idNalaz, DATE_FORMAT(n.datumNalaz,'%d.%m.%Y') AS datumNalaz, 
+                TRIM(zu.idZdrUst) AS idZdrUst, TRIM(zu.nazivZdrUst) AS nazivZdrUst,
+                TRIM(n.mkbSifraPrimarna) AS mkbSifraPrimarna, TRIM(d.imeDijagnoza) AS imeDijagnoza,
+                n.misljenjeSpecijalist 
+                FROM nalaz n 
+                JOIN zdr_ustanova zu ON zu.idZdrUst = n.idZdrUst 
+                JOIN dijagnoze d ON d.mkbSifra = n.mkbSifraPrimarna 
+                JOIN uputnica u ON u.idUputnica = n.idUputnica
+                WHERE n.idPacijent = '$idPacijent' 
+                AND n.komentarUzNalaz IS NOT NULL 
+                AND n.idUputnica IN 
+                (SELECT uz.idUputnica FROM uzorci uz) 
+                AND n.idUputnica IN 
+                (SELECT MIN(u2.idUputnica) FROM uputnica u2 
+                WHERE u.oznaka = u2.oznaka)
+                GROUP BY n.oznaka 
+                ORDER BY n.datumNalaz DESC, n.vrijemeNalaz DESC)";
         //Rezultat upita spremam u varijablu $result
         $result = mysqli_query($conn,$sql);
         //Ako rezultat upita ima podataka u njemu (znači nije prazan)
