@@ -267,7 +267,7 @@ class AzurirajReceptService{
             //Ako je statement neuspješan
             if(!mysqli_stmt_prepare($stmt,$sql)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement ne valja!";
+                $response["message"] = "Došlo je do pogreške!";
             }
             else{
                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -302,7 +302,7 @@ class AzurirajReceptService{
                 //Ako je statement neuspješan
                 if(!mysqli_stmt_prepare($stmtPovijestBolesti,$sqlPovijestBolesti)){
                     $response["success"] = "false";
-                    $response["message"] = "Prepared statement ne valja!";
+                    $response["message"] = "Došlo je do pogreške!";
                 }
                 else{
                     //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -318,7 +318,7 @@ class AzurirajReceptService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmtUpdateUsluge,$sqlUpdateUsluge)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                     } 
                     else{
                         //Ako je iznos recepta null
@@ -383,7 +383,7 @@ class AzurirajReceptService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmtDeletePov,$sqlDeletePov)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                     }
                     else{
                         //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -398,7 +398,7 @@ class AzurirajReceptService{
                         //Ako je statement neuspješan
                         if(!mysqli_stmt_prepare($stmtDeleteUsluge,$sqlDeleteUsluge)){
                             $response["success"] = "false";
-                            $response["message"] = "Prepared statement ne valja!";
+                            $response["message"] = "Došlo je do pogreške!";
                         }
                         else{
                             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -420,7 +420,7 @@ class AzurirajReceptService{
             //Ako je statement neuspješan
             if(!mysqli_stmt_prepare($stmtDelete,$sqlDelete)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement ne valja!";
+                $response["message"] = "Došlo je do pogreške!";
             }
             else{
                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -438,7 +438,7 @@ class AzurirajReceptService{
                 //Ako je statement neuspješan
                 if(!mysqli_stmt_prepare($stmt,$sql)){
                     $response["success"] = "false";
-                    $response["message"] = "Prepared statement ne valja!";
+                    $response["message"] = "Došlo je do pogreške!";
                 }
                 else{
                     //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -465,7 +465,7 @@ class AzurirajReceptService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmt,$sql)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                     }
                     else{
                         $prazna = NULL;
@@ -509,7 +509,7 @@ class AzurirajReceptService{
                         //Ako je statement neuspješan
                         if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
                             $response["success"] = "false";
-                            $response["message"] = "Prepared statement ne valja!";
+                            $response["message"] = "Došlo je do pogreške!";
                         }
                         //Ako je prepared statement u redu
                         else{
@@ -524,7 +524,7 @@ class AzurirajReceptService{
                             //Ako je statement neuspješan
                             if(!mysqli_stmt_prepare($stmtInsertUsluge,$sqlInsertUsluge)){
                                 $response["success"] = "false";
-                                $response["message"] = "Prepared statement ne valja!";
+                                $response["message"] = "Došlo je do pogreške!";
                             }
                             else{
                                 //Ako je iznos recepta null
@@ -622,7 +622,7 @@ class AzurirajReceptService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmtDeletePov,$sqlDeletePov)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                     }
                     else{
                         //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -644,7 +644,7 @@ class AzurirajReceptService{
                             //Ako je statement neuspješan
                             if(!mysqli_stmt_prepare($stmtDeleteUsluge,$sqlDeleteUsluge)){
                                 $response["success"] = "false";
-                                $response["message"] = "Prepared statement ne valja!";
+                                $response["message"] = "Došlo je do pogreške!";
                             }
                             else{
                                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -667,7 +667,7 @@ class AzurirajReceptService{
             //Ako je statement neuspješan
             if(!mysqli_stmt_prepare($stmtDelete,$sqlDelete)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement ne valja!";
+                $response["message"] = "Došlo je do pogreške!";
             }
             else{
                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -874,7 +874,7 @@ class AzurirajReceptService{
                 //Ako je statement neuspješan
                 if(!mysqli_stmt_prepare($stmt,$sql)){
                     $response["success"] = "false";
-                    $response["message"] = "Prepared statement ne valja!";
+                    $response["message"] = "Došlo je do pogreške!";
                 }
                 //Ako je prepared statement u redu
                 else{
@@ -909,7 +909,7 @@ class AzurirajReceptService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmtPovijestBolesti,$sqlPovijestBolesti)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                     }
                     else{
                         //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -924,7 +924,7 @@ class AzurirajReceptService{
                         //Ako je statement neuspješan
                         if(!mysqli_stmt_prepare($stmtUpdateUsluge,$sqlUpdateUsluge)){
                             $response["success"] = "false";
-                            $response["message"] = "Prepared statement ne valja!";
+                            $response["message"] = "Došlo je do pogreške!";
                         } 
                         else{
                             //Ako je iznos recepta null
@@ -957,7 +957,7 @@ class AzurirajReceptService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmt,$sql)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                     }
                     //Ako je prepared statement u redu
                     else{
@@ -1016,7 +1016,7 @@ class AzurirajReceptService{
                         //Ako je statement neuspješan
                         if(!mysqli_stmt_prepare($stmtPovijestBolesti,$sqlPovijestBolesti)){
                             $response["success"] = "false";
-                            $response["message"] = "Prepared statement ne valja!";
+                            $response["message"] = "Došlo je do pogreške!";
                         }
                         else{
                             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -1031,7 +1031,7 @@ class AzurirajReceptService{
                             //Ako je statement neuspješan
                             if(!mysqli_stmt_prepare($stmtUpdateUsluge,$sqlUpdateUsluge)){
                                 $response["success"] = "false";
-                                $response["message"] = "Prepared statement ne valja!";
+                                $response["message"] = "Došlo je do pogreške!";
                             }
                             else{
                                 //Ako je iznos recepta null
@@ -1061,7 +1061,7 @@ class AzurirajReceptService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmt,$sql)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                     }
                     else{
                         //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -1088,7 +1088,7 @@ class AzurirajReceptService{
                         //Ako je statement neuspješan
                         if(!mysqli_stmt_prepare($stmt,$sql)){
                             $response["success"] = "false";
-                            $response["message"] = "Prepared statement ne valja!";
+                            $response["message"] = "Došlo je do pogreške!";
                         }
                         else{
                             if(empty($prosliPregled)){
@@ -1131,7 +1131,7 @@ class AzurirajReceptService{
                             //Ako je statement neuspješan
                             if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
                                 $response["success"] = "false";
-                                $response["message"] = "Prepared statement ne valja!";
+                                $response["message"] = "Došlo je do pogreške!";
                             }
                             //Ako je prepared statement u redu
                             else{
@@ -1159,7 +1159,7 @@ class AzurirajReceptService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmt,$sql)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                     }
                     //Ako je prepared statement u redu
                     else{
@@ -1178,7 +1178,7 @@ class AzurirajReceptService{
                         //Ako je statement neuspješan
                         if(!mysqli_stmt_prepare($stmtPovijestBolesti,$sqlPovijestBolesti)){
                             $response["success"] = "false";
-                            $response["message"] = "Prepared statement ne valja!";
+                            $response["message"] = "Došlo je do pogreške!";
                         }
                         else{
                             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -1193,7 +1193,7 @@ class AzurirajReceptService{
                             //Ako je statement neuspješan
                             if(!mysqli_stmt_prepare($stmtUpdateUsluge,$sqlUpdateUsluge)){
                                 $response["success"] = "false";
-                                $response["message"] = "Prepared statement ne valja!";
+                                $response["message"] = "Došlo je do pogreške!";
                             }
                             else{
                                 //Ako je iznos recepta null
@@ -1274,7 +1274,7 @@ class AzurirajReceptService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmtUpdate,$sqlUpdate)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                     }
                     //Ako je prepared statement u redu
                     else{
@@ -1292,7 +1292,7 @@ class AzurirajReceptService{
                         //Ako je statement neuspješan
                         if(!mysqli_stmt_prepare($stmtPovijestBolesti,$sqlPovijestBolesti)){
                             $response["success"] = "false";
-                            $response["message"] = "Prepared statement ne valja!";
+                            $response["message"] = "Došlo je do pogreške!";
                         }
                         else{
                             //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -1346,7 +1346,7 @@ class AzurirajReceptService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmt,$sql)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                     }
                     else{
                         //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -1373,7 +1373,7 @@ class AzurirajReceptService{
                         //Ako je statement neuspješan
                         if(!mysqli_stmt_prepare($stmt,$sql)){
                             $response["success"] = "false";
-                            $response["message"] = "Prepared statement ne valja!";
+                            $response["message"] = "Došlo je do pogreške!";
                         }
                         else{
                             if(empty($prosliPregled)){
@@ -1416,7 +1416,7 @@ class AzurirajReceptService{
                             //Ako je statement neuspješan
                             if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
                                 $response["success"] = "false";
-                                $response["message"] = "Prepared statement ne valja!";
+                                $response["message"] = "Došlo je do pogreške!";
                             }
                             //Ako je prepared statement u redu
                             else{
@@ -1445,7 +1445,7 @@ class AzurirajReceptService{
                 //Ako je statement neuspješan
                 if(!mysqli_stmt_prepare($stmt,$sql)){
                     $response["success"] = "false";
-                    $response["message"] = "Prepared statement ne valja!";
+                    $response["message"] = "Došlo je do pogreške!";
                 }
                 else{
                     //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
@@ -1473,7 +1473,7 @@ class AzurirajReceptService{
                         //Ako je statement neuspješan
                         if(!mysqli_stmt_prepare($stmtInsertUsluge,$sqlInsertUsluge)){
                             $response["success"] = "false";
-                            $response["message"] = "Prepared statement ne valja!";
+                            $response["message"] = "Došlo je do pogreške!";
                             return $response;
                         }
                         else{
@@ -1498,7 +1498,7 @@ class AzurirajReceptService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmt,$sql)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                     }
                     else{
                         if(empty($prosliPregled)){
@@ -1541,7 +1541,7 @@ class AzurirajReceptService{
                         //Ako je statement neuspješan
                         if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
                             $response["success"] = "false";
-                            $response["message"] = "Prepared statement ne valja!";
+                            $response["message"] = "Došlo je do pogreške!";
                         }
                         //Ako je prepared statement u redu
                         else{

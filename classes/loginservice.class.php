@@ -89,7 +89,7 @@ class LoginService{
         $stmt = mysqli_stmt_init($conn);
         if(!mysqli_stmt_prepare($stmt,$sql)){
             $response["success"] = "false";
-            $response["message"] = "Prepared statement korisnika ne valja!";
+            $response["message"] = "Došlo je do pogreške!";
             
         }
         //Ako je prepared statement u redu
@@ -143,7 +143,7 @@ class LoginService{
                                 //Ako je prepared statment neuspješno izvršen
                                 if(!mysqli_stmt_prepare($stmtSessionLijecnik,$sqlSessionLijecnik)){
                                     $response["success"] = "false";
-                                    $response["message"] = "Prepared statement ne valja!";
+                                    $response["message"] = "Došlo je do pogreške!";
                                 }
                                 else{
                                     //Ako je prepared statment uspješno izvršen
@@ -192,7 +192,7 @@ class LoginService{
                                 //Ako je prepared statment neuspješno izvršen
                                 if(!mysqli_stmt_prepare($stmtSessionMedSestra,$sqlSessionMedSestra)){
                                     $response["success"] = "false";
-                                    $response["message"] = "Prepared statment prijave med ne valja!";
+                                    $response["message"] = "Došlo je do pogreške!";
                                 }
                                 else{
                                     //Ako je prepared statment uspješno izvršen

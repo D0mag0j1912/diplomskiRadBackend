@@ -105,7 +105,7 @@ class LijecnikService{
         //Ako je prepared statment neuspješno izvršen
         if(!mysqli_stmt_prepare($stmtLijecnik,$sqlLijecnik)){
             $response["success"] = "false";
-            $response["message"] = "Prepared statement liječnika ne valja!";
+            $response["message"] = "Došlo je do pogreške!";
         }
         //Ako je prepared statement uspješno izvršen
         else{
@@ -128,7 +128,7 @@ class LijecnikService{
             //Ako je prepared statment neuspješno izvršen
             if(!mysqli_stmt_prepare($stmtKorisnik,$sqlKorisnik)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement korisnika ne valja!";
+                $response["message"] = "Došlo je do pogreške!";
             }
             //Ako je prepared statement uspješno izvršen
             else{
@@ -161,7 +161,7 @@ class LijecnikService{
         $stmt = mysqli_stmt_init($conn);
         if(!mysqli_stmt_prepare($stmt,$sql)){
             $response["success"] = "false";
-            $response["message"] = "Prepared statement ne valja!";
+            $response["message"] = "Došlo je do pogreške!";
         }
         //Ako je prepared statement u redu
         else{
@@ -219,7 +219,7 @@ class LijecnikService{
         //Ako je prepared statment neuspješno izvršen
         if(!mysqli_stmt_prepare($stmt,$sql)){
             $response["success"] = "false";
-            $response["message"] = "Prepared statement ne valja!";
+            $response["message"] = "Došlo je do pogreške!";
         }
         //Ako je prepared statment uspješno izvršen
         else{

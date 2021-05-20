@@ -124,7 +124,7 @@ class SignupService{
 		//Ako je prepared statment neuspješno izvršen
 		if(!mysqli_stmt_prepare($stmtKorisnik,$sqlKorisnik)){
 			$response["success"] = "false";
-			$response["message"] = "Prepared statement korisnika ne valja!";
+			$response["message"] = "Došlo je do pogreške!";
 		}
 		//Ako je prepared statment uspješno izvršen
 		else{
@@ -144,7 +144,7 @@ class SignupService{
 				//Ako je prepared statment neuspješno izvršen
 				if(!mysqli_stmt_prepare($stmtMedSestra,$sqlMedSestra)){
 					$response["success"] = "false";
-					$response["message"] = "Prepared statement med. sestre ne valja!";
+					$response["message"] = "Došlo je do pogreške!";
 						
 				}
 				else{
@@ -190,7 +190,7 @@ class SignupService{
 				//Ako je prepared statment neuspješno izvršen
 				if(!mysqli_stmt_prepare($stmtLijecnik,$sqlLijecnik)){
 					$response["success"] = "false";
-					$response["message"] = "Prepared statement liječnika ne valja!";
+					$response["message"] = "Došlo je do pogreške!";
 						
 				}
 				else{

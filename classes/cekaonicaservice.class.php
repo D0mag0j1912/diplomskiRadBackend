@@ -291,7 +291,7 @@ class CekaonicaService{
                 //Ako je statement neuspješan
                 if(!mysqli_stmt_prepare($stmtObrada,$sqlObrada)){
                     $response["success"] = "false";
-                    $response["message"] = "Prepared statement brisanja obrade ne valja!";
+                    $response["message"] = "Došlo je do pogreške!";
                 }
                 //Ako je prepared statement u redu
                 else{
@@ -308,7 +308,7 @@ class CekaonicaService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmt,$sql)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement brisanja čekaonice ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                     }
                     //Ako je prepared statement u redu
                     else{
@@ -331,7 +331,7 @@ class CekaonicaService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmt,$sql)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement brisanja čekaonice ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                     }
                     //Ako je prepared statement u redu
                     else{
@@ -370,7 +370,7 @@ class CekaonicaService{
                 //Ako je statement neuspješan
                 if(!mysqli_stmt_prepare($stmtObrada,$sqlObrada)){
                     $response["success"] = "false";
-                    $response["message"] = "Prepared statement brisanja obrade ne valja!";
+                    $response["message"] = "Došlo je do pogreške!";
                 }
                 //Ako je prepared statement u redu
                 else{
@@ -387,7 +387,7 @@ class CekaonicaService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmt,$sql)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement brisanja čekaonice ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                     }
                     //Ako je prepared statement u redu
                     else{
@@ -411,7 +411,7 @@ class CekaonicaService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmt,$sql)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement brisanja čekaonice ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                     }
                     //Ako je prepared statement u redu
                     else{
@@ -495,7 +495,7 @@ class CekaonicaService{
             //Ako je statement neuspješan
             if(!mysqli_stmt_prepare($stmt,$sql)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement ne valja!";
+                $response["message"] = "Došlo je do pogreške!";
             }
             //Ako je prepared statement u redu
             else{
@@ -526,7 +526,7 @@ class CekaonicaService{
             //Ako je statement neuspješan
             if(!mysqli_stmt_prepare($stmt,$sql)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement ne valja!";
+                $response["message"] = "Došlo je do pogreške!";
             }
             //Ako je prepared statement u redu
             else{

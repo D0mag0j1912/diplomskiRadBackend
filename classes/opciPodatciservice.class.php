@@ -233,7 +233,7 @@ class OpciPodatciService{
             //Ako je statement neuspješan
             if(!mysqli_stmt_prepare($stmt,$sql)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement ne valja!";
+                $response["message"] = "Došlo je do pogreške!";
             }
             //Ako je prepared statement u redu
             else{
@@ -313,7 +313,7 @@ class OpciPodatciService{
                 //Ako je statement neuspješan
                 if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
                     $response["success"] = "false";
-                    $response["message"] = "Prepared statement ne valja!";
+                    $response["message"] = "Došlo je do pogreške!";
                 }
                 //Ako je prepared statement u redu
                 else{
@@ -331,7 +331,7 @@ class OpciPodatciService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmtZdr,$sqlZdr)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement zdravstvenih podataka ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                     }
                     //Ako je prepared statement u redu
                     else{
@@ -386,7 +386,7 @@ class OpciPodatciService{
                 //Ako je statement neuspješan
                 if(!mysqli_stmt_prepare($stmt,$sql)){
                     $response["success"] = "false";
-                    $response["message"] = "Prepared statement ne valja!";
+                    $response["message"] = "Došlo je do pogreške!";
                 }
                 //Ako je prepared statement u redu
                 else{
@@ -467,7 +467,7 @@ class OpciPodatciService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                     }
                     //Ako je prepared statement u redu
                     else{
@@ -487,7 +487,7 @@ class OpciPodatciService{
             //Ako je statement neuspješan
             if(!mysqli_stmt_prepare($stmtZdr,$sqlZdr)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement zdravstvenih podataka ne valja!";
+                $response["message"] = "Došlo je do pogreške!";
             }
             //Ako je prepared statement u redu
             else{

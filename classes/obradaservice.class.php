@@ -119,7 +119,7 @@ class ObradaService{
             //Ako trenutno aktivni pacijent nije naručen na današnji datum
             if($brojPacijenata == 0){
                 $response["success"] = "false";
-                $response["message"] = "Pacijent je nenaručen!";
+                $response["message"] = "Pacijent nije naručen!";
             }
             //Ako JE trenutno aktivni pacijent naručen na današnji datum
             else{
@@ -159,7 +159,7 @@ class ObradaService{
             //Ako trenutno aktivni pacijent nije naručen na današnji datum
             if($brojPacijenata == 0){
                 $response["success"] = "false";
-                $response["message"] = "Pacijent je nenaručen!";
+                $response["message"] = "Pacijent nije naručen!";
             }
             //Ako JE trenutno aktivni pacijent naručen na današnji datum
             else{
@@ -271,7 +271,7 @@ class ObradaService{
             //Ako je statement neuspješan
             if(!mysqli_stmt_prepare($stmt,$sql)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement ne valja!";
+                $response["message"] = "Došlo je do pogreške!";
             }
             //Ako je prepared statement u redu
             else{
@@ -300,7 +300,7 @@ class ObradaService{
                 //Ako je statement neuspješan
                 if(!mysqli_stmt_prepare($stmtCekaonica,$sqlCekaonica)){
                     $response["success"] = "false";
-                    $response["message"] = "Prepared statement cekaonice ne valja!";
+                    $response["message"] = "Došlo je do pogreške!";
                 }
                 //Ako je prepared statement u redu
                 else{
@@ -324,7 +324,7 @@ class ObradaService{
             //Ako je statement neuspješan
             if(!mysqli_stmt_prepare($stmt,$sql)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement ne valja!";
+                $response["message"] = "Došlo je do pogreške!";
             }
             //Ako je prepared statement u redu
             else{
@@ -353,7 +353,7 @@ class ObradaService{
                 //Ako je statement neuspješan
                 if(!mysqli_stmt_prepare($stmtCekaonica,$sqlCekaonica)){
                     $response["success"] = "false";
-                    $response["message"] = "Prepared statement cekaonice ne valja!";
+                    $response["message"] = "Došlo je do pogreške!";
                 }
                 //Ako je prepared statement u redu
                 else{
@@ -479,7 +479,7 @@ class ObradaService{
             //Ako je statement neuspješan
             if(!mysqli_stmt_prepare($stmtCekaonica,$sqlCekaonica)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement cekaonice ne valja!";
+                $response["message"] = "Došlo je do pogreške!";
             }
             //Ako je prepared statement u redu
             else{
@@ -499,7 +499,7 @@ class ObradaService{
                 //Ako je statement neuspješan
                 if(!mysqli_stmt_prepare($stmtObrada,$sqlObrada)){
                     $response["success"] = "false";
-                    $response["message"] = "Prepared statement cekaonice ne valja!";
+                    $response["message"] = "Došlo je do pogreške!";
                 }
                 //Ako je prepared statement u redu
                 else{
@@ -526,7 +526,7 @@ class ObradaService{
             //Ako je statement neuspješan
             if(!mysqli_stmt_prepare($stmtCekaonica,$sqlCekaonica)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement cekaonice ne valja!";
+                $response["message"] = "Došlo je do pogreške!";
             }
             //Ako je prepared statement u redu
             else{
@@ -546,7 +546,7 @@ class ObradaService{
                 //Ako je statement neuspješan
                 if(!mysqli_stmt_prepare($stmtObrada,$sqlObrada)){
                     $response["success"] = "false";
-                    $response["message"] = "Prepared statement cekaonice ne valja!";
+                    $response["message"] = "Došlo je do pogreške!";
                 }
                 //Ako je prepared statement u redu
                 else{
@@ -772,7 +772,7 @@ class ObradaService{
         //Ako je statement neuspješan
         if(!mysqli_stmt_prepare($stmt,$sql)){
             $response["success"] = "false";
-            $response["message"] = "Prepared statement osnovnih podataka ne valja!";
+            $response["message"] = "Došlo je do pogreške!";
         }
         //Ako je prepared statement u redu
         else{
@@ -842,7 +842,7 @@ class ObradaService{
         //Ako je statement neuspješan
         if(!mysqli_stmt_prepare($stmtZdr,$sqlZdr)){
             $response["success"] = "false";
-            $response["message"] = "Prepared statement zdravstvenih podataka ne valja!";
+            $response["message"] = "Došlo je do pogreške!";
         }
         //Ako je prepared statement u redu
         else{
@@ -861,7 +861,7 @@ class ObradaService{
             //Ako je statement neuspješan
             if(!mysqli_stmt_prepare($stmt,$sql)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement osnovnih podataka ne valja!";
+                $response["message"] = "Došlo je do pogreške!";
             }
             //Ako je prepared statement u redu
             else{
@@ -926,8 +926,9 @@ class ObradaService{
                 $sql = "SELECT p.imePacijent,p.prezPacijent FROM pacijent p 
                         JOIN cekaonica c ON c.idPacijent = p.idPacijent 
                         WHERE c.idCekaonica = 
-                        (SELECT MAX(idCekaonica) FROM cekaonica 
-                        WHERE statusCekaonica = '$status' AND idLijecnik = '$idLijecnik')";
+                        (SELECT MIN(idCekaonica) FROM cekaonica 
+                        WHERE statusCekaonica = '$status' 
+                        AND idLijecnik = '$idLijecnik')";
 
                 $result = $conn->query($sql);
 
@@ -975,8 +976,9 @@ class ObradaService{
                 $sql = "SELECT p.imePacijent,p.prezPacijent FROM pacijent p 
                         JOIN cekaonica c ON c.idPacijent = p.idPacijent 
                         WHERE c.idCekaonica = 
-                        (SELECT MAX(idCekaonica) FROM cekaonica 
-                        WHERE statusCekaonica = '$status' AND idMedSestra = '$idMedSestra')";
+                        (SELECT MIN(idCekaonica) FROM cekaonica 
+                        WHERE statusCekaonica = '$status' 
+                        AND idMedSestra = '$idMedSestra')";
 
                 $result = $conn->query($sql);
 

@@ -35,7 +35,7 @@ class LogoutService{
             //Ako je prepared statment neuspješno izvršen
             if(!mysqli_stmt_prepare($stmt,$sql)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement ne valja!";
+                $response["message"] = "Došlo je do pogreške!";
             }
             else{
                 
@@ -64,7 +64,7 @@ class LogoutService{
             //Ako je prepared statment neuspješno izvršen
             if(!mysqli_stmt_prepare($stmt,$sql)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement ne valja!";
+                $response["message"] = "Došlo je do pogreške!";
             }
             else{
                 

@@ -66,7 +66,7 @@ class DodajReceptService{
         //Ako je statement neuspješan
         if(!mysqli_stmt_prepare($stmt,$sql)){
             $response["success"] = "false";
-            $response["message"] = "Prepared statement ne valja!";
+            $response["message"] = "Došlo je do pogreške!";
             $response["idRecept"] = null;
         }
         //Ako je prepared statement u redu
@@ -275,7 +275,7 @@ class DodajReceptService{
                 //Ako je statement neuspješan
                 if(!mysqli_stmt_prepare($stmtUpdate,$sqlUpdate)){
                     $response["success"] = "false";
-                    $response["message"] = "Prepared statement ne valja!";
+                    $response["message"] = "Došlo je do pogreške!";
                     $response["idRecept"] = null;
                 }
                 //Ako je prepared statement u redu
@@ -307,7 +307,7 @@ class DodajReceptService{
                 //Ako je statement neuspješan
                 if(!mysqli_stmt_prepare($stmtDeleteAmbulanta,$sqlDeleteAmbulanta)){
                     $response["success"] = "false";
-                    $response["message"] = "Prepared statement ne valja!";
+                    $response["message"] = "Došlo je do pogreške!";
                     $response["idRecept"] = null;
                 }
                 else{
@@ -357,7 +357,7 @@ class DodajReceptService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmtDelete,$sqlDelete)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                         $response["idRecept"] = null;
                     }
                     else{
@@ -376,7 +376,7 @@ class DodajReceptService{
                         //Ako je statement neuspješan
                         if(!mysqli_stmt_prepare($stmt,$sql)){
                             $response["success"] = "false";
-                            $response["message"] = "Prepared statement ne valja!";
+                            $response["message"] = "Došlo je do pogreške!";
                             $response["idRecept"] = null;
                         }
                         else{
@@ -421,7 +421,7 @@ class DodajReceptService{
                             //Ako je statement neuspješan
                             if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
                                 $response["success"] = "false";
-                                $response["message"] = "Prepared statement ne valja!";
+                                $response["message"] = "Došlo je do pogreške!";
                                 $response["idRecept"] = null;
                             }
                             //Ako je prepared statement u redu
@@ -491,7 +491,7 @@ class DodajReceptService{
             //Ako je statement neuspješan
             if(!mysqli_stmt_prepare($stmtDeleteAmbulanta,$sqlDeleteAmbulanta)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement ne valja!";
+                $response["message"] = "Došlo je do pogreške!";
                 $response["idRecept"] = null;
             }
             else{
@@ -540,7 +540,7 @@ class DodajReceptService{
                 //Ako je statement neuspješan
                 if(!mysqli_stmt_prepare($stmtDelete,$sqlDelete)){
                     $response["success"] = "false";
-                    $response["message"] = "Prepared statement ne valja!";
+                    $response["message"] = "Došlo je do pogreške!";
                     $response["idRecept"] = null;
                 }
                 else{
@@ -565,7 +565,7 @@ class DodajReceptService{
             //Ako je statement neuspješan
             if(!mysqli_stmt_prepare($stmt,$sql)){
                 $response["success"] = "false";
-                $response["message"] = "Prepared statement ne valja!";
+                $response["message"] = "Došlo je do pogreške!";
                 $response["idRecept"] = null;
             }
             //Ako je prepared statement u redu
@@ -774,7 +774,7 @@ class DodajReceptService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmtUpdate,$sqlUpdate)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                         $response["idRecept"] = null;
                     }
                     //Ako je prepared statement u redu
@@ -806,7 +806,7 @@ class DodajReceptService{
                         //Ako je statement neuspješan
                         if(!mysqli_stmt_prepare($stmtUpdate,$sqlUpdate)){
                             $response["success"] = "false";
-                            $response["message"] = "Prepared statement ne valja!";
+                            $response["message"] = "Došlo je do pogreške!";
                             $response["idRecept"] = null;
                         }
                         //Ako je prepared statement u redu
@@ -871,7 +871,7 @@ class DodajReceptService{
                         //Ako je statement neuspješan
                         if(!mysqli_stmt_prepare($stmt,$sql)){
                             $response["success"] = "false";
-                            $response["message"] = "Prepared statement ne valja!";
+                            $response["message"] = "Došlo je do pogreške!";
                             $response["idRecept"] = null;
                         }
                         //Ako je prepared statement u redu
@@ -917,7 +917,7 @@ class DodajReceptService{
                             //Ako je statement neuspješan
                             if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
                                 $response["success"] = "false";
-                                $response["message"] = "Prepared statement ne valja!";
+                                $response["message"] = "Došlo je do pogreške!";
                                 $response["idRecept"] = null;
                             }
                             //Ako je prepared statement u redu
@@ -943,7 +943,7 @@ class DodajReceptService{
                         //Ako je statement neuspješan
                         if(!mysqli_stmt_prepare($stmtUpdate,$sqlUpdate)){
                             $response["success"] = "false";
-                            $response["message"] = "Prepared statement ne valja!";
+                            $response["message"] = "Došlo je do pogreške!";
                             $response["idRecept"] = null;
                         }
                         //Ako je prepared statement u redu
@@ -985,7 +985,7 @@ class DodajReceptService{
                         //Ako je statement neuspješan
                         if(!mysqli_stmt_prepare($stmtUpdate,$sqlUpdate)){
                             $response["success"] = "false";
-                            $response["message"] = "Prepared statement ne valja!";
+                            $response["message"] = "Došlo je do pogreške!";
                             $response["idRecept"] = null;
                         }
                         //Ako je prepared statement u redu
@@ -1052,7 +1052,7 @@ class DodajReceptService{
                         //Ako je statement neuspješan
                         if(!mysqli_stmt_prepare($stmt,$sql)){
                             $response["success"] = "false";
-                            $response["message"] = "Prepared statement ne valja!";
+                            $response["message"] = "Došlo je do pogreške!";
                             $response["idRecept"] = null;
                         }
                         //Ako je prepared statement u redu
@@ -1098,7 +1098,7 @@ class DodajReceptService{
                             //Ako je statement neuspješan
                             if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
                                 $response["success"] = "false";
-                                $response["message"] = "Prepared statement ne valja!";
+                                $response["message"] = "Došlo je do pogreške!";
                                 $response["idRecept"] = null;
                             }
                             //Ako je prepared statement u redu
@@ -1129,7 +1129,7 @@ class DodajReceptService{
                     //Ako je statement neuspješan
                     if(!mysqli_stmt_prepare($stmt,$sql)){
                         $response["success"] = "false";
-                        $response["message"] = "Prepared statement ne valja!";
+                        $response["message"] = "Došlo je do pogreške!";
                         $response["idRecept"] = null;
                     }
                     //Ako je prepared statement u redu
@@ -1175,7 +1175,7 @@ class DodajReceptService{
                         //Ako je statement neuspješan
                         if(!mysqli_stmt_prepare($stmtAmbulanta,$sqlAmbulanta)){
                             $response["success"] = "false";
-                            $response["message"] = "Prepared statement ne valja!";
+                            $response["message"] = "Došlo je do pogreške!";
                             $response["idRecept"] = null;
                         }
                         //Ako je prepared statement u redu
