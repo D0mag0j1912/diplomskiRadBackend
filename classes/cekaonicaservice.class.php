@@ -6,6 +6,51 @@ date_default_timezone_set('Europe/Zagreb');
 
 class CekaonicaService{
 
+    //Funkcija koja dohvaća MAKSIMALNI DATUM dodavanja povijesti bolesti nekog završenog pregleda
+    function dohvatiMaxDatum($tip, $idObrada){
+        //Dohvaćam bazu 
+        $baza = new Baza();
+        $conn = $baza->spojiSBazom();
+        $response = [];
+
+        //Ako je tip korisnika "lijecnik":
+        if($tip == "lijecnik"){
+            $sql = "SELECT MAX(pb.datum) AS MaxDatum, 
+                    DATE_FORMAT(MAX(pb.datum),'%d.%m.%Y') AS Datum FROM povijest_bolesti pb 
+                    WHERE pb.idObradaLijecnik = '$idObrada'";
+            $result = $conn->query($sql);
+
+            //Ako pacijent ima dodanih povijesti bolesti
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $response[] = $row;
+                }
+            } 
+            //Ako pacijent nema dodanih povijesti bolesti za ovaj ID obrade
+            else{
+                return null;
+            }
+        }
+        //Ako je tip korisnika "sestra":
+        else{
+            $sql = "SELECT MAX(p.datumPregled) AS MaxDatum FROM pregled p 
+                    WHERE p.idObradaMedSestra = '$idObrada'";
+            $result = $conn->query($sql);
+
+            //Ako pacijent ima dodanih općih podataka pregleda
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $response[] = $row;
+                }
+            } 
+            //Ako pacijent nema dodanih općih podataka pregleda za ovaj ID obrade
+            else{
+                return null;
+            }
+        }
+        return $response;
+    }
+
     //Funkcija koja dohvaća naziv i šifru sekundarnih dijagnoza na osnovu šifre sek. dijagnoze
     function dohvatiNazivSifraPovijestBolesti($datum,$vrijeme,$tipSlucaj,$mkbSifraPrimarna,$idObrada){
         //Dohvaćam bazu 
