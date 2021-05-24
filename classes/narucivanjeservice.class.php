@@ -202,7 +202,9 @@ class NarucivanjeService{
         $baza = new Baza();
         $conn = $baza->spojiSBazom();
         
-        $sql = "SELECT n.*,p.imePacijent,p.prezPacijent,p.mboPacijent FROM narucivanje n 
+        $sql = "SELECT n.*,CONCAT(p.imePacijent,' ',p.prezPacijent,' ',p.mboPacijent) AS Pacijent,
+                v.nazivVrstaPregled FROM narucivanje n 
+                JOIN vrsta_pregled v ON v.idVrstaPregled = n.idVrstaPregled
                 JOIN pacijent p ON p.idPacijent = n.idPacijent 
                 WHERE n.idNarucivanje = '$idNarudzba';";
         
@@ -214,29 +216,6 @@ class NarucivanjeService{
             }
         }
 
-        return $response;
-    }
-
-    //Funkcija koja dohvaća SVE VRSTE PREGLEDA, IME I PREZIME PACIJENTA,DATUM I VRIJEME NARUČIVANJA
-    function dohvatiVrstuPregleda(){
-        $response = [];
-
-        //Dohvaćam bazu 
-        $baza = new Baza();
-        $conn = $baza->spojiSBazom();
-
-        $sql = "SELECT vp.*,CONCAT(p.imePacijent,' ',p.prezPacijent,' ',p.mboPacijent) AS Pacijent,n.datumNarucivanje,n.vrijemeNarucivanje FROM vrsta_pregled vp 
-                JOIN narucivanje n ON n.idVrstaPregled = vp.idVrstaPregled 
-                JOIN pacijent p ON p.idPacijent = n.idPacijent;";
-
-        $result = $conn->query($sql);
-
-        if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                $response[] = $row;
-            }
-        }
-        //Vraćam odgovor
         return $response;
     }
 

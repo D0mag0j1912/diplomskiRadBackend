@@ -33,7 +33,8 @@ class CekaonicaService{
         }
         //Ako je tip korisnika "sestra":
         else{
-            $sql = "SELECT MAX(p.datumPregled) AS MaxDatum FROM pregled p 
+            $sql = "SELECT MAX(p.datumPregled) AS MaxDatum,
+                    DATE_FORMAT(MAX(p.datumPregled), '%d.%m.%Y') AS Datum FROM pregled p 
                     WHERE p.idObradaMedSestra = '$idObrada'";
             $result = $conn->query($sql);
 
