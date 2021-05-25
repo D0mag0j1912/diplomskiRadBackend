@@ -854,25 +854,67 @@ class ObradaService{
             //Izvršavanje statementa
             mysqli_stmt_execute($stmtZdr);
 
-            $sql = "UPDATE pacijent p SET p.mboPacijent = ? 
-                        WHERE p.idPacijent = ?";
+            //Ažuriraj MBO redova povijesti bolesti i općih podataka pregleda
+            //Prvo povijest_bolesti
+            $sqlUpdatePovijestBolesti = "UPDATE povijest_bolesti pb SET pb.mboPacijent = ? 
+                                        WHERE pb.mboPacijent IN 
+                                        (SELECT p.mboPacijent FROM pacijent p 
+                                        WHERE p.idPacijent = ?)";
             //Kreiranje prepared statementa
-            $stmt = mysqli_stmt_init($conn);
+            $stmtUpdatePovijestBolesti = mysqli_stmt_init($conn);
             //Ako je statement neuspješan
-            if(!mysqli_stmt_prepare($stmt,$sql)){
+            if(!mysqli_stmt_prepare($stmtUpdatePovijestBolesti,$sqlUpdatePovijestBolesti)){
                 $response["success"] = "false";
                 $response["message"] = "Došlo je do pogreške!";
             }
             //Ako je prepared statement u redu
             else{
                 //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
-                mysqli_stmt_bind_param($stmt,"si",$mbo,$idPacijent);
+                mysqli_stmt_bind_param($stmtUpdatePovijestBolesti,"si",$mbo,$idPacijent);
                 //Izvršavanje statementa
-                mysqli_stmt_execute($stmt);
+                mysqli_stmt_execute($stmtUpdatePovijestBolesti);
 
-                $response["success"] = "true";
-                $response["message"] = "Podatci uspješno ažurirani!";
+                //Onda iza ažuriranje općih podataka pregleda
+                $sqlUpdatePregled = "UPDATE pregled pr SET pr.mboPacijent = ? 
+                                        WHERE pr.mboPacijent IN 
+                                        (SELECT p.mboPacijent FROM pacijent p 
+                                        WHERE p.idPacijent = ?)";
+                //Kreiranje prepared statementa
+                $stmtUpdatePregled = mysqli_stmt_init($conn);
+                //Ako je statement neuspješan
+                if(!mysqli_stmt_prepare($stmtUpdatePregled,$sqlUpdatePregled)){
+                    $response["success"] = "false";
+                    $response["message"] = "Došlo je do pogreške!";
+                }
+                //Ako je prepared statement u redu
+                else{
+                    //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                    mysqli_stmt_bind_param($stmtUpdatePregled,"si",$mbo,$idPacijent);
+                    //Izvršavanje statementa
+                    mysqli_stmt_execute($stmtUpdatePregled);
+
+                    $sql = "UPDATE pacijent p SET p.mboPacijent = ? 
+                            WHERE p.idPacijent = ?";
+                    //Kreiranje prepared statementa
+                    $stmt = mysqli_stmt_init($conn);
+                    //Ako je statement neuspješan
+                    if(!mysqli_stmt_prepare($stmt,$sql)){
+                        $response["success"] = "false";
+                        $response["message"] = "Došlo je do pogreške!";
+                    }
+                    //Ako je prepared statement u redu
+                    else{
+                        //Zamjena parametara u statementu (umjesto ? se stavlja vrijednost)
+                        mysqli_stmt_bind_param($stmt,"si",$mbo,$idPacijent);
+                        //Izvršavanje statementa
+                        mysqli_stmt_execute($stmt);
+
+                        $response["success"] = "true";
+                        $response["message"] = "Podatci uspješno ažurirani!";
+                    }
+                }
             }
+
         }
         //Vraćam odgovor
         return $response;
